@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>캐릭터 정보 입력 — 모바일</title>
+<script src="./support.js"></script>
+<script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=347863" async></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var f=location.pathname.split("/").pop()||"";var m=f.indexOf("Mobile")===0;var w=window.innerWidth||1440;if(w<768&&!m&&f){location.replace("Mobile"+f+location.search);}else if(w>=1024&&m){location.replace(f.slice(6)+location.search);}}catch(e){}})();</script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;family=Gowun+Dodum&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;word-break:keep-all;overflow-wrap:break-word;font-family:'Gowun Dodum',sans-serif;background:#F5EDDC;color:#2A2119}
+a{color:#2F5A45}a:hover{color:#1E3D2E}
+button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
+.fl{display:flex;flex-direction:column;justify-content:space-between;gap:6px;font-size:13px;line-height:1.4;color:#4A3D30}
+.f{height:44px;box-sizing:border-box;padding:0 12px;border:1px solid #B6A27E;border-radius:10px;background:#FBF5E8;font-family:'Gowun Dodum',sans-serif;font-size:15px;color:#2A2119;width:100%;min-width:0}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 100vh; position: relative; word-break: keep-all; overflow-wrap: break-word; box-sizing: border-box; background: #F5EDDC; font-family: 'Gowun Dodum', sans-serif; color: #2A2119; display: flex; flex-direction: column">
+
+<header style="height: 60px; box-sizing: border-box; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #D9C8A6; background: #FBF5E8">
+<a href="MobileCharInput.dc.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #2A2119">
+<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.3 13.1L15.2 13.1L14.9 13.3L14.7 13.4L14.5 13.5L14.3 13.6L14.2 13.7L14.0 13.8L13.9 13.9L13.8 14.0L13.7 14.2L13.6 14.3L13.5 14.5L13.4 14.7L13.3 14.9L13.1 15.2L13.0 15.4L12.8 15.7L12.6 15.9L12.4 16.2L12.1 16.5L11.8 16.8L11.5 17.1L11.2 17.3L10.8 17.6L10.3 17.8L9.8 18.0L9.3 18.1L8.8 18.2L8.3 18.3L7.7 18.3L7.7 18.3M4.3 17.2L4.0 17.1L3.5 16.7L3.1 16.2L2.7 15.7L2.3 15.1L2.0 14.6L1.8 13.9L1.6 13.3L1.5 12.7L1.5 12.0L1.5 11.3L1.6 10.7L1.8 10.1L2.0 9.4L2.3 8.9L2.7 8.3L3.1 7.8L3.5 7.3L4.0 6.9L4.5 6.6L5.1 6.3L5.7 6.1L6.2 5.9L6.8 5.8L7.4 5.7L8.0 5.7L8.5 5.7L9.1 5.8L9.6 5.9L10.1 6.1L10.5 6.3L10.5 6.3M13.1 8.7L13.1 8.8L13.3 9.1L13.4 9.3L13.5 9.5L13.6 9.7L13.7 9.8L13.8 10.0L13.9 10.1L14.0 10.2L14.2 10.3L14.3 10.4L14.5 10.5L14.7 10.6L14.9 10.7L15.2 10.9L15.4 11.0L15.7 11.2L15.9 11.4L16.2 11.6L16.5 11.9L16.8 12.2L17.1 12.5L17.3 12.8L17.6 13.2L17.8 13.7L18.0 14.2L18.1 14.7L18.2 15.2L18.3 15.7L18.3 16.3L18.3 16.3M17.2 19.7L17.1 20.0L16.7 20.5L16.2 20.9L15.7 21.3L15.1 21.7L14.6 22.0L13.9 22.2L13.3 22.4L12.7 22.5L12.0 22.5L11.3 22.5L10.7 22.4L10.1 22.2L9.4 22.0L8.9 21.7L8.3 21.3L7.8 20.9L7.3 20.5L6.9 20.0L6.6 19.5L6.3 18.9L6.1 18.3L5.9 17.8L5.8 17.2L5.7 16.6L5.7 16.0L5.7 15.5L5.8 14.9L5.9 14.4L6.1 13.9L6.3 13.5L6.3 13.5M8.7 10.9L8.8 10.9L9.1 10.7L9.3 10.6L9.5 10.5L9.7 10.4L9.8 10.3L10.0 10.2L10.1 10.1L10.2 10.0L10.3 9.8L10.4 9.7L10.5 9.5L10.6 9.3L10.7 9.1L10.9 8.8L11.0 8.6L11.2 8.3L11.4 8.1L11.6 7.8L11.9 7.5L12.2 7.2L12.5 6.9L12.8 6.7L13.2 6.4L13.7 6.2L14.2 6.0L14.7 5.9L15.2 5.8L15.7 5.7L16.3 5.7L16.3 5.7M19.7 6.8L20.0 6.9L20.5 7.3L20.9 7.8L21.3 8.3L21.7 8.9L22.0 9.4L22.2 10.1L22.4 10.7L22.5 11.3L22.5 12.0L22.5 12.7L22.4 13.3L22.2 13.9L22.0 14.6L21.7 15.1L21.3 15.7L20.9 16.2L20.5 16.7L20.0 17.1L19.5 17.4L18.9 17.7L18.3 17.9L17.8 18.1L17.2 18.2L16.6 18.3L16.0 18.3L15.5 18.3L14.9 18.2L14.4 18.1L13.9 17.9L13.5 17.7L13.5 17.7M10.9 15.3L10.9 15.2L10.7 14.9L10.6 14.7L10.5 14.5L10.4 14.3L10.3 14.2L10.2 14.0L10.1 13.9L10.0 13.8L9.8 13.7L9.7 13.6L9.5 13.5L9.3 13.4L9.1 13.3L8.8 13.1L8.6 13.0L8.3 12.8L8.1 12.6L7.8 12.4L7.5 12.1L7.2 11.8L6.9 11.5L6.7 11.2L6.4 10.8L6.2 10.3L6.0 9.8L5.9 9.3L5.8 8.8L5.7 8.3L5.7 7.7L5.7 7.7M6.8 4.3L6.9 4.0L7.3 3.5L7.8 3.1L8.3 2.7L8.9 2.3L9.4 2.0L10.1 1.8L10.7 1.6L11.3 1.5L12.0 1.5L12.7 1.5L13.3 1.6L13.9 1.8L14.6 2.0L15.1 2.3L15.7 2.7L16.2 3.1L16.7 3.5L17.1 4.0L17.4 4.5L17.7 5.1L17.9 5.7L18.1 6.2L18.2 6.8L18.3 7.4L18.3 8.0L18.3 8.5L18.2 9.1L18.1 9.6L17.9 10.1L17.7 10.5L17.7 10.5"></path></svg>
+<span style="font-family: 'Gowun Batang', serif; font-size: 19px; font-weight: 700">하츠의 마비노기</span>
+</a>
+<button type="button" aria-label="메뉴 열기" aria-expanded="{{menuExp}}" onClick="{{toggleMenu}}" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #2A2119"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+</header>
+<sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}"><nav aria-label="전체 메뉴" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 20; background: #FBF5E8; border-bottom: 1px solid #D9C8A6; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.14); display: flex; flex-direction: column"><span style="padding: 14px 20px 10px; font-family: 'Gowun Batang', serif; font-size: 15px; font-weight: 700; color: #8A5E17">스펙업 계산기</span><a href="MobileCharInput.dc.html" aria-current="page" style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #2A2119; font-size: 15px; font-weight: 700; border-top: 1px solid #E6D9BD"><span>1. 캐릭터 정보</span><span style="font-size: 12px; color: #8A5E17">지금 보는 중</span></a><a href="MobileCalc.dc.html" style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #4A3D30; font-size: 15px; font-weight: 400; border-top: 1px solid #E6D9BD"><span>2. 장비 · 오검</span></a><a href="MobileCompare.dc.html" style="min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #4A3D30; font-size: 15px; font-weight: 400; border-top: 1px solid #E6D9BD"><span>3. 세팅 시뮬레이터</span></a></nav></sc-if>
+
+<nav aria-label="주 메뉴" style="display: flex; padding: 0 8px; border-bottom: 1px solid #D9C8A6; background: #FBF5E8; font-size: 15px">
+<a href="MobileCharInput.dc.html" aria-current="page" style="flex-grow: 1; text-align: center; text-decoration: none; color: #2A2119; font-weight: 700; padding: 13px 0; border-bottom: 2px solid {{accent}}">스펙업 계산기</a></nav>
+
+<section style="padding: 24px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+<p style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 15px; font-weight: 700; color: #8A5E17; letter-spacing: 0.02em">스펙업 계산기</p>
+<ol aria-label="진행 단계" style="white-space: nowrap; margin: 0; padding: 0; list-style: none; display: flex; align-items: center; gap: 6px; font-size: 12px">
+<li aria-current="step" style="display: flex; align-items: center; gap: 6px; font-weight: 700"><span style="width: 22px; height: 22px; border-radius: 50%; background: {{accent}}; color: #FBF5E8; display: flex; align-items: center; justify-content: center; font-size: 12px">1</span>캐릭터 정보</li>
+<li aria-hidden="true" style="width: 10px; height: 1px; background: #B6A27E"></li>
+<li><a href="MobileCalc.dc.html" style="display: flex; align-items: center; gap: 6px; color: #6B5A45; text-decoration: none"><span style="width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #B6A27E; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 12px">2</span>장비 · 오검</a></li>
+<li aria-hidden="true" style="width: 10px; height: 1px; background: #B6A27E"></li>
+<li><a href="MobileCompare.dc.html" style="display: flex; align-items: center; gap: 6px; color: #6B5A45; text-decoration: none"><span style="width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #B6A27E; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 12px">3</span>세팅 시뮬레이터</a></li>
+</ol>
+<h1 style="margin: 0; padding-left: 4px; font-family: 'Gowun Batang', serif; font-size: 28px; font-weight: 700">캐릭터 정보</h1>
+<p style="margin: 0; padding-left: 4px; font-size: 14px; line-height: 1.65; color: #6B5A45">아이콘을 눌러 선택하세요. 입력 내용은 이 브라우저에 자동 저장돼요.</p>
+<div role="radiogroup" aria-label="캐릭터 선택" style="display: flex; gap: 8px; background: #2A2119; border-radius: 14px; padding: 8px">
+<sc-for list="{{chars}}" as="c" hint-placeholder-count="2">
+<button type="button" role="radio" aria-checked="{{c.checked}}" onClick="{{c.pick}}" style="flex-grow: 1; min-height: 44px; border-radius: 10px; border: {{c.border}}; background: {{c.bg}}; color: #FBF5E8; font-family: 'Gowun Batang', serif; font-size: 15px; font-weight: 700">{{c.name}}</button>
+</sc-for>
+<sc-if value="{{canAdd}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{addChar}}" aria-label="새 캐릭터 추가" style="width: 44px; min-height: 44px; border-radius: 10px; border: 1px dashed #8C7A62; background: transparent; color: #E8D9B8; font-size: 20px">+</button></sc-if>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: -6px; padding: 0 4px; font-size: 12px; color: #6B5A45"><span role="status">{{savedLabel}}</span><sc-if value="{{isFull}}" hint-placeholder-val="{{ false }}"><span>최대 3개</span></sc-if><sc-if value="{{canDel}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{delChar}}" style="min-height: 36px; padding: 0 4px; border: none; background: transparent; color: #7A3B2E; font-size: 12px; text-decoration: underline">{{delLabel}}</button></sc-if></div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 0 4px">
+<div style="display: flex; gap: 8px"><input class="f" type="text" maxlength="12" aria-label="캐릭터 이름" placeholder="캐릭터 이름" value="{{nameValue}}" onChange="{{onNameDraft}}" onKeyDown="{{onNameKey}}" style="flex-grow: 1; min-width: 0"><button type="button" onClick="{{saveName}}" style="flex-shrink: 0; min-height: 44px; padding: 0 14px; border-radius: 10px; border: none; background: {{accent}}; color: #FBF5E8; font-size: 14px; font-weight: 700">이름 저장</button></div>
+<sc-if value="{{nameMsg}}" hint-placeholder-val="{{ false }}"><span role="status" style="font-size: 12px; color: #1E3D2E">{{nameMsg}}</span></sc-if>
+</div>
+</section>
+
+<section style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 14px">
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">아르카나</h2>
+<div role="radiogroup" aria-label="아르카나 선택" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{arcanas}}" as="a" hint-placeholder-count="9">
+<button type="button" role="radio" aria-checked="{{a.checked}}" onClick="{{a.pick}}" style="min-height: 64px; padding: 10px; border-radius: 12px; border: {{a.border}}; background: {{a.bg}}; display: flex; align-items: center; gap: 10px; color: #2A2119; text-align: left">
+<span style="position: relative; width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><span style="position: absolute; width: 31px; height: 31px; border-radius: 7px; transform: rotate(45deg); background: {{a.iconBg}}; box-shadow: inset 0 0 0 1.5px {{a.frame}}"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.iconFg}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: relative"><path d="{{a.icon}}"></path></svg></span>
+<span style="font-family: 'Gowun Batang', serif; font-size: 14px; font-weight: 700; line-height: 1.3">{{a.name}}</span>
+</button>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<label class="fl">아르카나 종합 레벨<input class="f" type="number" min="0" placeholder="숫자" value="{{fv.arcLevel}}" onChange="{{fc.arcLevel}}"></label>
+<label class="fl">아르카나 각성 레벨<input class="f" type="number" min="1" max="50" placeholder="1~50" value="{{fv.arcAwake}}" onChange="{{fc.arcAwake}}"></label>
+<label class="fl" style="grid-column: 1 / -1">크리티컬 히트 랭크<select class="f" value="{{rankValue}}" onChange="{{fc.critRank}}"><sc-for list="{{rankOpts}}" as="r" hint-placeholder-count="15"><option value="{{r.v}}">{{r.label}}</option></sc-for></select></label>
+</div>
+</div>
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">그랜드마스터 재능</h2></div>
+<p style="margin: -4px 0 0; font-size: 12px; color: #8C7A62">보유한 재능을 모두 선택해 주세요</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{gms}}" as="g" hint-placeholder-count="5">
+<button type="button" aria-pressed="{{g.checked}}" onClick="{{g.pick}}" style="min-height: 92px; padding: 10px 4px; border-radius: 12px; border: {{g.border}}; background: {{g.bg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #2A2119">
+<span style="width: 42px; height: 42px; border-radius: 10px; background: {{g.iconBg}}; box-shadow: inset 0 0 0 1.5px {{g.frame}}; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{g.iconFg}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.icon}}"></path></svg></span>
+<span style="font-size: 12px; text-align: center; line-height: 1.3">{{g.name}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">무기 · 기본 대미지</h2>
+<label class="fl">무기 종류<select class="f" value="{{weaponValue}}" onChange="{{onWeapon}}"><sc-for list="{{weaponOpts}}" as="w" hint-placeholder-count="8"><option value="{{w.v}}">{{w.label}}</option></sc-for></select></label>
+<label class="fl">보조무기<select class="f" value="{{subValue}}" onChange="{{onSub}}"><sc-for list="{{subOpts}}" as="w" hint-placeholder-count="4"><option value="{{w.v}}">{{w.label}}</option></sc-for></select></label>
+<div class="fl"><span id="m-rf">특별 개조</span>
+<div role="radiogroup" aria-labelledby="m-rf" style="display: flex; gap: 4px">
+<sc-for list="{{reforges}}" as="r" hint-placeholder-count="2">
+<button type="button" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="flex-grow: 1; height: 44px; border-radius: 10px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 15px">{{r.label}}</button>
+</sc-for>
+</div></div>
+<div class="fl"><span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span id="m-st">개조 단계</span><sc-if value="{{stageLimited}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8C7A62">8단계는 소울리버레이트 · 태양과 달의 검만 가능해요</span></sc-if></span>
+<div role="radiogroup" aria-labelledby="m-st" style="display: grid; grid-template-columns: {{stageCols}}; gap: 4px">
+<sc-for list="{{stages}}" as="r" hint-placeholder-count="8">
+<button type="button" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="height: 44px; border-radius: 10px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 14px">{{r.label}}</button>
+</sc-for>
+</div></div>
+<div role="status" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><span style="display: flex; align-items: center; gap: 8px"><strong style="font-family: 'Gowun Batang', serif; font-size: 15px">{{rfLabel}}</strong><sc-if value="{{rfDark}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #E3EDE6">다크 메이지 전용</span></sc-if></span><span style="font-size: 13px; line-height: 1.5">{{rfEffect}}</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start">
+<label class="fl"><span>현재 {{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{fv.maxDmg}}" onChange="{{fc.maxDmg}}"></label>
+<div class="fl"><span>무기 보너스 대미지 (%)</span><sc-if value="{{bonusEditable}}" hint-placeholder-val="{{ true }}"><input class="f" type="number" placeholder="%" max="112" aria-label="무기 보너스 대미지 (%)" value="{{fv.gearBonus}}" onChange="{{fc.gearBonus}}"></sc-if><sc-if value="{{bonusFixed}}" hint-placeholder-val="{{ false }}"><input class="f" type="number" aria-label="무기 보너스 대미지 (%)" value="{{bonusFixedVal}}" readonly style="background: #EFE5CF; color: #4A3D30; cursor: not-allowed"></sc-if><span style="font-size: 11px; color: #8C7A62">{{bonusNote}}</span></div>
+</div>
+</div>
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">정령</h2>
+<sc-for list="{{spirits}}" as="s" hint-placeholder-count="5">
+<div role="radiogroup" aria-label="{{s.name}}" style="display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: #4A3D30">{{s.name}}</span>
+<div style="display: flex; gap: 4px">
+<sc-for list="{{s.levels}}" as="l" hint-placeholder-count="6">
+<button type="button" role="radio" aria-checked="{{l.checked}}" onClick="{{l.pick}}" style="flex-grow: 1; height: 44px; border-radius: 10px; border: {{l.border}}; background: {{l.bg}}; color: {{l.fg}}; font-size: 14px">{{l.label}}</button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">미니어처</h2>
+<div style="padding: 12px; border-radius: 12px; background: #FBF5E8; border: 1px solid #E6D8BC; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Gowun Batang', serif; font-size: 16px; font-weight: 700; color: #2A2119">{{mxTitle}}</span><div style="display: flex; flex-direction: column; gap: 8px"><label class="fl">미니어처<select class="f" value="{{mv.mA}}" onChange="{{fcA.main}}"><sc-for list="{{mo.mA}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl">엑스트라 미니어처<select class="f" value="{{mv.mAx}}" onChange="{{fcA.ex}}"><sc-for list="{{mo.mAx}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label></div></div>
+<div style="padding: 12px; border-radius: 12px; background: #FBF5E8; border: 1px solid #E6D8BC; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Gowun Batang', serif; font-size: 16px; font-weight: 700; color: #2A2119">크리티컬 대미지</span><div style="display: flex; flex-direction: column; gap: 8px"><label class="fl">미니어처<select class="f" value="{{mv.miniCdmg}}" onChange="{{fc.miniCdmg}}"><sc-for list="{{mo.miniCdmg}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl">엑스트라 미니어처<select class="f" value="{{mv.miniCdmgEx}}" onChange="{{fc.miniCdmgEx}}"><sc-for list="{{mo.miniCdmgEx}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label></div></div>
+<div style="padding: 12px; border-radius: 12px; background: #FBF5E8; border: 1px solid #E6D8BC; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Gowun Batang', serif; font-size: 16px; font-weight: 700; color: #2A2119">보너스 대미지</span><div style="display: flex; flex-direction: column; gap: 8px"><label class="fl">미니어처<select class="f" value="{{mv.miniBonus}}" onChange="{{fc.miniBonus}}"><sc-for list="{{mo.miniBonus}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl">엑스트라 미니어처<select class="f" value="{{mv.miniBonusEx}}" onChange="{{fc.miniBonusEx}}"><sc-for list="{{mo.miniBonusEx}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label></div></div>
+<div class="fl"><span id="m-kl">칼리아흐의 결계 미니어처</span><div role="radiogroup" aria-labelledby="m-kl" style="display: flex; gap: 4px"><sc-for list="{{kaliachOpts}}" as="k" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{k.checked}}" onClick="{{k.pick}}" style="flex-grow: 1; height: 44px; border-radius: 10px; border: {{k.border}}; background: {{k.bg}}; color: {{k.fg}}; font-size: 14px">{{k.label}}</button></sc-for></div></div>
+</div>
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">펫 하우스</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{pets}}" as="p" hint-placeholder-count="2">
+<button type="button" aria-pressed="{{p.checked}}" onClick="{{p.pick}}" style="min-height: 84px; padding: 8px; border-radius: 12px; border: {{p.border}}; background: {{p.bg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #2A2119; font-size: 12px">
+<span style="width: 36px; height: 36px; border-radius: 50%; background: {{p.iconBg}}; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{p.iconFg}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{p.icon}}"></path></svg></span>
+<span style="display: flex; flex-direction: column; align-items: center; gap: 2px">{{p.name}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">인형 가방</h2>
+<select class="f" aria-label="인형 가방" value="{{dollValue}}" onChange="{{fc.dollBag}}"><sc-for list="{{dollOpts}}" as="d" hint-placeholder-count="9"><option value="{{d.v}}">{{d.label}}</option></sc-for></select>
+</div>
+<sc-if value="{{hasRadeka}}" hint-placeholder-val="{{ true }}"><div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 14px 18px; display: flex; flex-direction: column; gap: 14px"><sc-for list="{{radekaRows}}" as="r" hint-placeholder-count="2"><div style="display: flex; flex-direction: column; gap: 8px"><div style="display: flex; flex-direction: column; gap: 2px"><h2 id="m-{{r.id}}" style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 18px">{{r.name}}</h2><span style="font-size: 11px; color: #6B5A45">{{r.sub}}</span></div><div role="radiogroup" aria-labelledby="m-{{r.id}}" style="display: flex; gap: 4px"><sc-for list="{{r.opts}}" as="k" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{k.checked}}" onClick="{{k.pick}}" style="flex-grow: 1; height: 40px; border-radius: 10px; border: {{k.border}}; background: {{k.bg}}; color: {{k.fg}}; font-size: 14px">{{k.label}}</button></sc-for></div></div></sc-for></div></sc-if>
+
+
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">전투 환경</h2>
+<p style="margin: -4px 0 0; font-size: 12px; line-height: 1.6; color: #6B5A45">연습 모드 기준 스킬별 딜 비중을 입력하고, 연속 공격과 스타더스트(블래스트, 플레어)는 제외해 주세요.<br>단, 스타더스트를 발동하는 스킬이 모두 아르카나 스킬이면 포함해 주세요.</p>
+<sc-for list="{{skillBox.rows}}" as="k" hint-placeholder-count="2"><div style="padding: 10px; border-radius: 12px; background: #FBF5E8; border: 1px solid #E6D8BC; display: flex; flex-direction: column; gap: 8px"><div style="display: flex; gap: 8px; align-items: center"><span style="flex-shrink: 0; font-size: 12px; color: #6B5A45">{{k.no}}</span><select class="f" aria-label="{{k.label}} 스킬 명" value="{{k.name}}" onChange="{{k.onName}}" style="flex-grow: 1; min-width: 0"><sc-for list="{{k.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></select><button type="button" onClick="{{k.remove}}" aria-label="{{k.label}} 삭제" style="flex-shrink: 0; height: 44px; padding: 0 12px; border-radius: 10px; border: 1.5px solid #B6A27E; background: transparent; color: #2A2119; font-size: 13px">삭제</button></div><div style="display: flex; gap: 8px; align-items: center"><span style="flex-shrink: 0; display: flex; align-items: center; min-height: 44px; font-size: 13px; color: #4A3D30">딜 비중</span><input class="f" type="text" inputmode="decimal" aria-label="{{k.label}} 딜 비중 (%)" placeholder="딜 비중 (%)" value="{{k.share}}" onChange="{{k.onShare}}" style="flex-grow: 1; min-width: 0"></div></div></sc-for>
+<sc-if value="{{skillBox.empty}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #8C7A62">추가한 스킬이 없어요 · 스킬 추가를 눌러 입력해 보세요</span></sc-if>
+<strong role="status" style="font-size: 13px; color: {{skillBox.sumFg}}">{{skillBox.sum}}</strong><span style="margin-top: -8px; font-size: 12px; line-height: 1.5; color: #6B5A45">합계가 100%가 아니어도 괜찮아요. 합계를 100%로 환산해 아르카나 스킬 비중을 계산해요.</span>
+<sc-if value="{{skillBox.canAdd}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{skillBox.add}}" style="min-height: 44px; border-radius: 10px; border: none; background: {{accent}}; color: #FBF5E8; font-size: 14px; font-weight: 700">+ 스킬 추가</button></sc-if>
+</div>
+
+
+</section>
+<a href="MobileCalc.dc.html" style="margin: 0 16px 28px; text-decoration: none; color: #FBF5E8; background: {{accent}}; border-radius: 16px; padding: 18px; display: flex; justify-content: space-between; align-items: center; min-height: 44px">
+<span style="display: flex; flex-direction: column; gap: 4px"><strong style="font-family: 'Gowun Batang', serif; font-size: 17px">장비 · 오검 입력하기</strong><span style="font-size: 13px; line-height: 1.5; color: #E3EDE6">장착한 장비와 오검 워드, 브리레흐의 주화를 입력해요.</span></span>
+<span style="font-size: 20px" aria-hidden="true">→</span>
+</a>
+
+
+<footer style="margin-top: auto; padding: 20px 16px 28px; border-top: 1px solid #D9C8A6; font-size: 13px; line-height: 1.6; color: #6B5A45; display: flex; flex-direction: column; gap: 4px">
+<span>하츠의 마비노기 · 비공식 팬 사이트</span>
+<span>게임 정보는 업데이트에 따라 달라질 수 있어요.</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2F5A45","options":["#2F5A45","#7A3B2E","#2E4A6B"]},"$preview":{"width":390,"height":5640}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.DEF = { fields: {}, arcana: 0, gm: {}, reforge: 1, stage: 4, spirit: [0, 0, 0, 0, 0], pets: {}, goal: 0, kaliach: 0, radeka: 0, breath: 0, might: 0, skills: [], stinger: {} };
+const st = this.loadStore();
+const cur = st.chars[st.cur] ? st.cur : 0;
+this.state = Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false });
+}
+loadStore() {
+try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { return v; } } catch (e) {}
+return { cur: 0, savedAt: '', chars: [{ name: '캐릭터 A', info: null, gear: null }, { name: '캐릭터 B', info: {}, gear: { eq: {}, og: {} } }] };
+}
+saveStore(v) { try { window.localStorage.setItem('hatz-mabinogi-v1', JSON.stringify(v)); } catch (e) {} }
+nowLabel() { const d = new Date(); const p = (n) => (n < 10 ? '0' : '') + n; return p(d.getHours()) + ':' + p(d.getMinutes()); }
+arcName(i) { return ['엘레멘탈 나이트', '세인트 바드', '다크 메이지', '알케믹 스팅어', '세이크리드 가드', '블래스트 랜서', '배리어블 거너', '포비든 알케미스트', '멜로딕 퍼피티어', '퓨리 파이터'][i] || '아르카나 미선택'; }
+infoOf(c) { if (!c || c.info === null) return {}; if (!c.info || !Object.keys(c.info).length) return { arcana: -1 }; return c.info; }
+upd(patch) {
+const next = Object.assign({}, this.state, patch);
+const st = this.loadStore();
+const c = st.chars[next.char];
+if (c) {
+const info = {}; Object.keys(this.DEF).forEach((k) => { info[k] = next[k]; });
+c.info = info; c.arcana = next.arcana; st.cur = next.char; st.savedAt = this.nowLabel(); this.saveStore(st);
+patch = Object.assign({}, patch, { savedAt: st.savedAt });
+}
+this.setState(Object.assign({ confirmDel: false }, patch));
+}
+saveName() {
+const st = this.loadStore(); const c = st.chars[this.state.char]; if (!c) return;
+const v = String(this.state.nameDraft == null ? c.name : this.state.nameDraft).trim().slice(0, 12);
+if (!v) { this.setState({ nameDraft: null, nameMsg: '이름을 입력해 주세요' }); return; }
+c.name = v; st.savedAt = this.nowLabel(); this.saveStore(st);
+this.setState({ nameDraft: null, nameMsg: '이름을 저장했어요', savedAt: st.savedAt });
+}
+pickChar(i) {
+const st = this.loadStore(); if (!st.chars[i]) return;
+st.cur = i; this.saveStore(st);
+this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[i]), { char: i, confirmDel: false, nameDraft: null, nameMsg: '' }));
+}
+addChar() {
+const st = this.loadStore(); if (st.chars.length >= 3) return;
+const used = st.chars.map((c) => c.name);
+const name = ['캐릭터 A', '캐릭터 B', '캐릭터 C'].filter((n) => used.indexOf(n) < 0)[0] || ('캐릭터 ' + (st.chars.length + 1));
+st.chars.push({ name: name, info: {}, gear: { eq: {}, og: {} } }); st.cur = st.chars.length - 1; st.savedAt = this.nowLabel(); this.saveStore(st);
+this.setState(Object.assign({}, this.DEF, { arcana: -1, char: st.cur, savedAt: st.savedAt, confirmDel: false, nameDraft: null, nameMsg: '새 캐릭터를 만들었어요 · 이름을 바꿔 저장해 보세요' }));
+}
+delChar() {
+const st = this.loadStore(); if (st.chars.length <= 1) return;
+if (!this.state.confirmDel) { this.setState({ confirmDel: true }); return; }
+st.chars.splice(this.state.char, 1); st.cur = Math.max(0, this.state.char - 1); st.savedAt = this.nowLabel(); this.saveStore(st);
+this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[st.cur]), { char: st.cur, savedAt: st.savedAt, confirmDel: false, nameDraft: null, nameMsg: '' }));
+}
+
+seg(list, cur, key) {
+return list.map((label, i) => {
+const on = i === cur;
+return { label: label, checked: on ? 'true' : 'false', bg: on ? '#2A2119' : '#FBF5E8', fg: on ? '#FBF5E8' : '#2A2119', border: on ? '1px solid #2A2119' : '1px solid #D9C8A6', pick: () => { const o = {}; o[key] = i; this.upd(o); } };
+});
+}
+tile(on, accent) {
+return { checked: on ? 'true' : 'false', border: on ? '2px solid ' + accent : '1px solid #D9C8A6', bg: on ? '#FFFBF2' : '#FBF5E8', iconBg: on ? accent : '#EFE5CF', iconFg: on ? '#FBF5E8' : '#8A5E17', frame: on ? '#D9A441' : '#C9A96A' };
+}
+renderVals() {
+const accent = this.props.accent ?? '#2F5A45';
+const s = this.state;
+// 다크 메이지는 마법 공격력, 포비든 알케미스트는 연금술 대미지로 표기
+const MX = ((a) => a === 2 ? '마법 공격력' : (a === 7 ? '연금술 대미지' : '최대 대미지'))(s.arcana);
+const I = {
+sword: 'M14 4h6v6l-9 9-3-3zM5 16l3 3M4 20l2-2',
+note: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
+moon: 'M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z',
+flask: 'M9 3h6M10 3v6L4 19a1.5 1.5 0 0 0 1.3 2h13.4a1.5 1.5 0 0 0 1.3-2L14 9V3M7 14h10',
+shield: 'M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6zM9 12l2 2 4-4',
+spear: 'M4 20L18 6M14 4h6v6M4 16l4 4',
+flame: 'M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1 1 2 2 3 2 0-2 0-4 0-6z',
+cross: 'M12 3v4M12 17v4M3 12h4M17 12h4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
+puppet: 'M6 3v6M12 3v4M18 3v6M12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM8 21l4-8 4 8M7 16h10',
+fist: 'M7 11V7a1.5 1.5 0 0 1 3 0v3M10 10V6a1.5 1.5 0 0 1 3 0v4M13 10V7a1.5 1.5 0 0 1 3 0v4M16 11V9a1.5 1.5 0 0 1 3 0v4c0 4-3 8-7 8s-6-3-6-6v-3a1.5 1.5 0 0 1 3 0',
+star: 'M12 3l2.2 5.6L20 9.3l-4.6 3.9 1.4 5.8L12 16l-4.8 3 1.4-5.8L4 9.3l5.8-.7z',
+shuriken: 'M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3zM12 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z',
+constel: 'M4 18l5-6 5 3 6-9M4 18h.01M9 12h.01M14 15h.01M20 6h.01',
+lawn: 'M3 20h18M5 20c0-3 1-5 2-7M9 20c0-4 1-7 3-10M13 20c0-3 1-6 3-8M17 20c0-2 1-4 2-5',
+tower: 'M6 21V9h6v12M12 13h6v8M6 9l3-4 3 4M3 21h18'
+};
+const A = [
+['엘레멘탈 나이트', 'M12 2.5l2 3v9h-4v-9zM7.5 14.5h9M12 14.5v4.5M10.2 21h3.6M18.5 5.5l1.5-1.5M19 9h2.5M5.5 5.5L4 4M5 9H2.5'],
+['세인트 바드', 'M6 3.5c-1.6 4.2-.6 9.3 2.6 12.5h6.8c3.2-3.2 4.2-8.3 2.6-12.5M6 3.5c1.5.3 2.4 1.4 2.5 3M18 3.5c-1.5.3-2.4 1.4-2.5 3M8.5 6.5h7M10 6.5V16M12 6.5V16M14 6.5V16M8.6 16l-.6 4.5h8l-.6-4.5'],
+['다크 메이지', 'M17.5 17.5A8 8 0 1 1 11 3.5a6.5 6.5 0 0 0 6.5 14zM17.5 4l.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8z'],
+['알케믹 스팅어', 'M3.5 20.5L16.5 7.5M12 6.5h5.5V12M5.5 18.5l-2.5-.3M5.5 18.5l-.3-2.5M7.5 16.5l-2.5-.3M7.5 16.5l-.3-2.5M18 14.5c1.4 1.7 2.1 2.8 2.1 3.7a2.1 2.1 0 0 1-4.2 0c0-.9.7-2 2.1-3.7z'],
+['세이크리드 가드', 'M12 3l7.5 3v5.5c0 4.7-3.2 8-7.5 9.5-4.3-1.5-7.5-4.8-7.5-9.5V6zM12 7.5v9M8.5 11h7'],
+['블래스트 랜서', 'M21 3l-9.5 5 4.5 4.5zM11.5 8l-1.5 1.5 4.5 4.5L16 12.5M12.2 11.8L3.5 20.5M3 10.5l2 .5M5.5 6.5L7 8M10 3l.3 2'],
+['배리어블 거너', 'M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM12 2.5v5M12 16.5v5M2.5 12h5M16.5 12h5M12 11.3v1.4'],
+['포비든 알케미스트', 'M9.5 3h5M10.5 3v5.5L5 18.5A1.8 1.8 0 0 0 6.6 21h10.8a1.8 1.8 0 0 0 1.6-2.5L13.5 8.5V3M8.2 15.5c1.5-1 2.5 1 3.8 0s2.3-1 3.8 0'],
+['멜로딕 퍼피티어', 'M3.5 4h11M9 2.5v4M5.5 4v7M12.5 4v6M5.5 11a1.6 1.6 0 1 0 .01 0M5.5 14.2v3.8M3.5 21l2-3 2 3M3.5 15.5h4M19.5 17.5V8l2 1.2M19.5 17.5a1.8 1.8 0 1 1-3.6 0 1.8 1.8 0 0 1 3.6 0z'],
+['퓨리 파이터', 'M4.5 9a2.2 2.2 0 0 1 4.4 0 2.2 2.2 0 0 1 4.4 0 2.2 2.2 0 0 1 4.4 0M17.7 9.4a2.1 2.1 0 0 1 2.8 2v3.1c0 3.6-2.9 6.5-6.5 6.5h-3c-3.6 0-6.5-2.9-6.5-6.5V9M4.5 13h7.5a2 2 0 0 1 0 4H9.5M8 3.5l.5 1.8M12.5 2.5v2M17 3.5l-.5 1.8']
+];
+// 세인트 바드(1)는 선택지에서 숨김 — 저장 번호가 바뀌지 않도록 목록 자체는 유지
+const ARC_HIDDEN = [1];
+const arcanas = A.map((a, i) => Object.assign({ name: a[0], icon: a[1], pick: () => this.upd({ arcana: i }) }, this.tile(i === s.arcana, accent))).filter((_, i) => ARC_HIDDEN.indexOf(i) < 0);
+const G = [
+['근접 전투', 'M20.5 3.5l-.6 3.4-8.4 8.4-2.8-2.8 8.4-8.4zM6.8 11.8l5.4 5.4M9.5 14.5l-4.6 4.6M4.2 19.8h.01'],
+['마법', 'M12 3l7.8 13.5H4.2zM12 21l-7.8-13.5h15.6z'],
+['격투술', 'M4.5 9a2.2 2.2 0 0 1 4.4 0 2.2 2.2 0 0 1 4.4 0 2.2 2.2 0 0 1 4.4 0M17.7 9.4a2.1 2.1 0 0 1 2.8 2v3.1c0 3.6-2.9 6.5-6.5 6.5h-3c-3.6 0-6.5-2.9-6.5-6.5V9M4.5 13h7.5a2 2 0 0 1 0 4H9.5'],
+['인술', 'M12 2.5l2 7.5 7.5 2-7.5 2-2 7.5-2-7.5-7.5-2 7.5-2zM12 10.6a1.4 1.4 0 1 0 .01 0'],
+['전투 점성술', 'M5 21L16 3.5M16 3.5c-4.5 0-9 2.2-11 6.5 3-2.2 7.2-2.6 9.8-1.4M19 12l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7z']
+];
+const GM_CRIT = [2.5, 2, 1, 1, 1];
+const critGm = GM_CRIT.reduce((t, v, i) => t + (s.gm && s.gm[i] ? v : 0), 0);
+const gms = G.map((g, i) => Object.assign({ name: g[0], icon: g[1], crit: '크리 +' + GM_CRIT[i] + '%', critFg: s.gm && s.gm[i] ? '#1E3D2E' : '#8C7A62', pick: () => { const m = Object.assign({}, s.gm); m[i] = !m[i]; this.upd({ gm: m }); } }, this.tile(!!s.gm[i], accent)));
+const PET_CD = [1, 2];
+const P = [['중형 잔디밭 (4단계)', I.lawn], ['캣타워 (4단계)', I.tower]];
+const pets = P.map((p, i) => Object.assign({ name: p[0], icon: p[1], effect: '크리티컬 대미지 +' + PET_CD[i] + '%', effFg: s.pets && s.pets[i] ? '#1E3D2E' : '#8C7A62', pick: () => { const m = Object.assign({}, s.pets); m[i] = !m[i]; this.upd({ pets: m }); } }, this.tile(!!s.pets[i], accent)));
+// 칼리아흐의 결계 미니어처 — 활성화 시 크리티컬 확률 +1% (세팅 시뮬레이터 스탯에 반영)
+// 비전 오브 라데카 — 알케믹 스팅어 전용, 활성화 시 재능 스킬 대미지 +10% (세팅 시뮬레이터의 재능 보너스 대미지)
+// 라데카 버프 (셋 중 1개만 활성화) — 비전(알케믹 스팅어 · 재능 +10%) · 브레스(모든 아르카나 · 재능 +5%) · 마이트(엘레멘탈 나이트 · 세이크리드 가드 · 근접 재능 스킬과 그 근접 재능을 기반 계산식에 포함하는 아르카나 스킬의 근접 재능 부분 대미지 ×1.15 — 현재 전투 스탯에는 더하지 않음)
+const rdOpts = (key) => ['비활성화', '활성화'].map((label, i) => { const on = (s[key] ? 1 : 0) === i; return { label: label, checked: on ? 'true' : 'false', bg: on ? accent : '#FBF5E8', fg: on ? '#FBF5E8' : '#2A2119', border: on ? '1px solid ' + accent : '1px solid #D9C8A6', pick: () => this.upd(i ? { radeka: 0, breath: 0, might: 0, [key]: 1 } : { [key]: 0 }) }; });
+const radekaOpts = rdOpts('radeka');
+const radekaRows = [['radeka', '비전 오브 라데카', '알케믹 스팅어 전용', s.arcana === 3], ['breath', '브레스 오브 라데카', '재능 보너스 대미지 +5%', s.arcana >= 0], ['might', '마이트 오브 라데카', '근접 재능 스킬 대미지 ×1.15', s.arcana === 0 || s.arcana === 4]].filter((r) => r[3]).map((r) => ({ id: 'rd-' + r[0], name: r[1], sub: r[2], opts: rdOpts(r[0]) }));
+const kaliachOpts = ['비활성화', '활성화'].map((label, i) => { const on = (s.kaliach ? 1 : 0) === i; return { label: label, checked: on ? 'true' : 'false', bg: on ? accent : '#FBF5E8', fg: on ? '#FBF5E8' : '#2A2119', border: on ? '1px solid ' + accent : '1px solid #D9C8A6', pick: () => this.upd({ kaliach: i }) }; });
+// 인형 가방 — 크리티컬 대미지 5% 이상만 (프리미엄 여부 통합) · 출처 mabi.labanyu.com
+const DOLL_BAGS = [['샛바람 용병단 세트 인형 가방', 8], ['신들의 도시 주민들 세트 인형 가방', 7], ['시그니처 잔망루피 세트 인형 가방', 7], ['에린 잔망루피 세트 인형 가방', 7], ['바이브 카흐 권능의 세트 인형 가방', 5], ['프리렌&페른&슈타르크 세트 인형 가방', 5]];
+// 미니어처 목록 [이름, 해당 항목의 메인 스탯 수치] — 선택한 항목의 메인 스탯만 적용 (최대 대미지 / 크리티컬 대미지 % / 보너스 대미지 %)
+const MINI = {
+miniMax: [['낭만 농장 여신이 내린 기적의 성수', 8], ['스페셜 응원해요 잔망루피 미니어처', 8], ['낭만 농장 스프링 가든 등나무', 7], ['스페셜 슈타르크 미니어처', 7], ['블로니 미니어처', 7], ['포들라 미니어처', 6], ['피르안 미니어처', 5], ['톨비쉬 미니어처', 5], ['낭만 농장 노란색 별사탕 스프라이트 미니어처', 5], ['청자 미니어처', 5], ['낭만 농장 왕립 천문학회 텐트 미니어처', 5], ['카트라이더 배찌 미니어처(레드)', 5], ['알터 미니어처', 4], ['르웰린 미니어처', 4], ['빨강 샛별 미니어처', 4]],
+miniMaxEx: [['피유 엑스트라 미니어처', 5], ['세라 엑스트라 미니어처', 4], ['별 엑스트라 미니어처', 4], ['판타스틱 메모리 스틸 트로피', 3], ['비행범선 엑스트라 미니어처', 3], ['낭만 농장 아로마 베어 엑스트라 미니어처', 3], ['낭만 농장 호치 엑스트라 미니어처', 3], ['16주년 페스티아 엑스트라 미니어처', 2]],
+miniMatk: [['스페셜 프리렌 미니어처', 6], ['에탄 미니어처', 6], ['스페셜 로나 잔망루피 미니어처', 6], ['청자 미니어처', 5], ['낭만 농장 하늘색 별사탕 스프라이트 미니어처', 5], ['케흘렌 미니어처', 5], ['낭만 농장 아름드리 벚꽃 나무', 5], ['카트라이더 배찌 미니어처(블루)', 5], ['데이르블라 미니어처', 5], ['주황 샛별 미니어처', 4], ['타닐리엠 미니어처', 3]],
+miniMatkEx: [['브리엘 엑스트라 미니어처', 6], ['판타스틱 메모리 브론즈 트로피', 5], ['달 엑스트라 미니어처', 4], ['낭만 농장 아로마 베어 엑스트라 미니어처', 3], ['낭만 농장 호치 엑스트라 미니어처', 3], ['16주년 페스티아 엑스트라 미니어처', 2]],
+miniCdmg: [['스페셜 블로니 잔망루피 미니어처', 5], ['낭만 농장 스프링 가든 우물', 5], ['스페셜 힘멜 미니어처', 5], ['핀키 미니어처', 4], ['낭만 농장 여신이 내린 심연의 기운', 4], ['마르에드 미니어처', 4], ['스페셜 잔망루피 미니어처', 4], ['낭만 농장 PPP 단체 등신대', 3], ['카트라이더 배찌 미니어처(레드)', 3], ['심연의 구슬 미니어처', 2], ['낭만 농장 분홍색 별사탕 스프라이트 미니어처', 2], ['청자 미니어처', 2], ['노랑 샛별 미니어처', 2]],
+miniCdmgEx: [['비행범선 엑스트라 미니어처', 3], ['펠롬 엑스트라 미니어처', 3], ['낭만 농장 멜윈 엑스트라 미니어처', 3], ['16주년 페스티아 엑스트라 미니어처', 2], ['낭만 농장 호치 엑스트라 미니어처', 2], ['판타스틱 메모리 실버 트로피', 1], ['카텔 엑스트라 미니어처', 1]],
+miniBonus: [['스페셜 위벨 미니어처', 2], ['스페셜 퍼거스 잔망루피 미니어처', 2], ['독서하는 나오 미니어처', 1], ['심연의 구슬 미니어처', 1], ['낭만 농장 왕립 천문학회 텐트 미니어처', 1], ['초록 샛별 미니어처', 1]],
+miniBonusEx: [['낭만 농장 브리 레흐 입구 엑스트라 미니어처', 2], ['낭만 농장 아로마 베어 엑스트라 미니어처', 1]]
+};
+// 목록은 수치가 낮은 순 → 가장 높은 항목이 맨 아래
+// 같은 수치의 미니어처는 하나의 선택지로 묶음 (저장값은 수치, 예: '5')
+// 수치별 대표 미니어처 한 개의 정식 명칭 + 적용 스탯 표시
+const miniStat = (k) => /Matk/.test(k) ? '마법 공격력' : (/Cdmg/.test(k) ? '크리티컬 대미지' : (/Bonus/.test(k) ? '보너스 대미지' : MX));
+const miniGroups = (k) => { const g = {}; MINI[k].forEach((m) => { if (!g[m[1]]) g[m[1]] = m[0]; }); return Object.keys(g).map(Number).sort((a, b) => a - b).map((v) => ({ v: String(v), label: g[v] + ' · ' + miniStat(k) + ' +' + v + (/Cdmg|Bonus/.test(k) ? '%' : '') })); };
+const miniCurVal = (k, cur) => { if (!cur) return ''; if (/^\d+$/.test(cur)) return MINI[k].some((m) => String(m[1]) === cur) ? cur : ''; const hit = MINI[k].find((m) => m[0] === cur); return hit ? String(hit[1]) : ''; };
+const mo = {}; const mv = {};
+Object.keys(MINI).forEach((k) => { mo[k] = [{ v: '', label: '선택 안 함' }].concat(miniGroups(k)); mv[k] = miniCurVal(k, (s.fields || {})[k]); });
+// 다크 메이지는 최대 대미지 대신 마법 공격력 미니어처
+const miniA = s.arcana === 2 ? 'miniMatk' : 'miniMax';
+mo.mA = mo[miniA]; mo.mAx = mo[miniA + 'Ex']; mv.mA = mv[miniA]; mv.mAx = mv[miniA + 'Ex'];
+// 크리티컬 히트 랭크별 크리티컬 대미지 (%)
+const CRIT_RANK = [['F', 50], ['E', 55], ['D', 60], ['C', 65], ['B', 70], ['A', 75], ['9', 90], ['8', 95], ['7', 100], ['6', 105], ['5', 110], ['4', 120], ['3', 130], ['2', 140], ['1', 150]];
+const rankOpts = [{ v: '', label: '랭크 선택' }].concat(CRIT_RANK.map((r) => ({ v: r[0], label: r[0] + '랭크' })));
+const dollOpts = [{ v: '', label: '인형 가방 선택' }].concat(DOLL_BAGS.slice().sort((a, b) => a[1] - b[1]).map((d) => ({ v: d[0], label: d[0] })));
+const LV6 = ['0', '1', '2', '3', '4', '5'];
+const SP = [
+['정령 연마', LV6, (l) => l ? '크리티컬 대미지 +' + (3 * l) + '%' : '효과 없음'],
+['정령 봉인 해제', ['비활성화', '활성화'], (l) => l ? '크리티컬 확률 +5%' : '효과 없음'],
+['약점 분석', LV6, (l) => l ? '재능 보너스 +' + (2 * l) + '%' : '효과 없음'],
+['광폭화', LV6, (l) => l ? '재능 보너스 +' + (2 * l) + '%' : '효과 없음'],
+['실체화 버프 강화', LV6, (l) => '실체화 버프 ' + (10 + 3 * l) + '%']
+];
+// 화면 표시 순서 (저장 순서는 그대로)
+const SP_ORDER = [0, 2, 3, 1, 4];
+const spirits = SP_ORDER.map((si) => {
+const sp = SP[si];
+const lv = s.spirit[si] || 0;
+return {
+name: sp[0], effect: sp[2](lv), effFg: lv || si === 4 ? '#1E3D2E' : '#8C7A62',
+levels: sp[1].map((label, i) => {
+const on = lv === i;
+return { label: label, checked: on ? 'true' : 'false', bg: on ? accent : '#FBF5E8', fg: on ? '#FBF5E8' : '#2A2119', border: on ? '1px solid ' + accent : '1px solid #D9C8A6', pick: () => { const arr = s.spirit.slice(); arr[si] = i; this.upd({ spirit: arr }); } };
+})
+};
+});
+const petCd = PET_CD.reduce((t, v, i) => t + (s.pets && s.pets[i] ? v : 0), 0);
+const spCd = 3 * (s.spirit[0] || 0); const sealCr = s.spirit[1] ? 5 : 0; const spTal = 2 * ((s.spirit[2] || 0) + (s.spirit[3] || 0)); const spBuff = 10 + 3 * (s.spirit[4] || 0);
+const spiritSum = '크리티컬 대미지 +' + spCd + '% · 크리티컬 확률 +' + sealCr + '% · 재능 보너스 +' + spTal + '% · 실체화 버프 ' + spBuff + '%';
+// 아르카나별 무기 종류 (0 엘레멘탈 나이트, 2 다크 메이지, 3 알케믹 스팅어, 4 세이크리드 가드, 5 블래스트 랜서, 6 배리어블 거너, 7 포비든 알케미스트, 8 멜로딕 퍼피티어, 9 퓨리 파이터)
+const WEAPONS = {
+0: ['페러시우스 템퍼드 소드', '페러시우스 타이탄 블레이드', '나이트브링어 어썰트', '나이트브링어 인포서', '나이트브링어 워로드', '태양과 달의 검', '소울리버레이트 소드', '소울리버레이트 해머', '소울리버레이트 블레이드'],
+2: ['페러시우스 아케인 원드', '페러시우스 미스틱 스태프', '나이트브링어 엘리멘토', '나이트브링어 인퀴지터', '소울리버레이트 원드', '소울리버레이트 스태프'],
+3: ['페러시우스 위스퍼링 보우', '페러시우스 메커나이즈 크로스보우', '나이트브링어 프레데터', '나이트브링어 로그', '소울리버레이트 보우', '소울리버레이트 크로스보우'],
+4: ['나이트브링어 바이킹', '태양과 달의 검', '소울리버레이트 액스', '소울리버레이트 블레이드'],
+5: ['페러시우스 게일 랜스', '나이트브링어 스피어헤드', '소울리버레이트 랜스'],
+6: ['페러시우스 나이트스톰 듀얼건', '나이트브링어 뱅퀴셔', '소울리버레이트 듀얼건'],
+7: ['페러시우스 티라누스 실린더', '나이트브링어 테크니션', '소울리버레이트 실린더'],
+8: ['페러시우스 스트러글 핸들', '나이트브링어 트릭스터', '소울리버레이트 핸들'],
+9: ['페러시우스 토멘티드 너클', '나이트브링어 베가본드', '소울리버레이트 너클']
+};
+const ONE_HAND_NAMES = ['페러시우스 템퍼드 소드', '나이트브링어 어썰트', '소울리버레이트 소드', '소울리버레이트 해머', '페러시우스 아케인 원드', '나이트브링어 엘리멘토', '소울리버레이트 원드', '나이트브링어 바이킹', '소울리버레이트 액스'].concat(WEAPONS[3], WEAPONS[7], WEAPONS[8]);
+// 8단계 개조가 가능한 무기: 소울리버레이트 계열 + 태양과 달의 검
+const canS8 = (w) => !w || w.indexOf('소울리버레이트') === 0 || w === '태양과 달의 검';
+const wList = WEAPONS[s.arcana] || [];
+const wCur = (s.fields || {}).weapon || '';
+const weaponOpts = [{ v: '', label: wList.length ? '무기 종류 선택' : (s.arcana >= 0 ? '이 아르카나의 무기 목록 준비 중' : '아르카나를 먼저 선택해 주세요') }].concat(wList.map((w) => ({ v: w, label: w + (ONE_HAND_NAMES.indexOf(w) >= 0 ? ' (한손)' : '') })));
+// 8단계 개조는 canS8 무기만 가능 (무기를 고르지 않았으면 제한 없음)
+const wValid = wList.indexOf(wCur) >= 0;
+const stageMax = wValid && !canS8(wCur) ? 7 : 8;
+// 무기 보너스 대미지(양손 기준): 페러시우스 56% · 나이트브링어 84% (수정 가능) / 소울리버레이트 · 태양과 달의 검 112% (고정)
+// 한손 무기는 무기 보너스 대미지 1/2 (페러시우스 28 · 나이트브링어 42 · 소울리버레이트 56)
+const ONE_HAND = ONE_HAND_NAMES;
+const isOneHand = (w) => ONE_HAND.indexOf(w) >= 0;
+const isFixedW = (w) => !!w && (w.indexOf('소울리버레이트') === 0 || w === '태양과 달의 검');
+const wBonusDef = (w) => { if (!w) return null; const base = isFixedW(w) ? 112 : (w.indexOf('나이트브링어') === 0 ? 84 : (w.indexOf('페러시우스') === 0 ? 56 : null)); return base === null ? null : (isOneHand(w) ? base / 2 : base); };
+const SUBS = {
+0: ['페러시우스 센티널 실드', '나이트브링어 뱅가드', '소울리버레이트 실드', '워리어 실드'],
+2: ['페러시우스 포비든 마도서', '나이트브링어 프로핏', '소울리버레이트 마도서'],
+3: ['페러시우스 위스퍼링 애로우', '페러시우스 메커나이즈 볼트', '나이트브링어 샤프슈터', '나이트브링어 호크아이', '소울리버레이트 이터널 애로우', '소울리버레이트 이터널 볼트'],
+4: ['페러시우스 센티널 실드', '나이트브링어 뱅가드', '소울리버레이트 실드', '워리어 실드'],
+7: ['페러시우스 티라누스 가드실린더', '나이트브링어 모더레이터', '소울리버레이트 가드실린더'],
+8: ['몰락자의 피에로 미니어처', '나이트브링어 아이리스 티어', '소울리버레이트 콜로서스(피에로) 미니어처']
+};
+// 보조무기 보너스 = 같은 계열 한손 무기 보너스 (페러시우스 28 · 나이트브링어 42 · 소울리버레이트 · 워리어 실드 56)
+const isSoulSub = (x) => !!x && (x.indexOf('소울리버레이트') === 0 || x === '워리어 실드');
+const sBonus = (x) => !x ? 0 : (isSoulSub(x) ? 56 : (x.indexOf('나이트브링어') === 0 ? 42 : ((x.indexOf('페러시우스') === 0 || x.indexOf('몰락자') === 0) ? 28 : 0)));
+// 엘레멘탈 나이트 · 세이크리드 가드는 블레이드 · 워로드에도 보조무기 장착 가능
+const canSub = (w) => !!w && (isOneHand(w) || ((s.arcana === 0 || s.arcana === 4) && /(블레이드|워로드)$/.test(w)));
+const BONUS_CAP = 112;
+const subListOf = (w) => (w && wList.indexOf(w) >= 0 && canSub(w)) ? (SUBS[s.arcana] || []) : [];
+const subList = subListOf(wCur);
+const sCur = (s.fields || {}).sub || '';
+const sEff = subList.indexOf(sCur) >= 0 ? sCur : '';
+const totDef = (w, sub) => { const b = wBonusDef(w); return b === null ? null : Math.min(BONUS_CAP, b + sBonus(sub)); };
+const subFixedOk = (x) => !x || isSoulSub(x);
+const bDef = wValid ? totDef(wCur, sEff) : null;
+const wBonusFixed = wValid && isFixedW(wCur) && (subFixedOk(sEff) || bDef >= BONUS_CAP);
+const bRaw = wValid && bDef !== null ? wBonusDef(wCur) + sBonus(sEff) : 0;
+const bNoteCore = !wValid || bDef === null ? '' : (sEff ? (isOneHand(wCur) ? '한손 ' : '') + wBonusDef(wCur) + '% + 보조무기 ' + sBonus(sEff) + '% ' + (bRaw > BONUS_CAP ? '→ 최대 ' + BONUS_CAP + '%' : '= ' + bDef + '%') : (canSub(wCur) ? (isOneHand(wCur) ? '한손 ' : '') + bDef + '% · 보조무기 없음' : bDef + '%'));
+const subOpts = [{ v: '', label: subList.length ? '보조무기 없음' : (wValid && canSub(wCur) ? '이 아르카나의 보조무기 준비 중' : (wValid ? '보조무기를 낄 수 없는 무기예요' : '무기를 먼저 골라 주세요')) }].concat(subList.map((x) => ({ v: x, label: x + (sBonus(x) ? ' (+' + sBonus(x) + '%)' : '') })));
+// 특별 개조 효과표 — R강: 크리티컬 대미지 / S강: 최대·최소·보너스 대미지 (다크 메이지는 마법 공격력·보너스 대미지). S8: 최대 대미지 +170 · 최소 대미지 +85
+const RF_R = [6, 16, 26, 38, 50, 62, 74, 89];
+const RF_S = [[50, 25, 2], [60, 30, 3], [70, 35, 4], [90, 45, 5], [110, 55, 6], [130, 65, 7], [155, 78, 9], [170, 85, 10]];
+const RF_SDM = [[90, 2], [105, 3], [125, 4], [155, 5], [190, 6], [230, 7], [270, 9], [310, 10]];
+const rfAt = (type, stage, dark) => {
+const z = { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false };
+if (!stage) return z;
+if (type === 0) return Object.assign(z, { cdmg: RF_R[stage - 1] });
+if (dark) { const r = RF_SDM[stage - 1]; return Object.assign(z, { matk: r[0], bonus: r[1] }); }
+const r = RF_S[stage - 1]; return Object.assign(z, { max: r[0] || 0, min: r[1] || 0, bonus: r[2], unknown: r[0] === null });
+};
+const rfText = (x, type, dark) => type === 0 ? '크리티컬 대미지 +' + x.cdmg + '%' : (dark ? '마법 공격력 +' + x.matk + ' · 보너스 대미지 +' + x.bonus + '%' : (x.unknown ? '최대 · 최소 대미지 확인 중 · 보너스 대미지 +' + x.bonus + '%' : MX + ' +' + x.max + ' · 최소 대미지 +' + x.min + ' · 보너스 대미지 +' + x.bonus + '%'));
+const rfDelta = (a, b) => ({ cdmg: b.cdmg - a.cdmg, max: b.max - a.max, min: b.min - a.min, bonus: b.bonus - a.bonus, matk: b.matk - a.matk, unknown: a.unknown || b.unknown });
+const rfDeltaText = (d) => [['cdmg', '크리티컬 대미지', '%'], ['max', MX, ''], ['min', '최소 대미지', ''], ['matk', '마법 공격력', ''], ['bonus', '보너스 대미지', '%']].filter((k) => d[k[0]]).map((k) => k[1] + ' ' + (d[k[0]] > 0 ? '+' : '') + d[k[0]] + k[2]).join(' · ') + (d.unknown ? ' (S8 최대·최소 확인 중)' : '');
+const rfType = s.reforge === 0 ? 0 : 1; const rfStage = Math.min((typeof s.stage === 'number' ? s.stage : 0) + 1, stageMax); const rfDark = rfType === 1 && s.arcana === 2;
+const roster = this.loadStore().chars;
+const FK = ["arcLevel", "arcAwake", "totalLevel", "maxDmg", "gearBonus", "miniNormal", "miniMax", "miniMaxEx", "miniMatk", "miniMatkEx", "miniCdmg", "miniCdmgEx", "miniBonus", "miniBonusEx", "miniExtra", "dollBag", "arcRatio", "critRank"];
+// 전투 환경 — 스킬별 딜 비중 (스킬 명 · 아르카나 스킬 여부 · 딜 비중 %) → 아르카나 스킬 비중을 자동 계산해 fields.arcRatio 에도 저장
+// 아르카나별 대표 스킬 [스킬 명(띄어쓰기 없음), 아르카나 스킬 여부] — 스타더스트(블래스트 · 플레어)는 발동 스킬이 모두 아르카나 스킬일 때만 넣으므로 아르카나 스킬로 분류
+const STARDUST = [['블래스트', 1], ['플레어', 1]];
+const SKILL_LIST = {
+0: [['파이어리프어택', 1], ['아이스윈드밀', 1], ['라이트닝스매시', 1], ['라인브레이크', 1]],
+1: [['구원의메아리', 1], ['정화의고동', 1], ['붕괴의파동', 1], ['음파의세례', 1]],
+2: [['익스플로전런지', 1], ['라이트닝체인', 1], ['스노우스톰', 1], ['레이턴트이그니션', 1]],
+3: [['매그넘샷', 0], ['어전트샷', 0], ['플레임버스트', 1], ['하이드로피어스', 1], ['트라이어설트', 1], ['더스트샷', 1], ['라인포스', 1], ['알케믹컨버전스', 1]],
+4: [['희생의응징', 1], ['심판의일격', 1], ['고결한희생', 1], ['광휘의단죄', 1], ['철벽강타', 1], ['성역전개', 1]],
+5: [['임팩트크러시', 1], ['오버드라이브', 1], ['어나이얼레이션', 1], ['차지어설트', 1], ['스파이럴볼텍스', 1]],
+6: [['헤비아틸러리', 1], ['데바스테이션캐논', 1], ['페이탈스코프', 1], ['트랜스뮤트존', 1], ['래피드파이어', 1]],
+7: [['케미컬카니발', 1], ['스파이럴이럽션', 1], ['서먼나이트메어', 1]],
+8: [['다운비트악센트', 1], ['인터루드슬래시', 1], ['그랜드피날레', 1], ['트래킹스텝', 1], ['와이어웹', 1]],
+9: [['익시드:체인블로우', 1], ['익시드:임팩트다이브', 1], ['익시드:포스슬램', 1], ['게일피어스', 1], ['얼티밋스트라이크', 1]]
+};
+// 목록 순서: 재능 스킬 → 아르카나 스킬(스타더스트 포함)
+const skillPoolAll = (SKILL_LIST[s.arcana] || []).concat(SKILL_LIST[s.arcana] ? STARDUST : []);
+const skillPool = skillPoolAll.filter((q) => !q[1]).concat(skillPoolAll.filter((q) => q[1]));
+const skills = Array.isArray(s.skills) ? s.skills : [];
+const skShare = (k) => Number(k.share) || 0;
+const setSkills = (arr) => { const tot = arr.reduce((a, k) => a + skShare(k), 0); const arcS = arr.filter((k) => k.arc).reduce((a, k) => a + skShare(k), 0); const f = Object.assign({}, s.fields); if (tot) { f.arcRatio = String(Math.round(arcS / tot * 1000) / 10); } else { delete f.arcRatio; } this.upd({ skills: arr, fields: f }); };
+const skSet = (i, p) => setSkills(skills.map((k, j) => (j === i ? Object.assign({}, k, p) : k)));
+const skTot = Math.round(skills.reduce((a, k) => a + skShare(k), 0) * 10) / 10;
+const skArc = Math.round(skills.filter((k) => k.arc).reduce((a, k) => a + skShare(k), 0) * 10) / 10;
+const skillBox = {
+rows: skills.map((k, i) => ({ no: String(i + 1), name: k.name || '', arc: !!k.arc, share: k.share || '', label: '스킬 ' + (i + 1),
+opts: [{ v: '', label: skillPool.length ? '스킬 선택' : '아르카나를 먼저 선택해 주세요' }].concat(skillPool.filter((q) => q[0] === k.name || !skills.some((o, j) => j !== i && o.name === q[0])).map((q) => ({ v: q[0], label: q[0] }))).concat(k.name && !skillPool.some((q) => q[0] === k.name) ? [{ v: k.name, label: k.name }] : []),
+arcTxt: k.name ? (k.arc ? '아르카나 스킬' : '재능 스킬') : '스킬 미선택', arcFg: k.name ? (k.arc ? '#1E3D2E' : '#6B5A45') : '#8C7A62',
+onName: (e) => { const v = e.target.value; const hit = skillPool.filter((q) => q[0] === v)[0]; skSet(i, { name: v, arc: hit ? !!hit[1] : false }); },
+onShare: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || (/^\d*\.?\d*$/.test(raw) && Number(raw) <= 100)) { skSet(i, { share: raw }); } else { e.target.value = k.share || ''; } },
+remove: () => setSkills(skills.filter((_, j) => j !== i)) })),
+empty: skills.length === 0, has: skills.length > 0, canAdd: skills.length < Math.min(10, skillPool.length),
+add: () => setSkills(skills.concat([{ name: '', arc: false, share: '' }])),
+sum: '합계 ' + skTot + '% · 아르카나 스킬 비중 ' + (skTot ? Math.round(skArc / skTot * 1000) / 10 : 0) + '%',
+warn: '',
+sumFg: '#1E3D2E'
+};
+// 알케믹 스팅어 스킬 설정 — 마기그래프(기본 10 · 최대) · 오검 배율. 세공 레벨 · 세트 효과 · 어둠의 에르그 · 무리아스의 유물은 장비 · 오검 페이지 값을 씀
+const ST_GROUPS = [
+['마기그래프', [['magi', '마기그래프 레벨 (매그넘샷)', 10]]],
+['오검 배율 (%)', [['ogCr', '크래시샷', 999], ['ogFl', '플레임버스트', 999], ['ogMg', '매그넘샷', 999], ['ogHy', '하이드로피어스', 999], ['ogTr', '트라이어설트', 999]]]
+];
+const stS = s.stinger || {};
+const stSet = (k, v) => this.upd({ stinger: Object.assign({}, stS, { [k]: v }) });
+const stingerBox = {
+groups: ST_GROUPS.map((g) => ({ title: g[0], fields: g[1].map((q) => ({ label: q[1], value: stS[q[0]] == null ? (q[0] === 'magi' ? '10' : '') : String(stS[q[0]]), ph: '0~' + q[2], onChange: (e) => { const raw = String(e.target.value).trim(); if (raw === '') { stSet(q[0], ''); return; } if (/^\d+$/.test(raw)) { stSet(q[0], String(Math.min(q[2], Number(raw)))); return; } e.target.value = stS[q[0]] == null ? '' : String(stS[q[0]]); } })) })),
+setOpts: []
+};
+const fv = {}; const fc = {};
+FK.forEach((k) => { fv[k] = (s.fields || {})[k] || ''; fc[k] = (e) => { const o = Object.assign({}, s.fields || {}); o[k] = e.target.value; if (k === 'gearBonus' && Number(o[k]) > BONUS_CAP) { o[k] = String(BONUS_CAP); } if (k === 'arcAwake' && o[k] !== '') { o[k] = String(Math.min(50, Math.max(1, Math.round(Number(o[k]) || 1)))); } if (k === 'arcLevel' && o[k] !== '') { o[k] = String(Math.max(0, Math.round(Number(o[k]) || 0))); } this.upd({ fields: o }); }; });
+if (Number(fv.gearBonus) > BONUS_CAP) { fv.gearBonus = String(BONUS_CAP); }
+if (wBonusFixed) { fv.gearBonus = String(bDef); } else if (!fv.gearBonus && wValid && bDef) { fv.gearBonus = String(bDef); }
+const chars = roster.map((c, i) => {
+const on = i === s.char;
+return { name: c.name, checked: on ? 'true' : 'false', bg: on ? '#4A3D30' : 'transparent', border: on ? '2px solid #D9A441' : '1px solid #5A4B3C', pick: () => this.pickChar(i) };
+});
+return {
+mxLabel: MX,
+accent: accent, chars: chars, arcanas: arcanas, gms: gms, pets: pets, spirits: spirits,
+reforges: this.seg(['R 개조', 'S 개조'], s.reforge, 'reforge'),
+stages: this.seg(['1', '2', '3', '4', '5', '6', '7', '8'].slice(0, stageMax), Math.min(s.stage, stageMax - 1), 'stage'),
+stageLimited: stageMax < 8, stageCols: 'repeat(' + stageMax + ', minmax(0, 1fr))',
+goals: this.seg(['화력', '생존', '균형'], s.goal, 'goal'),
+currentName: (roster[s.char] || {}).name || '캐릭터',
+fv: fv, fc: fc,
+bonusFixed: wBonusFixed, bonusEditable: !wBonusFixed, bonusFixedVal: wValid ? String(bDef) : '', bonusNote: wBonusFixed ? '고정값 ' + bNoteCore : (wValid ? bNoteCore + ' · 수정 가능' : '무기를 고르면 자동으로 입력돼요'),
+subOpts: subOpts, subValue: sEff, onSub: (e) => { const o = Object.assign({}, s.fields || {}); o.sub = e.target.value; const bd = totDef(wCur, o.sub); if (bd) { o.gearBonus = String(bd); } this.upd({ fields: o }); },
+rankOpts: rankOpts, rankValue: CRIT_RANK.some((r) => r[0] === (s.fields || {}).critRank) ? (s.fields || {}).critRank : '', mo: mo, mv: mv, mxTitle: MX, fcA: { main: fc[miniA], ex: fc[miniA + 'Ex'] }, dollOpts: dollOpts, dollValue: DOLL_BAGS.some((d) => d[0] === (s.fields || {}).dollBag) ? (s.fields || {}).dollBag : '', weaponOpts: weaponOpts, weaponValue: wList.indexOf(wCur) >= 0 ? wCur : '', onWeapon: (e) => { const o = Object.assign({}, s.fields || {}); o.weapon = e.target.value; if (subListOf(o.weapon).indexOf(o.sub || '') < 0) { o.sub = ''; } const bd = totDef(o.weapon, o.sub || ''); if (bd) { o.gearBonus = String(bd); } const lim = !canS8(o.weapon); this.upd(lim && s.stage > 6 ? { fields: o, stage: 6 } : { fields: o }); },
+rfLabel: (rfType ? 'S' : 'R') + rfStage + '강', rfEffect: rfText(rfAt(rfType, rfStage, rfDark), rfType, rfDark), rfDark: rfDark,
+critGm: critGm + '%', critTotal: (30 + critGm + sealCr) + '%', critSeal: sealCr ? ' + 정령 봉인 해제 5%' : '',
+skillBox: skillBox, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, petSum: '크리티컬 대미지 +' + petCd + '%',
+menuOpen: !!s.menuOpen, menuExp: s.menuOpen ? 'true' : 'false', toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
+canAdd: roster.length < 3, isFull: roster.length >= 3, addChar: () => this.addChar(),
+nameValue: s.nameDraft == null ? ((roster[s.char] || {}).name || '') : s.nameDraft, onNameDraft: (e) => this.setState({ nameDraft: e.target.value, nameMsg: '' }), onNameKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.saveName(); } }, saveName: () => this.saveName(), nameMsg: s.nameMsg || '', canDel: roster.length > 1, delChar: () => this.delChar(), delLabel: s.confirmDel ? '한 번 더 누르면 삭제돼요' : '이 캐릭터 삭제', delFg: s.confirmDel ? '#F2B8A8' : '#E8D9B8',
+savedLabel: s.savedAt ? '자동 저장됨 · ' + s.savedAt : '입력하면 자동으로 저장돼요',
+currentArcana: (A[s.arcana] || ['아르카나 미선택'])[0]
+};
+}
+}
+</script>
+</body>
+</html>
