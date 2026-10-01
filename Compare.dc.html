@@ -236,6 +236,7 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 <select class="f" aria-label="{{x.label}} 오검 워드 효과" value="{{x.value}}" onChange="{{x.onEffect}}"><option value="">{{x.first}}</option><sc-for list="{{x.groups}}" as="g" hint-placeholder-count="2"><optgroup label="{{g.label}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></optgroup></sc-for></select>
 <select class="f" aria-label="{{x.label}} 레벨" value="{{x.lv}}" onChange="{{x.onLevel}}"><sc-for list="{{x.lvOpts}}" as="l" hint-placeholder-count="10"><option value="{{l.v}}">{{l.label}}</option></sc-for></select>
 <span style="text-align: right; font-size: 14px; color: {{x.maxFg}}">{{x.max}}</span>
+<sc-if value="{{x.gainOn}}" hint-placeholder-val="{{ false }}"><span style="grid-column: 2 / -1; font-size: 13px; color: #1E3D2E">{{x.gainTxt}}</span></sc-if>
 </div>
 </sc-for>
 </div>
@@ -1078,7 +1079,7 @@ const raw = ogCur[i]; const cur = raw && allowFx(raw.e) ? raw : null; const mx =
 const taken = ogCur.filter((q, k) => k !== i && q && allowFx(q.e)).map((q) => q.e);
 const mk = (list) => list.filter((q) => taken.indexOf(q[0]) < 0).map((q) => ({ v: q[0], label: q[0] }));
 return {
-label: '효과 ' + (i + 1), value: cur ? cur.e : '',
+label: '효과 ' + (i + 1), value: cur ? cur.e : '', gainOn: false, gainTxt: '',
 first: tpSel ? '효과 선택' : '오검 종류를 먼저 골라 주세요',
 tOpts: tpSel ? mk(OG_TAL) : [], // 오검 종류를 고르기 전에는 효과 목록 없이 안내 문구만 · 특수 오검은 아르카나 스킬 효과 + 재능 스킬 효과
 groups: (tpSel && isSpecialOg(tpSel) ? [{ label: '아르카나 스킬 효과', opts: mk(OG_ARC) }] : []).concat(tpSel ? [{ label: '재능 스킬 효과', opts: mk(OG_TAL) }] : []), aGroups: tpSel && isSpecialOg(tpSel) ? [{ label: '아르카나 스킬 효과', opts: mk(OG_ARC) }] : [],
@@ -1230,6 +1231,9 @@ const OG_MAST = (() => { const n = wName; if (n.indexOf('크로스보우') >= 0)
 const ogStatOf = (V) => (MXK === 'matk' ? V['마법 공격력 증가'] || 0 : (MXK === 'alch' ? ((V['불 속성 연금술 대미지 증가'] || 0) + (V['물 속성 연금술 대미지 증가'] || 0) + (V['흙 속성 연금술 대미지 증가'] || 0) + (V['바람 속성 연금술 대미지 증가'] || 0)) / 4 : (OG_MAST ? V[OG_MAST] || 0 : 0)));
 const ogBaseV = ogNow;
 const ogGain = (() => { if (!s.ogSim) return null; const simV = ogValsOf(s.ogSim.og, s.ogSim.ogw); const simW = Object.keys(s.ogSim.ogw || {}).map((k) => s.ogSim.ogw[k]); ogNow = simV; setCombos(simW); const sk = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; ogNow = ogBaseV; setCombos(stgOgw); const dm = ogStatOf(simV) - ogStatOf(ogBaseV); const pct = Math.round((sk + (dm ? dealPctRaw({ max: dm }) : 0)) * 100) / 100; return { pct: pct, dmg: Math.round(sk / 100 * MXEQ + dm) }; })(); // 스탯(무기 마스터리 등)으로 늘어난 최대 대미지는 그대로 환산에 더해요 (반올림한 %를 다시 곱하면 +10이 +9로 보이는 문제)
+// 오검 효과 하나당 딜 기여 — 고른 칸의 효과마다, 그 효과를 뺐을 때와 비교한 총딜 증가율 · 최대 대미지 환산 (우리 계산식 기준)
+const ogEvalOf = (ogM, ogwM) => { const V = ogValsOf(ogM, ogwM); ogNow = V; setCombos(Object.keys(ogwM || {}).map((k) => ogwM[k])); const sk = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; ogNow = ogBaseV; setCombos(stgOgw); const dm = ogStatOf(V) - ogStatOf(ogBaseV); return { pct: sk + (dm ? dealPctRaw({ max: dm }) : 0), dmg: sk / 100 * MXEQ + dm }; };
+{ const full = ogEvalOf(og, ogw); effects.forEach((x, i) => { if (!x.value) return; const o2 = Object.assign({}, og); const arr = (o2[ogSel] || [null, null, null]).slice(); arr[i] = null; o2[ogSel] = arr; const w = ogEvalOf(o2, ogw); const p = Math.round((full.pct - w.pct) * 100) / 100; const d = Math.round(full.dmg - w.dmg); x.gainOn = true; x.gainTxt = p || d ? '이 효과 딜 ' + (p >= 0 ? '+' : '') + pctT(p) + '% · ' + MX + ' 환산 ' + (d >= 0 ? '+' : '') + d : '이 효과는 지금 딜 계산에 영향이 없어요'; }); }
 if (ogGain && ogGain.pct) { chosen.push({ key: 'og.sim', slotKey: 'og.sim', slot: '오검 워드', dim: '오검 워드 변경', from: '현재 오검', to: '바꾼 오검', pct: ogGain.pct, dmg: ogGain.dmg, costM: 0, eff: 0, group: '부가 장비', names: '오검', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); }
 if (ogGain && ogDiff.on) { const sg = (v) => (v > 0 ? '+' : (v < 0 ? '' : '±')); ogDiff.gainOn = true; ogDiff.gainLine = '예상 딜 상승 ' + sg(ogGain.pct) + pctT(ogGain.pct) + '% · ' + MX + ' 환산 ' + sg(ogGain.dmg) + ogGain.dmg; }
 // ── 더스크바운드 개조 옵션 변경 (머리 · 의상 · 장갑 · 신발 4부위가 모두 더스크바운드일 때만, 장비 · 오검에서 고른 옵션이 현재) ──
