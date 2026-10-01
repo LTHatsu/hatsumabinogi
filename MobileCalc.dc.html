@@ -204,7 +204,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <sc-for list="{{t.list}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 9px 14px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; cursor: pointer"><span style="font-size: 15px; color: #2A2119">{{x.name}}</span><span style="font-size: 12px; color: #6B5A45">{{x.sub}}</span></button></sc-for>
 <sc-if value="{{t.more}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 8px 14px; font-size: 12px; color: #6B5A45">{{t.moreText}}</span></sc-if>
 </div></sc-if>
-<sc-if value="{{t.descOn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.5; color: #4A3D30">{{t.desc}}</span></sc-if></div></sc-for>
+<sc-if value="{{t.descOn}}" hint-placeholder-val="{{ false }}"><span style="padding-left: 13px; font-size: 13px; line-height: 1.5; color: #4A3D30">{{t.desc}}</span></sc-if></div></sc-for>
 </div>
 </section>
 
