@@ -20,7 +20,7 @@ async function collect(path, params, maxPages = MAX_PAGES) {
   const items = []; let cursor;
   for (let p = 0; p < maxPages; p++) {
     const d = await call(path, { ...params, cursor });
-    (d.auction_item || []).forEach((it) => items.push(it));
+    (d.auction_item || d.auction_history || []).forEach((it) => items.push(it));
     cursor = d.next_cursor; await sleep(DELAY_MS);
     if (!cursor) break;
   }
@@ -52,6 +52,26 @@ if (catDue && (prices.categories || []).length) {
   if (Object.keys(fresh).length) { catItems = fresh; prices.categoryUpdatedAt = new Date().toISOString(); }
 }
 prices.categoryItems = catItems;
+// 거래 내역 — 지금 매물이 없는 아이템은 최근 거래가로 보여주려고 카테고리별 거래 내역(/auction/history)도 같은 주기로 받아요 · 이름별로 가장 최근 거래 1건(가격 · 시각)
+let histItems = prices.historyItems || {};
+if (catDue && (prices.categories || []).length) {
+  const fresh = {};
+  for (const cat of prices.categories) {
+    try {
+      const list = await collect('/mabinogi/v1/auction/history', { auction_item_category: cat }, Number(prices.historyMaxPages) || 10);
+      for (const it of list) {
+        const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue;
+        const at = it.date_auction_buy || it.date_auction_expire || '';
+        for (const name of new Set([it.item_name, it.item_display_name].filter(Boolean))) {
+          const c = fresh[name];
+          if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) fresh[name] = { last: price, at };
+        }
+      }
+    } catch (e) { errors.push(String(e.message || e)); }
+  }
+  if (Object.keys(fresh).length) { histItems = Object.assign({}, histItems, fresh); prices.historyUpdatedAt = new Date().toISOString(); }
+}
+prices.historyItems = histItems;
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);

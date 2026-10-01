@@ -455,15 +455,17 @@ const encOk = (k, v) => { const r = encRange(k); const n = Number(v); return /^-
 const encCh = (k) => (e) => { const raw = String(e.target.value).trim(); if (raw === '') { setDet(k, ''); return; } if (/^-?\d*$/.test(raw)) { setDet(k, raw); return; } e.target.value = dCur[k] || ''; };
 const encBlur = (k) => () => { if (dCur[k] && !encOk(k, dCur[k])) { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); delete o[k]; all[selKey] = o; this.upd({ det: all, detErr: k }); } };
 // 경매장 시세 — prices.json(예약 작업이 NEXON Open API로 주기적으로 갱신)의 최저가 · 장비는 아이템 이름으로, 인챈트는 스크롤 이름('[개방된] [전용] 인챈트 스크롤 - 이름')의 '-' 뒤 이름으로 맞춰 가장 싼 값을 써요
-const pAll = s.prices ? Object.assign({}, s.prices.categoryItems || {}, s.prices.items || {}) : {};
-if (s.prices && this._pRef !== s.prices) { this._pRef = s.prices; this._pEnc = {}; Object.keys(pAll).forEach((n) => { if (n.indexOf('인챈트 스크롤') < 0 || n.indexOf(' - ') < 0) return; const k = n.slice(n.lastIndexOf(' - ') + 3).replace(/\s/g, ''); const x = pAll[n]; const v = Number(x && typeof x === 'object' ? x.min : x); if (k && v > 0 && (!this._pEnc[k] || v < this._pEnc[k])) { this._pEnc[k] = v; } }); }
+// 실시간 매물 최저가가 없으면 거래 내역의 최근 거래가(historyItems)로 대신해요 (hist 표시)
+const pHist = {}; if (s.prices && s.prices.historyItems) { Object.keys(s.prices.historyItems).forEach((n) => { const h = s.prices.historyItems[n]; if (h && h.last > 0) { pHist[n] = { min: h.last, hist: true, at: h.at }; } }); }
+const pAll = s.prices ? Object.assign({}, pHist, s.prices.categoryItems || {}, s.prices.items || {}) : {};
+if (s.prices && this._pRef !== s.prices) { this._pRef = s.prices; this._pEnc = {}; this._pEncH = {}; [false, true].forEach((hp) => Object.keys(pAll).forEach((n) => { if (!!(pAll[n] || {}).hist !== hp) return; if (n.indexOf('인챈트 스크롤') < 0 || n.indexOf(' - ') < 0) return; const k = n.slice(n.lastIndexOf(' - ') + 3).replace(/\s/g, ''); const x = pAll[n]; const v = Number(x && typeof x === 'object' ? x.min : x); if (k && v > 0 && (!this._pEnc[k] || (!hp && v < this._pEnc[k]))) { this._pEnc[k] = v; if (hp) { this._pEncH[k] = 1; } } })); }
 const gold = (n) => { const e = Math.floor(n / 1e8); const m = Math.floor((n % 1e8) / 1e4); const p = []; if (e) { p.push(e + '억'); } if (m) { p.push(m % 1000 === 0 ? m / 1000 + '천만' : m.toLocaleString() + '만'); } return (p.length ? p.join(' ') : Math.round(n).toLocaleString()) + 'G'; };
 const parseGold = (t) => { const s0 = String(t || '').replace(/[,\sGg]|골드/g, ''); if (!s0) return 0; if (/^\d+(\.\d+)?$/.test(s0)) return Number(s0); let v = 0; let rest = s0; const m1 = s0.match(/(\d+(?:\.\d+)?)억/); if (m1) { v += Number(m1[1]) * 1e8; rest = s0.slice(s0.indexOf('억') + 1); } const m2 = rest.match(/(\d+(?:\.\d+)?)천만/); const m3 = rest.match(/(\d+(?:\.\d+)?)백만/); const m4 = rest.match(/(\d+(?:\.\d+)?)만/); if (m2) { v += Number(m2[1]) * 1e7; } else if (m3) { v += Number(m3[1]) * 1e6; } else if (m4) { v += Number(m4[1]) * 1e4; } return Math.round(v); };
 // 가격 입력 — 숫자만 넣으면 세 자리마다 쉼표를 넣고, 옆에 억 · 만 단위로 읽어 보여줘요 (15억 · 1억 4천만처럼 글자로 써도 돼요)
 const fmtNum = (t) => { const x = String(t); return /^[\d,]+$/.test(x.trim()) ? x.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',') : x; };
 const readG = (raw) => { const g = parseGold(raw); return g > 0 ? '= ' + gold(g) : (String(raw || '').trim() ? '숫자로 입력해 주세요' : ''); };
-const pItem = (nm) => { const x = pAll[nm]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? gold(v) : ''; };
-const pEnc = (nm) => { const v = (this._pEnc || {})[String(nm).replace(/\s/g, '')]; return v ? gold(v) : ''; };
+const pItem = (nm) => { const x = pAll[nm]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? gold(v) + (x && x.hist ? ' (최근 거래가)' : '') : ''; };
+const pEnc = (nm) => { const k = String(nm).replace(/\s/g, ''); const v = (this._pEnc || {})[k]; return v ? gold(v) + ((this._pEncH || {})[k] ? ' (최근 거래가)' : '') : ''; };
 // 인챈트 — 에린 데이터(enchant-data.json) 기준: 장착 장비에 실제로 붙일 수 있는 인챈트만 접두 · 접미로 나눠 검색하고, 고른 인챈트의 주요 옵션(최대 대미지 · 마법 공격력 · 연금술 대미지) 유동 폭으로 입력 범위를 정해요
 // 장비 종류에 따라 수치가 다른 인챈트(중갑 투구/모자 등)는 장착 장비 종류의 범위를, 종류를 모르면 가능한 범위 전체를 써요 · 같은 옵션이 여러 줄이면(랭크 조건 등) 모두 더해요
 const EN = s.enData;
