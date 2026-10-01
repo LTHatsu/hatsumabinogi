@@ -67,7 +67,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </sc-for>
 <div style="border-radius: 10px; padding: 10px 12px; background: #F5EDDC; border: 1.5px solid transparent; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 11px; color: #6B5A45">재능 한정 효과</span><sc-for list="{{talOnly}}" as="q" hint-placeholder-count="1"><div style="display: flex; flex-direction: column; gap: 1px"><strong style="font-size: 12px; color: #2A2119">{{q.name}}</strong><span style="font-size: 10px; line-height: 1.4; color: #1E3D2E">{{q.fx}}</span></div></sc-for><sc-if value="{{talOnlyNone}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; color: #8C7A62">적용 중인 효과가 없어요</span></sc-if></div>
 </div>
-<sc-if value="{{pierce.on}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; background: #F5EDDC"><label style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: #2A2119"><span>이중 피어싱 기준 보호</span><span style="display: flex; align-items: center; gap: 8px"><input class="f" type="text" inputmode="numeric" placeholder="150" aria-label="이중 피어싱 기준 보호" value="{{pierce.prot}}" onChange="{{pierce.onProt}}" onBlur="{{pierce.onBlur}}" style="width: 72px; height: 36px; padding: 0 10px; font-size: 14px"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px; color: #1E3D2E">×{{pierce.mul}}</strong></span></label><span style="font-size: 10px; line-height: 1.4; color: #6B5A45">피어싱 1회 적용 후 남은 보호 (100~180, 기본 150)</span></div></sc-if>
+<sc-if value="{{pierce.on}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; background: #F5EDDC"><label style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: #2A2119"><span>이중 피어싱 기준 보호</span><span style="display: flex; align-items: center; gap: 8px"><input class="f" type="text" inputmode="numeric" placeholder="131" aria-label="이중 피어싱 기준 보호" value="{{pierce.prot}}" onChange="{{pierce.onProt}}" onBlur="{{pierce.onBlur}}" style="width: 72px; height: 36px; padding: 0 10px; font-size: 14px"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px; color: #1E3D2E">×{{pierce.mul}}</strong></span></label><span style="font-size: 10px; line-height: 1.4; color: #6B5A45">피어싱 1회 적용 후 남은 보호 (45~200, 기본 131)</span></div></sc-if>
 </div>
 <div style="background: #2A2119; color: #FBF5E8; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center">
 <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #E8D9B8">예상 딜 상승</span><strong style="font-family: 'Gowun Batang', serif; font-size: 24px; color: #D9A441">+{{sum.pct}}%</strong></div>
@@ -518,11 +518,11 @@ const crash = (370 + 3.5 * sv('crLv') + sv('ogCr')) * wCr;
 // 이중 피어싱 — 아르카나 스킬 계산식 안의 기반(재능) 스킬 부분에만 피어싱이 두 번 적용돼 보호 차감이 줄어요 (약 ×1.45 근사).
 // 재능 스킬 단독 사용 · 아르카나 고유 추가 대미지에는 적용하지 않아요. 앞으로 추가하는 아르카나 스킬의 기반 스킬 부분에도 같이 적용해요
 // 이중 피어싱 배율 — 피어싱 1회 적용 후 남은 보호 P에서 피어싱 45를 한 번 더 깎았을 때 남는 피해의 비율
-// 피해감소율 ≈ 0.269 × ln(보호) − 0.602 : 계산 시트 '각종 대미지 효율 계산' 보호 297 기준 표(보호 90~157)에 맞춘 근사식 — 보호 · 피어싱 공식이 확인되면 교체
-// 남은 보호는 캐릭터별로 입력 (기본 150 = 상지 · 풀디버프, 100~180)
-const PROT_RED = (p) => 0.269 * Math.log(p) - 0.602;
+// 피해감소율(%) = (100 / √2) × log10((보호 + 10√2) / (10√2)) — 마비노기 월드 위키 Stats/Protection
+// 남은 보호는 캐릭터별로 입력 (기본 131 = 레넨의 미이르 보호 297 − 기본 디버프 120.67 − 피어싱 45, 45~200)
+const PROT_RED = (p) => Math.max(0, Math.log10((p + 10 * Math.SQRT2) / (10 * Math.SQRT2)) / Math.SQRT2);
 const protRaw = curChar && curChar.simOpt && curChar.simOpt.prot ? String(curChar.simOpt.prot) : '';
-const protV = Math.min(180, Math.max(100, Number(protRaw) || 150));
+const protV = Math.min(200, Math.max(45, Number(protRaw) || 131));
 const PIERCE2 = (1 - PROT_RED(protV - 45)) / (1 - PROT_RED(protV));
 const setProt = (v) => { try { const st2 = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (st2 && st2.chars && st2.chars[st2.cur]) { const o = Object.assign({}, st2.chars[st2.cur].simOpt); if (v === '') { delete o.prot; } else { o.prot = v; } st2.chars[st2.cur].simOpt = o; window.localStorage.setItem('hatz-mabinogi-v1', JSON.stringify(st2)); } } catch (e) {} this.forceUpdate(); };
 const flHit = crash * PIERCE2 + 1080 + 45 * rFl + sv('ogFl');
