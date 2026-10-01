@@ -528,6 +528,7 @@ const FURY_COMBO_BASE = 1.0 + 0.7 + 1.0 + furyWeaponCombo;
 const FURY_SK = { dp: ['대쉬펀치', 460, 3, 2, 0, 1], up: ['스크류 어퍼', 690, 6, 3, 10, 1], dk: ['드롭킥', 800, 9, 4, 0, 1], cf: ['차징피스트', 700, 3, 2, 10, 1.75], ss: ['섬머솔트', 700, 6, 3, 0, 1], pd: ['파운딩', 1000, 9, 4, 10, 1] };
 Object.keys(FURY_SK).forEach((k) => { SG_KEY['f_' + k] = FURY_SK[k][0]; });
 SG_KEY.f_cm = '연속기 마스터리';
+// TODO(오검 연동 후): 오검 워드 '연속기 마스터리' 효과 1개당 최대 2%(0.02)를 장착 수만큼 연속마 배율에 더하기 — 시트의 3.7 = 소울 너클 3.5 + 장갑 세공 10레벨 0.1 + 오검 2% × 5개 0.1
 const furySoul = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0;
 const furyGale = ['닌', '알름', '에만콜'].every((x) => stgOgw.indexOf(x) >= 0);
 const furyUlt = !furyGale && ['페른', '케르트', '일란드'].every((x) => stgOgw.indexOf(x) >= 0);
