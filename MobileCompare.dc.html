@@ -574,7 +574,7 @@ const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).fil
 const envTot = envSkills.reduce((a, k) => a + Number(k.share), 0);
 const SHARE = {}; envSkills.forEach((k) => { SHARE[k.name] = envTot ? Number(k.share) / envTot : 0; });
 const shareOf = (name) => SHARE[name] || 0;
-const envShares = envSkills.map((k) => ({ name: k.name, pct: (Math.round(shareOf(k.name) * 1000) / 10) + '%', fg: k.arc ? '#1E3D2E' : '#4A3D30', bg: k.arc ? '#E3EDE6' : '#FBF5E8' }));
+const envShares = envSkills.slice().sort((a, b) => shareOf(b.name) - shareOf(a.name)).map((k) => ({ name: k.name, pct: (Math.round(shareOf(k.name) * 1000) / 10) + '%', fg: k.arc ? '#1E3D2E' : '#4A3D30', bg: k.arc ? '#E3EDE6' : '#FBF5E8' }));
 // ── 알케믹 스팅어 스킬 효율 (계산 시트 기준) ──
 // 총딜 증가율 = Σ 스킬 보정 비중(shareOf) × 스킬 대미지 증가율 · 최대 대미지 환산 = 총딜 증가율 × 현재 최대 대미지
 const isStg = arcIdx === 3;
