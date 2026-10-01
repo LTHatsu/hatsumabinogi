@@ -116,7 +116,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </div>
 <div class="fl" style="position: relative"><span>장비 아이템</span><input class="f" type="search" autocomplete="off" value="{{sel.itemValue}}" onChange="{{onItem}}" onFocus="{{onItemFocus}}" onBlur="{{onItemBlur}}" placeholder="아이템 이름을 입력해 주세요">
 <sc-if value="{{sug.on}}" hint-placeholder-val="{{ false }}"><div role="listbox" aria-label="장비 아이템 목록" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px; max-height: 280px; overflow-y: auto; background: #FFFBF2; border: 1px solid #B6A27E; border-radius: 10px; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.16)">
-<sc-for list="{{sug.list}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: block; width: 100%; min-height: 40px; padding: 8px 12px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; font-size: 14px; color: #2A2119">{{x.name}}</button></sc-for>
+<sc-for list="{{sug.list}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; width: 100%; min-height: 40px; padding: 8px 12px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; font-size: 14px; color: #2A2119"><span style="min-width: 0">{{x.name}}</span><span style="flex-shrink: 0; font-size: 12px; color: #8A5A1E">{{x.price}}</span></button></sc-for>
 <sc-if value="{{sug.more}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 8px 12px; font-size: 12px; color: #6B5A45">{{sug.moreText}}</span></sc-if>
 </div></sc-if></div>
 <sc-if value="{{sel.halo}}" hint-placeholder-val="{{ false }}"><span role="status" style="margin-top: -6px; font-size: 12px; color: #1E3D2E">불완전한 공상의 왕관 헤일로 · 아르카나 보너스 대미지 +3%</span></sc-if>
@@ -127,18 +127,22 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <label class="fl">효과 레벨<select class="f" value="{{det.rLv}}" onChange="{{det.onRLv}}"><sc-for list="{{det.rLvOpts}}" as="l" hint-placeholder-count="10"><option value="{{l.v}}">{{l.label}}</option></sc-for></select></label>
 </div>
 </sc-if>
-<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
-<label class="fl">접두 인챈트<select class="f" onChange="{{onField}}"><option>[접두]</option></select></label>
-<label class="fl"><span>접두 {{mxLabel}}</span><input class="f" type="number" min="8" max="12" placeholder="8~12" value="{{det.pre}}" onChange="{{det.onPre}}" onBlur="{{det.blurPre}}"></label>
-<label class="fl">접미 인챈트<select class="f" onChange="{{onField}}"><option>[접미]</option></select></label>
-<label class="fl"><span>접미 {{mxLabel}}</span><input class="f" type="number" min="8" max="12" placeholder="8~12" value="{{det.suf}}" onChange="{{det.onSuf}}" onBlur="{{det.blurSuf}}"></label>
+<sc-for list="{{det.enc}}" as="n" hint-placeholder-count="2"><div style="display: flex; flex-direction: column; gap: 6px"><div style="display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 10px">
+<div class="fl" style="position: relative"><span>{{n.label}}</span><input class="f" type="search" autocomplete="off" value="{{n.name}}" onChange="{{n.onName}}" onFocus="{{n.onFocus}}" onBlur="{{n.onBlur}}" placeholder="{{n.namePh}}">
+<sc-if value="{{n.sugOn}}" hint-placeholder-val="{{ false }}"><div role="listbox" aria-label="{{n.label}} 목록" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px; max-height: 320px; overflow-y: auto; background: #FFFBF2; border: 1px solid #B6A27E; border-radius: 10px; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.16)">
+<sc-for list="{{n.list}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 9px 14px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; cursor: pointer"><span style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"><span style="font-size: 15px; color: #2A2119">{{x.name}}</span><span style="flex-shrink: 0; font-size: 12px; color: #8A5A1E">{{x.price}}</span></span><span style="font-size: 12px; color: #6B5A45">{{x.sub}}</span></button></sc-for>
+<sc-if value="{{n.more}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 8px 14px; font-size: 12px; color: #6B5A45">{{n.moreText}}</span></sc-if>
+</div></sc-if></div>
+<sc-if value="{{n.off}}" hint-placeholder-val="{{ false }}"><label class="fl"><span>{{n.short}} {{mxLabel}}</span><input class="f" type="text" value="{{n.offText}}" readonly aria-readonly="true" style="background: #EFE5CF; color: #6B5A45; font-size: 12px; cursor: not-allowed"></label></sc-if>
+<sc-if value="{{n.on}}" hint-placeholder-val="{{ true }}"><label class="fl"><span>{{n.short}} {{mxLabel}}</span><input class="f" type="text" inputmode="numeric" placeholder="{{n.ph}}" value="{{n.value}}" onChange="{{n.onVal}}" onBlur="{{n.onValBlur}}"></label></sc-if>
 </div>
+<sc-if value="{{n.descOn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.5; color: #4A3D30">{{n.desc}}</span></sc-if></div></sc-for>
 <sc-if value="{{det.isSg}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; flex-direction: column; gap: 10px">
 <sc-for list="{{det.sgRows}}" as="g" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px"><label class="fl">{{g.label}}<select class="f" value="{{g.value}}" onChange="{{g.onOpt}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl"><span>세공 레벨</span><input class="f" type="text" inputmode="numeric" placeholder="{{g.ph}}" value="{{g.lv}}" onChange="{{g.onLv}}"></label></div></sc-for>
 </div>
 </sc-if>
-<sc-if value="{{det.setOk}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #4A3D30">세트 효과</span><div style="display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 2px"><sc-if value="{{det.duskOk}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setDusk}}" onChange="{{det.onDusk}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">더스크바운드 시리즈 (보너스 대미지 +5% · 크리티컬 대미지 +10%)</label></sc-if><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setCrit}}" onChange="{{det.onCrit}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">크리티컬 대미지 증가 (+7%)</label><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setMagnum}}" onChange="{{det.onMagnum}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">매그넘샷 강화 (매그넘샷 배율 ×1.15)</label></div></div></sc-if>
+<sc-if value="{{det.setOk}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #4A3D30">세트 효과</span><div style="display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 2px"><sc-if value="{{det.duskOk}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setDusk}}" onChange="{{det.onDusk}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">더스크바운드 시리즈 (보너스 대미지 +5% · 크리티컬 대미지 +10%)</label></sc-if><sc-if value="{{det.critOk}}" hint-placeholder-val="{{ true }}"><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setCrit}}" onChange="{{det.onCrit}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">크리티컬 대미지 증가 (+7%)</label></sc-if><sc-if value="{{det.magnumOk}}" hint-placeholder-val="{{ true }}"><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setMagnum}}" onChange="{{det.onMagnum}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">매그넘샷 강화 (매그넘샷 배율 ×1.15)</label></sc-if></div><span style="font-size: 12px; line-height: 1.5; color: #6B5A45">{{det.setNote}}</span></div></sc-if>
 <sc-if value="{{det.ergHwOn}}" hint-placeholder-val="{{ true }}">
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
 <sc-if value="{{det.isMain}}" hint-placeholder-val="{{ true }}"><label class="fl">에르그<input class="f" type="text" value="S등급 · 50레벨" readonly aria-readonly="true" style="background: #EFE5CF; color: #4A3D30; cursor: not-allowed"></label>
@@ -190,9 +194,12 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <section aria-label="타이틀" style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 12px">
 <h2 style="margin: 0; padding-left: 4px; font-family: 'Gowun Batang', serif; font-size: 22px">타이틀</h2>
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
-<label class="fl">타이틀<input class="f" type="search" list="title-list" placeholder="타이틀 이름" value="{{title.main}}" onChange="{{title.onMain}}"></label>
-<label class="fl">2차 타이틀<input class="f" type="search" list="title-list" placeholder="2차 타이틀 이름" value="{{title.sub}}" onChange="{{title.onSub}}"></label>
-<datalist id="title-list"></datalist>
+<sc-for list="{{title.rows}}" as="t" hint-placeholder-count="2"><div class="fl" style="position: relative; justify-content: flex-start"><span>{{t.label}}</span><input class="f" type="search" autocomplete="off" placeholder="{{t.ph}}" value="{{t.value}}" onChange="{{t.onChange}}" onFocus="{{t.onFocus}}" onBlur="{{t.onBlur}}">
+<sc-if value="{{t.sugOn}}" hint-placeholder-val="{{ false }}"><div role="listbox" aria-label="{{t.label}} 목록" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px; max-height: 320px; overflow-y: auto; background: #FFFBF2; border: 1px solid #B6A27E; border-radius: 10px; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.16)">
+<sc-for list="{{t.list}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 9px 14px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; cursor: pointer"><span style="font-size: 15px; color: #2A2119">{{x.name}}</span><span style="font-size: 12px; color: #6B5A45">{{x.sub}}</span></button></sc-for>
+<sc-if value="{{t.more}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 8px 14px; font-size: 12px; color: #6B5A45">{{t.moreText}}</span></sc-if>
+</div></sc-if>
+<sc-if value="{{t.descOn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.5; color: #4A3D30">{{t.desc}}</span></sc-if></div></sc-for>
 </div>
 </section>
 
@@ -271,7 +278,10 @@ return Object.assign(c.gear ? { eq: c.gear.eq || {}, og: c.gear.og || {}, ogw: c
 syncStore() { const n = this.fromStore(); const cur = this.state; if (JSON.stringify([n.charWeapon, n.charSub, n.charName, n.charArcana, n.eq, n.og, n.ogw, n.brireh, n.totem, n.title, n.det]) !== JSON.stringify([cur.charWeapon, cur.charSub, cur.charName, cur.charArcana, cur.eq, cur.og, cur.ogw, cur.brireh, cur.totem, cur.title, cur.det])) { this.setState(n); } }
 componentDidMount() {
 // 장비 목록 · 세공 데이터 (에린 데이터 기준, equip-data.json)
-try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this._edMap = null; this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./title-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.p) { this.setState({ tiData: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this._edMap = null; this._edG = null; this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
 // 다른 페이지(캐릭터 정보 등)에서 바꾼 내용을 바로 반영 — 저장소 변경 · 페이지 포커스 시 다시 읽어요
 this._sync = () => this.syncStore();
 window.addEventListener('storage', this._sync); window.addEventListener('focus', this._sync); document.addEventListener('visibilitychange', this._sync); this._poll = setInterval(this._sync, 1500);
@@ -378,6 +388,12 @@ const edSlot = (k) => (k === 'acc1' || k === 'acc2' ? 'acc' : k);
 if (ED && !this._edMap) { this._edMap = {}; Object.keys(ED.slots).forEach((sk) => { const m = {}; ED.slots[sk].forEach((x) => { m[x[0]] = x[1]; }); this._edMap[sk] = m; }); }
 const SG_DEF_KEYS = { head: ['Headgear', 'Helm'], body: ['ClothArmor', 'ClothArmorComm', 'HeavyArmor', 'Lightarmor'], hands: ['Gauntlet', 'Glove'], feet: ['Armorboots', 'Shoes'], acc1: ['Accessary'], acc2: ['Accessary'] };
 const sgItem = selKey === 'rhand' ? (String((s.eq || {}).rhand || '').trim() || s.charWeapon || '') : (selKey === 'lhand' ? (String((s.eq || {}).lhand || '').trim() || s.charSub || '') : String((s.eq || {})[selKey] || '').trim());
+// 세트 효과 — equip-data.json의 itemSets: 아이템 이름 → 세트 코드(c 크리티컬 대미지 증가 · m 매그넘샷 강화 · d 더스크바운드)
+const SET_CODE = { crit: 'c', magnum: 'm', dusk: 'd' }; const SET_NAME = { crit: '크리티컬 대미지 증가', magnum: '매그넘샷 강화', dusk: '더스크바운드' };
+const itemSets = ED && ED.itemSets ? (ED.itemSets[sgItem] || '') : '';
+const setElse = (() => { const o = {}; Object.keys(detAll).forEach((k) => { if (k === selKey) return; Object.keys((detAll[k] || {}).sets || {}).forEach((q) => { if (SET_NAME[q] && itemSets.indexOf(SET_CODE[q]) >= 0) { o[SET_NAME[q]] = 1; } }); }); return Object.keys(o); })();
+// 장비를 바꾸면 새 장비에 없는 세트 효과 체크는 지워요 (다른 장비에 남은 체크는 그대로)
+const pruneSets = (det0, key, nm) => { if (!ED || !ED.itemSets) return det0; const d = (det0 || {})[key]; if (!d || !d.sets) return det0; const ok = ED.itemSets[nm] || ''; const o = {}; Object.keys(d.sets).forEach((q) => { if (ok.indexOf(SET_CODE[q]) >= 0) { o[q] = 1; } }); const all = Object.assign({}, det0); all[key] = Object.assign({}, d); if (Object.keys(o).length) { all[key].sets = o; } else { delete all[key].sets; } return all; };
 const sgItemKnown = !!(ED && ((this._edMap || {})[edSlot(selKey)] || {})[sgItem]);
 const sgKeys = (() => { if (!ED) return []; const hit = ((this._edMap || {})[edSlot(selKey)] || {})[sgItem]; if (hit) return hit; return (SG_DEF_KEYS[selKey] || []).map((k) => ED.keys.indexOf(k)).filter((i) => i >= 0); })();
 const sgList = !ED ? [] : ED.opts.filter((o) => o[1].some((k) => sgKeys.indexOf(k) >= 0)).map((o) => { const oh = o[4] && sgKeys.some((k) => ED.oneHand.indexOf(k) >= 0); const ac = o[3] && sgKeys.some((k) => ED.acc.indexOf(k) >= 0); const cap = oh ? o[4] : (ac ? o[3] : o[2]); return { name: o[0], cap: cap, mx: o[5] ? (ED.lb[String(cap)] || cap) : cap }; });
@@ -390,16 +406,54 @@ const isArmorSlot = ['head', 'body', 'hands', 'feet', 'robe'].indexOf(selKey) >=
 const sgArr = Array.isArray(dCur.sg) ? dCur.sg : [];
 const setSg = (i, p) => { const arr = [0, 1, 2].map((k) => Object.assign({}, sgArr[k] || {})); Object.assign(arr[i], p); if (!arr[i].o) { arr[i] = {}; } setDet('sg', arr.some((q) => q.o) ? arr : ''); };
 const sgRows = [0, 1, 2].map((i) => { const q = sgArr[i] || {}; return { label: '세공 옵션 ' + (i + 1), value: q.o || '', lv: q.lv || '', opts: [{ v: '', label: !ED ? '세공 정보 불러오는 중' : (sgList.length ? '옵션 선택' : (isWeaponSlot && !sgItem ? '무기를 먼저 골라 주세요' : '이 장비에는 세공 옵션이 없어요')) }].concat(q.o && !sgFind(q.o) ? [{ v: q.o, label: q.o + ' (이 장비에 없는 옵션)' }] : []).concat(sgList.filter((x) => x.name === q.o || !sgArr.some((z, k) => k !== i && z && z.o === x.name)).map((x) => ({ v: x.name, label: x.name }))), onOpt: (e) => setSg(i, { o: e.target.value, lv: e.target.value ? String(Math.min(sgMax(e.target.value), Number(q.lv) || 1)) : '', mx: e.target.value ? sgMax(e.target.value) : '' }), onLv: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setSg(i, { lv: raw === '' ? '' : String(Math.min(sgMax(q.o), Math.max(1, Number(raw)))) }); } else { e.target.value = q.lv || ''; } }, lvOff: !q.o, ph: sgPh(q.o) }; });
-// 인챈트 유동 옵션 범위 — 인챈트별 범위가 정해지면 ENC_RANGE에 추가 (지금은 모두 8~12)
-const ENC_RANGE = {};
 // 에르그는 S등급 50레벨 고정 (입력 없음) · 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30
 const FIELD_RANGE = { ergLv: [1, 50], dErg: [1, 50], hwMax: [1, 30] };
-const FIELD_NAME = { pre: '인챈트 수치는', suf: '인챈트 수치는', ergLv: '에르그 레벨은', dErg: '어둠의 에르그 레벨은', hwMax: '성수 수치는' };
-const encRange = (k) => FIELD_RANGE[k] || ENC_RANGE[selKey + '.' + k] || [8, 12];
-const encOk = (k, v) => { const r = encRange(k); const n = Number(v); return /^\d+$/.test(String(v)) && n >= r[0] && n <= r[1]; };
+const FIELD_NAME = { pre: '접두 인챈트 수치는', suf: '접미 인챈트 수치는', ergLv: '에르그 레벨은', dErg: '어둠의 에르그 레벨은', hwMax: '성수 수치는' };
+const encRange = (k) => FIELD_RANGE[k] || enSel[k] || [0, 0];
+const encOk = (k, v) => { const r = encRange(k); const n = Number(v); return /^-?\d+$/.test(String(v)) && n >= r[0] && n <= r[1]; };
 // 입력하는 동안은 숫자면 그대로 두고, 다른 칸으로 이동하는 순간 범위를 확인해 벗어나면 지우고 안내해요
-const encCh = (k) => (e) => { const raw = String(e.target.value).trim(); if (raw === '') { setDet(k, ''); return; } if (/^\d+$/.test(raw)) { setDet(k, raw); return; } e.target.value = dCur[k] || ''; };
+const encCh = (k) => (e) => { const raw = String(e.target.value).trim(); if (raw === '') { setDet(k, ''); return; } if (/^-?\d*$/.test(raw)) { setDet(k, raw); return; } e.target.value = dCur[k] || ''; };
 const encBlur = (k) => () => { if (dCur[k] && !encOk(k, dCur[k])) { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); delete o[k]; all[selKey] = o; this.upd({ det: all, detErr: k }); } };
+// 경매장 시세 — prices.json(예약 작업이 NEXON Open API로 주기적으로 갱신)의 최저가 · 장비는 아이템 이름으로, 인챈트는 스크롤 이름에서 '인챈트 스크롤'을 뺀 이름으로 맞춰요
+const pAll = s.prices ? Object.assign({}, s.prices.categoryItems || {}, s.prices.items || {}) : {};
+if (s.prices && this._pRef !== s.prices) { this._pRef = s.prices; this._pEnc = {}; Object.keys(pAll).forEach((n) => { if (n.indexOf('인챈트') < 0) return; const k = n.replace(/인챈트\s*스크롤|인챈트/g, '').replace(/[\s\-()[\]:·]/g, ''); const x = pAll[n]; const v = Number(x && typeof x === 'object' ? x.min : x); if (k && v > 0 && (!this._pEnc[k] || v < this._pEnc[k])) { this._pEnc[k] = v; } }); }
+const gold = (n) => { const e = Math.floor(n / 1e8); const m = Math.floor((n % 1e8) / 1e4); const p = []; if (e) { p.push(e + '억'); } if (m) { p.push(m % 1000 === 0 ? m / 1000 + '천만' : m.toLocaleString() + '만'); } return (p.length ? p.join(' ') : Math.round(n).toLocaleString()) + 'G'; };
+const pItem = (nm) => { const x = pAll[nm]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? gold(v) : ''; };
+const pEnc = (nm) => { const v = (this._pEnc || {})[String(nm).replace(/\s/g, '')]; return v ? gold(v) : ''; };
+// 인챈트 — 에린 데이터(enchant-data.json) 기준: 장착 장비에 실제로 붙일 수 있는 인챈트만 접두 · 접미로 나눠 검색하고, 고른 인챈트의 주요 옵션(최대 대미지 · 마법 공격력 · 연금술 대미지) 유동 폭으로 입력 범위를 정해요
+// 장비 종류에 따라 수치가 다른 인챈트(중갑 투구/모자 등)는 장착 장비 종류의 범위를, 종류를 모르면 가능한 범위 전체를 써요 · 같은 옵션이 여러 줄이면(랭크 조건 등) 모두 더해요
+const EN = s.enData;
+if (ED && !this._edG) { this._edG = {}; this._enSlot = {}; Object.keys(ED.slots).forEach((sk) => { const m = {}; ED.slots[sk].forEach((x) => { m[x[0]] = [x[2], x[3] || '']; }); this._edG[sk] = m; }); }
+const enItem = ED && this._edG ? (this._edG[edSlot(selKey)] || {})[sgItem] : null;
+const enType = enItem ? enItem[1] : '';
+const enAllowed = (() => { if (!ED || !EN) return null; if (enItem) return ED.enchGroups[enItem[0]] || []; const sk = edSlot(selKey); if (!ED.slots[sk]) return EN.list.map((x, i) => i); if (!this._enSlot[sk]) { const u = {}; ED.slots[sk].forEach((x) => { (ED.enchGroups[x[2]] || []).forEach((i) => { u[i] = 1; }); }); this._enSlot[sk] = Object.keys(u).map(Number); } return this._enSlot[sk]; })();
+const EN_K = MX === '마법 공격력' ? 5 : (MX === '연금술 대미지' ? 6 : 4);
+const EN_RANK = '123456789ABCDEF';
+const enFind = (nm, af) => (enAllowed && nm ? enAllowed.filter((i) => EN.list[i][1] === af && EN.list[i][0] === nm)[0] : undefined);
+const enRangeOf = (i) => { const ef = EN.list[i][EN_K] || []; if (!ef.length) return null; const base = ef.filter((e) => !e[0]); const cond = ef.filter((e) => e[0]); let lo = base.reduce((a, e) => a + e[1], 0); let hi = base.reduce((a, e) => a + e[2], 0); let wide = false; if (cond.length) { const hit = cond.filter((e) => enType.indexOf(e[0]) >= 0); const use = hit.length ? hit : cond; wide = !hit.length; lo += Math.min.apply(null, use.map((e) => e[1])); hi += Math.max.apply(null, use.map((e) => e[2])); } return [lo, hi, wide]; };
+const enRg = (r) => (r[0] === r[1] ? String(r[0]) : r[0] + '~' + r[1]);
+const enSel = {};
+const setDetMany = (p) => { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); Object.keys(p).forEach((kk) => { if (p[kk] === '' || p[kk] == null) { delete o[kk]; } else { o[kk] = p[kk]; } }); all[selKey] = o; this.upd({ det: all, detErr: false, saved: selKey }); };
+// 로브에는 인챈트 칸을 두지 않아요
+const enRows = (selKey === 'robe' ? [] : [['pre', 0, '접두 인챈트', '접두'], ['suf', 1, '접미 인챈트', '접미']]).map((q) => {
+const k = q[0]; const nk = k + 'Name'; const nm = String(dCur[nk] || ''); const idx = enFind(nm, q[1]); const rg = idx !== undefined ? enRangeOf(idx) : null;
+if (rg) { enSel[k] = rg; }
+const qN = nm.replace(/\s/g, '').toLowerCase();
+const hits = s.enOpen === k && enAllowed ? enAllowed.filter((i) => EN.list[i][1] === q[1] && (!qN || EN.list[i][0].replace(/\s/g, '').toLowerCase().indexOf(qN) >= 0)) : [];
+const hasR = (i) => ((EN.list[i][EN_K] || []).length ? 0 : 1);
+hits.sort((x, y) => (qN ? (EN.list[x][0].replace(/\s/g, '').toLowerCase().indexOf(qN) === 0 ? 0 : 1) - (EN.list[y][0].replace(/\s/g, '').toLowerCase().indexOf(qN) === 0 ? 0 : 1) : 0) || hasR(x) - hasR(y) || EN_RANK.indexOf(EN.list[x][2]) - EN_RANK.indexOf(EN.list[y][2]) || EN.list[x][0].length - EN.list[y][0].length);
+const old = dCur[k] && idx === undefined;
+return {
+label: q[2], short: q[3], name: nm, value: dCur[k] || '', off: !rg, on: !!rg, offText: old ? '기존 값 ' + dCur[k] + ' · 인챈트를 고르면 범위가 정해져요' : (idx !== undefined ? '이 인챈트엔 ' + MX + ' 옵션이 없어요' : '인챈트를 먼저 골라 주세요'),
+ph: rg ? enRg(rg) : '', namePh: !EN || !ED ? '인챈트 정보 불러오는 중' : '이름을 입력하거나 눌러서 골라요',
+sugOn: hits.length > 0, more: hits.length > 30, moreText: '전체 ' + hits.length + '개 중 30개 · 더 입력하면 좁혀져요',
+list: hits.slice(0, 30).map((i) => { const x = EN.list[i]; const r = enRangeOf(i); return { name: x[0], price: pEnc(x[0]), sub: (x[2] ? x[2] + '랭크 · ' : '') + (x[7] ? '공용 · ' : '이 부위 전용 · ') + (r ? MX + ' ' + enRg(r) : MX + ' 옵션 없음'), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const p = {}; p[nk] = x[0]; const cur = Number(dCur[k]); if (!r) { p[k] = ''; } else if (r[0] === r[1]) { p[k] = String(r[0]); } else if (!dCur[k] || cur < r[0] || cur > r[1]) { p[k] = ''; } setDetMany(p); this.setState({ enOpen: '' }); } }; }),
+descOn: idx !== undefined || (!!nm && !!EN && !!enAllowed), desc: idx !== undefined ? (EN.list[idx][2] ? EN.list[idx][2] + '랭크 · ' : '') + (pEnc(nm) ? '경매장 최저가 ' + pEnc(nm) + ' · ' : '') + EN.list[idx][3] + (rg && rg[2] ? ' · 장비 종류를 몰라 가능한 범위를 모두 열어 뒀어요' : '') : '이 장비에 붙일 수 있는 ' + q[2] + ' 목록에 없어요 · 목록에서 골라 주세요',
+onName: (e) => { const v = e.target.value; const p = {}; p[nk] = v; if (enFind(v, q[1]) === undefined) { p[k] = ''; } setDetMany(p); this.setState({ enOpen: k }); },
+onFocus: () => this.setState({ enOpen: k }), onBlur: () => { setTimeout(() => { if (this.state.enOpen === k) { this.setState({ enOpen: '' }); } }, 150); },
+onVal: encCh(k), onValBlur: encBlur(k)
+};
+});
 const title = selInfo.name;
 // 오검 워드 — 정오각형 5칸 (예시 목록)
 const OG_ICON = 'M18.8 15.4L18.9 15.8L19.0 16.5L19.1 17.1L19.0 17.8L18.9 18.4L18.6 19.0L18.2 19.5L17.8 19.9L17.2 20.2L16.6 20.4L16.0 20.5L15.4 20.5L14.7 20.3L14.1 20.1L13.5 19.7L12.9 19.3L12.4 18.7L12.0 18.2L11.6 17.6L11.4 17.0L11.1 16.5L11.0 16.0L10.9 15.5L10.8 15.1L10.7 14.7L10.7 14.4L10.6 14.2L10.5 14.1L10.3 14.0L10.1 14.0L9.8 14.0L9.5 14.1L9.0 14.1L8.6 14.2L8.0 14.2L7.7 14.2M4.5 13.2L4.2 13.0L3.7 12.5L3.3 12.0L2.9 11.4L2.7 10.8L2.5 10.2L2.6 9.6L2.7 9.0L2.9 8.4L3.3 7.9L3.8 7.5L4.3 7.1L4.9 6.9L5.6 6.7L6.3 6.6L7.0 6.7L7.7 6.8L8.4 7.0L9.0 7.2L9.5 7.5L10.1 7.9L10.5 8.2L10.9 8.5L11.2 8.8L11.4 9.1L11.7 9.2L11.8 9.4L12.0 9.4L12.2 9.4L12.3 9.2L12.6 9.1L12.8 8.8L13.1 8.5L13.5 8.2L13.9 7.9L14.2 7.7M17.4 6.6L17.7 6.6L18.4 6.7L19.1 6.9L19.7 7.1L20.2 7.5L20.7 7.9L21.1 8.4L21.3 9.0L21.4 9.6L21.5 10.2L21.3 10.8L21.1 11.4L20.7 12.0L20.3 12.5L19.8 13.0L19.2 13.4L18.6 13.7L17.9 13.9L17.2 14.1L16.6 14.2L16.0 14.2L15.4 14.2L15.0 14.1L14.5 14.1L14.2 14.0L13.9 14.0L13.7 14.0L13.5 14.1L13.4 14.2L13.3 14.4L13.3 14.7L13.2 15.1L13.1 15.5L13.0 16.0L12.9 16.5L12.8 16.8M10.8 19.5L10.5 19.7L9.9 20.1L9.3 20.3L8.6 20.5L8.0 20.5L7.4 20.4L6.8 20.2L6.2 19.9L5.8 19.5L5.4 19.0L5.1 18.4L5.0 17.8L4.9 17.1L5.0 16.5L5.1 15.8L5.4 15.1L5.7 14.5L6.1 13.9L6.5 13.4L7.0 13.0L7.5 12.6L7.9 12.3L8.3 12.0L8.7 11.8L9.0 11.6L9.3 11.5L9.4 11.3L9.5 11.2L9.5 11.0L9.5 10.8L9.4 10.6L9.2 10.2L9.0 9.9L8.9 9.4L8.7 8.9L8.6 8.6M8.6 5.2L8.7 4.9L8.9 4.3L9.3 3.7L9.7 3.2L10.2 2.8L10.8 2.5L11.4 2.3L12.0 2.2L12.6 2.3L13.2 2.5L13.8 2.8L14.3 3.2L14.7 3.7L15.1 4.3L15.3 4.9L15.5 5.6L15.6 6.3L15.6 7.0L15.6 7.7L15.5 8.3L15.3 8.9L15.1 9.4L15.0 9.9L14.8 10.2L14.6 10.6L14.5 10.8L14.5 11.0L14.5 11.2L14.6 11.3L14.7 11.5L15.0 11.6L15.3 11.8L15.7 12.0L16.1 12.3L16.5 12.6L16.8 12.8';
@@ -606,13 +660,24 @@ const sugAll = ED && String(s.sel).indexOf('relic') !== 0 ? (ED.slots[edSlot(sel
 const sugQ = String((s.eq || {})[selKey] || '').trim(); const sugN = sugQ.replace(/\s/g, '').toLowerCase();
 const sugHits = s.sugOpen && sugN ? sugAll.filter((x) => x[0] !== sugQ && x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) >= 0) : [];
 sugHits.sort((x, y) => (x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) - (y[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) || x[0].length - y[0].length);
-const sugV = { on: sugHits.length > 0, more: sugHits.length > 30, moreText: '전체 ' + sugHits.length + '개 중 30개 · 더 입력하면 좁혀져요', list: sugHits.slice(0, 30).map((x) => ({ name: x[0], pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const eq = Object.assign({}, this.state.eq); eq[selKey] = x[0]; this.upd({ eq: eq, saved: selKey, sugOpen: false }); } })) };
+const sugV = { on: sugHits.length > 0, more: sugHits.length > 30, moreText: '전체 ' + sugHits.length + '개 중 30개 · 더 입력하면 좁혀져요', list: sugHits.slice(0, 30).map((x) => ({ name: x[0], price: pItem(x[0]), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const eq = Object.assign({}, this.state.eq); eq[selKey] = x[0]; this.upd({ eq: eq, saved: selKey, sugOpen: false, det: pruneSets(this.state.det, selKey, x[0]) }); } })) };
 return {
 mxLabel: MX,
 accent: accent,
 totem: totemVals,
-// 타이틀 · 2차 타이틀 (이름 입력 · 효과 데이터는 추후 연결)
-title: { main: (s.title || {}).main || '', sub: (s.title || {}).sub || '', onMain: (e) => this.upd({ title: Object.assign({}, s.title || {}, { main: String(e.target.value).slice(0, 40) }) }), onSub: (e) => this.upd({ title: Object.assign({}, s.title || {}, { sub: String(e.target.value).slice(0, 40) }) }) },
+// 타이틀 · 2차 타이틀 — 에린 데이터(title-data.json)의 1차 · 2차 타이틀 목록에서 검색해 고르고, 고른 타이틀의 효과를 보여줘요
+title: { rows: [['main', 'p', '타이틀', '타이틀 이름을 입력하면 목록이 나와요'], ['sub', 's', '2차 타이틀', '2차 타이틀 이름을 입력하면 목록이 나와요']].map((q) => {
+const k = q[0]; const v = String((s.title || {})[k] || ''); const all = (s.tiData && s.tiData[q[1]]) || []; const vN = v.replace(/\s/g, '').toLowerCase();
+const hit = all.filter((x) => x[0] === v)[0];
+const hits = s.tiOpen === k ? all.filter((x) => !vN || x[0].replace(/\s/g, '').toLowerCase().indexOf(vN) >= 0 || x[1].replace(/\s/g, '').toLowerCase().indexOf(vN) >= 0) : [];
+hits.sort((x, y) => (vN ? (x[0].replace(/\s/g, '').toLowerCase().indexOf(vN) === 0 ? 0 : (x[0].replace(/\s/g, '').toLowerCase().indexOf(vN) > 0 ? 1 : 2)) - (y[0].replace(/\s/g, '').toLowerCase().indexOf(vN) === 0 ? 0 : (y[0].replace(/\s/g, '').toLowerCase().indexOf(vN) > 0 ? 1 : 2)) : 0) || x[0].length - y[0].length);
+const setT = (val, open) => { const o = Object.assign({}, s.title || {}); if (val) { o[k] = val; } else { delete o[k]; } this.upd({ title: o }); this.setState({ tiOpen: open }); };
+return { label: q[2], ph: s.tiData ? q[3] : '타이틀 정보 불러오는 중', value: v,
+sugOn: hits.length > 0 && !(hit && hits.length === 1), more: hits.length > 30, moreText: '전체 ' + hits.length + '개 중 30개 · 더 입력하면 좁혀져요',
+list: hits.slice(0, 30).map((x) => ({ name: x[0], sub: x[1] || '효과 없음', pick: (e) => { if (e && e.preventDefault) e.preventDefault(); setT(x[0], ''); } })),
+descOn: !!hit || (!!v && !!s.tiData), desc: hit ? (hit[1] || '효과 없음') : q[2] + ' 목록에 없는 이름이에요 · 목록에서 골라 주세요',
+onChange: (e) => setT(String(e.target.value).slice(0, 60), k), onFocus: () => this.setState({ tiOpen: k }), onBlur: () => { setTimeout(() => { if (this.state.tiOpen === k) { this.setState({ tiOpen: '' }); } }, 150); } };
+}) },
 bri: { max: (s.brireh || {}).max || '', onMax: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { max: e.target.value }) }), crit: (s.brireh || {}).crit || '', arc: (s.brireh || {}).arc || '', onCrit: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { crit: e.target.value }) }), onArc: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { arc: e.target.value }) }) },
 menuOpen: !!s.menuOpen, menuExp: s.menuOpen ? 'true' : 'false', toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
 charName: s.charName,
@@ -627,7 +692,7 @@ row1: rows[0], row2: rows[1], row3: rows[2], row4: rows[3],
 equippedCount: count,
 sel: { isRelic: String(s.sel).indexOf('relic') === 0, notRelic: String(s.sel).indexOf('relic') !== 0, listId: (s.sel === 'acc1' || s.sel === 'acc2') ? 'acc-items' : '', halo: (s.sel === 'acc1' || s.sel === 'acc2') && String(selInfo.item || '').indexOf('불완전한 공상의 왕관 헤일로') >= 0, name: selInfo.name, icon: selInfo.icon, isWeapon: selInfo.isWeapon, title: title, itemValue: selInfo.item || '', status: selInfo.item ? '장착 중 · ' + selInfo.item : '비어 있음 · 채우면 자동 저장' },
 savedHere: s.saved === selKey,
-det: { isMain: s.sel === 'rhand', wmax: dCur.wmax || '', pre: dCur.pre || '', suf: dCur.suf || '', err: !!s.detErr, errMsg: s.detErr ? (FIELD_NAME[s.detErr] || '입력값은') + ' ' + encRange(s.detErr)[0] + '~' + encRange(s.detErr)[1] + ' 사이만 입력할 수 있어요' : '', onW: (e) => { const raw = String(e.target.value).trim(); setDet('wmax', raw === '' ? '' : String(Math.max(0, Math.round(Number(raw) || 0)))); }, onPre: encCh('pre'), onSuf: encCh('suf'), blurPre: encBlur('pre'), blurSuf: encBlur('suf'),
+det: { enc: enRows, isMain: s.sel === 'rhand', wmax: dCur.wmax || '', pre: dCur.pre || '', suf: dCur.suf || '', err: !!s.detErr, errMsg: s.detErr ? (FIELD_NAME[s.detErr] || '입력값은') + ' ' + encRange(s.detErr)[0] + '~' + encRange(s.detErr)[1] + ' 사이만 입력할 수 있어요' : '', onW: (e) => { const raw = String(e.target.value).trim(); setDet('wmax', raw === '' ? '' : String(Math.max(0, Math.round(Number(raw) || 0)))); }, onPre: encCh('pre'), onSuf: encCh('suf'), blurPre: encBlur('pre'), blurSuf: encBlur('suf'),
 ergGrade: dCur.ergGrade || '', onErgGrade: (e) => setDet('ergGrade', e.target.value), ergLv: dCur.ergLv || '', onErgLv: encCh('ergLv'), blurErgLv: encBlur('ergLv'),
 dErg: dCur.dErg || '', onDErg: encCh('dErg'), blurDErg: encBlur('dErg'),
 // 무리아스의 성수 — 로브 제외 모든 장비. 최대 대미지(1~30)는 캐릭터 정보 최대 대미지에 이미 포함된 값, 크리티컬 대미지(1~4%)는 시뮬레이터 스탯에 더해져요
@@ -635,15 +700,16 @@ rFx: dCur.rFx || '', onRFx: (e) => { const v = e.target.value; const all = Objec
 rGroups: (RELIC_FX[s.charArcana] ? [[s.charArcana, RELIC_FX[s.charArcana]]] : Object.keys(RELIC_FX).map((k) => [k, RELIC_FX[k]])).map((g) => ({ label: g[0], opts: g[1].map((q) => ({ v: q[0], label: q[0] + ' (최대 ' + q[1] + ')' })) })),
 rLvOpts: dCur.rFx ? (() => { const hit = [].concat.apply([], Object.keys(RELIC_FX).map((a) => RELIC_FX[a])).filter((q) => q[0] === dCur.rFx)[0]; const step = hit && hit[2]; return Array.from({ length: 10 }, (_, k) => ({ v: String(k + 1), label: 'Lv.' + (k + 1) + (step ? ' (+' + step * (k + 1) + '%)' : '') + (k === 9 ? ' (최대)' : '') })); })() : [{ v: '', label: '—' }],
 isSg: isWeaponSlot || ['head', 'body', 'hands', 'feet', 'acc1', 'acc2'].indexOf(selKey) >= 0, sgRows: sgRows,
-// 세트 효과 체크 — 더스크바운드 시리즈는 아이템 이름에 '더스크바운드'가 있을 때만 · 매그넘샷 강화: 매그넘샷 배율 ×1.15 (계산 시트의 보헤미안 웨어)
-setOk: String(s.sel).indexOf('relic') !== 0, duskOk: String(selInfo.item || '').replace(/\s/g, '').indexOf('더스크바운드') >= 0,
+// 세트 효과 체크 — 장비 아이템 정보(에린 데이터 set_bonuses)에 그 세트 효과가 있을 때만 · 크리티컬 대미지 증가 +7% · 매그넘샷 강화 ×1.15 · 더스크바운드(보너스 대미지 +5% · 크리티컬 대미지 +10%)
+setOk: String(s.sel).indexOf('relic') !== 0 && /[cmd]/.test(itemSets), duskOk: itemSets.indexOf('d') >= 0, critOk: itemSets.indexOf('c') >= 0, magnumOk: itemSets.indexOf('m') >= 0,
+setNote: '이 장비에 있는 세트 효과만 보여요 · 같은 세트 효과는 여러 장비에 체크해도 1번만 적용돼요' + (setElse.length ? ' (다른 장비에서 이미 체크: ' + setElse.join(', ') + ')' : ''),
 setDusk: !!(dCur.sets || {}).dusk, setCrit: !!(dCur.sets || {}).crit, setMagnum: !!(dCur.sets || {}).magnum,
 onDusk: setToggle('dusk'), onCrit: setToggle('crit'), onMagnum: setToggle('magnum'),
 // 무기 세트 효과 (자동) — 주무기 아이템 이름, 없으면 캐릭터 정보의 무기 종류
 wsNote: (() => { const n = String((s.eq || {}).rhand || '') || s.charWeapon || ''; if (n.indexOf('소울 리버레이트') >= 0 && (n.indexOf('보우') >= 0 || n.indexOf('크로스보우') >= 0)) { return '소울 리버레이트 무기 세트 효과 · 크래시샷 배율 ×1.2 · 매그넘샷 배율 ×1.15 (자동 적용)'; } if (n.indexOf('나이트브링어') >= 0) { return '나이트브링어 무기 세트 효과 · 크래시샷 배율 ×1.15 (자동 적용)'; } return ''; })(),
 ergHwOn: s.sel === 'rhand' || (s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0), hwOk: s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0, hwType: dCur.hwType || '', onHwType: (e) => setDet('hwType', e.target.value), hwMaxOn: dCur.hwType === 'max', hwCdOn: dCur.hwType === 'cdmg', hwMax: dCur.hwMax || '', onHwMax: encCh('hwMax'), blurHwMax: encBlur('hwMax'), hwCd: dCur.hwCd || '', onHwCd: (e) => setDet('hwCd', e.target.value) },
 onSpirit: (e) => this.upd({ exSpirit: e.target.checked }),
-onItem: (e) => { const v = e.target.value; const eq = Object.assign({}, s.eq); if (v.trim()) { eq[selKey] = v; } else { delete eq[selKey]; } this.upd({ eq: eq, saved: selKey, sugOpen: true }); },
+onItem: (e) => { const v = e.target.value; const eq = Object.assign({}, s.eq); if (v.trim()) { eq[selKey] = v; } else { delete eq[selKey]; } const known = !!(ED && ((this._edMap || {})[edSlot(selKey)] || {})[v.trim()]); this.upd(Object.assign({ eq: eq, saved: selKey, sugOpen: true }, known ? { det: pruneSets(s.det, selKey, v.trim()) } : {})); },
 onItemFocus: () => this.setState({ sugOpen: true }), onItemBlur: () => { setTimeout(() => this.setState({ sugOpen: false }), 150); },
 sug: sugV,
 onField: () => this.upd({ saved: selKey }),
