@@ -517,14 +517,17 @@ const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM
 const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'), shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트');
 // 아르카나 스킬 계산식 안의 재능 스킬 비율 (재능 보너스 대미지가 이 부분에만 적용) — 알케믹 스팅어: 플레임버스트(크래시샷) · 하이드로피어스(매그넘샷)
 // ── 퓨리 파이터 스킬 계산식 (격투가 스킬배율 계산 시트 · 게일 / 얼티밋 오검 전용 블록) ──
-// 연속기(재능) 배율 J = ((세공 × a + 마기그래프 × b) × 차징 1.75 + 기본 배율) × 소울 보정 × 연속마 배율 3.7 × (1 + 어둠의 에르그 × 0.15%)
+// 연속기(재능) 배율 J = ((세공 × a + 마기그래프 × b) × 차징 1.75 + 기본 배율) × 소울 보정 × 연속마 배율 × (1 + 어둠의 에르그 × 0.15%)
 // 아르카나 스킬 = 기반 연속기 J × 이중 피어싱 1.45 (재능 부분) + 아르카나 고유 추가 대미지 (유물 · 기본)
 // 마기그래프: 스크류 어퍼 · 차징피스트 · 파운딩 10 고정 · 소울리버레이트 너클이면 드롭킥 ×1.15 · 파운딩 ×1.8 · 오검 워드 효과는 아직 0
 // 오검 조합: 게일 피어스(닌 · 알름 · 에만콜) → 게일 ×1.2, 드롭킥 · 포스슬램 ×1.12 / 얼티밋 스트라이크(페른 · 케르트 · 일란드) → 얼티밋 1 · 2타 160% + 3타 230%
 const isFury = arcIdx === 9;
-const FURY_COMBO = 3.7;
+// 연속마 배율 = 기본 1.0 + 연속마 스킬 · 아르카나 상한 0.7 + 너클 에르그 S50 1.0 + 무기(소울리버레이트 너클 0.8 · 나이트브링어 0.7) + 장갑 연속기 마스터리 세공 1레벨당 0.01
+const furyWeaponCombo = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0 ? 0.8 : (wName.indexOf('나이트브링어') >= 0 ? 0.7 : 0);
+const FURY_COMBO_BASE = 1.0 + 0.7 + 1.0 + furyWeaponCombo;
 const FURY_SK = { dp: ['대쉬펀치', 460, 3, 2, 0, 1], up: ['스크류 어퍼', 690, 6, 3, 10, 1], dk: ['드롭킥', 800, 9, 4, 0, 1], cf: ['차징피스트', 700, 3, 2, 10, 1.75], ss: ['섬머솔트', 700, 6, 3, 0, 1], pd: ['파운딩', 1000, 9, 4, 10, 1] };
 Object.keys(FURY_SK).forEach((k) => { SG_KEY['f_' + k] = FURY_SK[k][0]; });
+SG_KEY.f_cm = '연속기 마스터리';
 const furySoul = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0;
 const furyGale = ['닌', '알름', '에만콜'].every((x) => stgOgw.indexOf(x) >= 0);
 const furyUlt = !furyGale && ['페른', '케르트', '일란드'].every((x) => stgOgw.indexOf(x) >= 0);
@@ -534,7 +537,7 @@ const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3:
 const furyEval = (ov, w) => {
 const g = (k) => sv('f_' + k) + ((ov.sg || {})['f_' + k] || 0);
 const dE = ov.dErg !== undefined ? ov.dErg : dErgLv; const lv = ov.relic || furyRelicWith('', 0);
-const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1]) * soul * FURY_COMBO * (1 + dE * 0.0015); };
+const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1]) * soul * (FURY_COMBO_BASE + 0.01 * g('cm')) * (1 + dE * 0.0015); };
 const arc = (D, I) => ({ v: D * PIERCE2 * w + I, tal: D * PIERCE2 });
 const ultD = furyUlt ? J('up') * (3 * 1.6 + 1.5 * 2.3) : J('up') * 4.5; const ultI = furyUlt ? 2000 * 1.6 + 1500 * 2.3 : 3500;
 const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 60 + 900), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500), '게일피어스': arc(J('cf'), 1300), '포스플레어': arc(J('dk') * 0.7, 650), '얼티밋스트라이크': arc(ultD, ultI) };
@@ -973,6 +976,7 @@ head: on ? (calc ? '▲ ' + fmt(st) : '▲ Lv.' + lv + ' → Lv.' + tg) : '', ef
 const stgHasShare = isFury || !!(shF || shH || shM || shT);
 const SG_OPT_KEY = { '크래시샷': 'crLv', '매그넘샷': 'mgLv', '불 연금술 마스터리': 'fire', '물 연금술 마스터리': 'water', '바람 연금술 마스터리': 'wind' };
 Object.keys(FURY_SK).forEach((k) => { SG_OPT_KEY[FURY_SK[k][0]] = 'f_' + k; });
+SG_OPT_KEY['연속기 마스터리'] = 'f_cm';
 const SG_SLOTS = ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'robe'];
 const slotName = (k) => (SLOTS.filter((sl) => sl[0] === k)[0] || [k, k])[1];
 const pctTxt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0));
