@@ -426,7 +426,7 @@ const sgPh = (o) => { const x = sgFind(o); return x ? '1~' + x.cap + (x.mx > x.c
 // 체크박스는 전투 스탯 · 계산식에 영향을 주는 세트만 (equip-data.json setHide에 있는 세트는 숨김, 데이터는 유지) · 주무기 세트 효과는 체크 없이 항상 적용
 const SET_HIDE = (ED && ED.setHide) || [];
 // 이름이 같은 효과(같은 스킬 강화 · 크리티컬 대미지 3/7/10% 등)는 방어구 · 장신구 안에서 가장 높은 값 하나만 적용 — 더 낮은 쪽은 체크해도 계산에 안 들어간다고 알려줘요 (주무기 세트와는 중첩)
-const SET_V = { crit: ['cdmg', 7], CriticalDamageUp_3: ['cdmg', 3], dusk: ['cdmg', 10], MaxDamagePlus_8: ['max', 8], MaxDamagePlus_15: ['max', 15], MaxDamagePlus_25: ['max', 25], MaxDamagePlus_50: ['max', 50], max_damage_sp: ['max', 10], MagicAttackPlus_15: ['matk', 15], magicattackplus_sp: ['matk', 15], MagicAttackPlus_100: ['matk', 100], all_alchemy_damage_15: ['alch', 15], all_alchemy_damage_50: ['alch', 50] };
+const SET_V = { crit: ['cdmg', 7], CriticalDamageUp_3: ['cdmg', 3], dusk: ['cdmg', 10], MaxDamagePlus_8: ['max', 8], MaxDamagePlus_15: ['max', 15], MaxDamagePlus_25: ['max', 25], MaxDamagePlus_50: ['max', 50], max_damage_sp: ['max', 10], MagicAttackPlus_15: ['matk', 15], magicattackplus_sp: ['matk', 15], MagicAttackPlus_100: ['matk', 100], all_alchemy_damage: ['alch', 50], all_alchemy_damage_15: ['alch', 15], all_alchemy_damage_50: ['alch', 50], MagicAttackPlus_30: ['matk', 30], MagicAttackPlus_50: ['matk', 50] };
 const setGrp = (q) => (SET_V[q] ? SET_V[q] : (ED && ED.skillSets && ED.skillSets[q] ? ['sk:' + ED.skillSets[q][1], ED.skillSets[q][2]] : null));
 const armOn = {}; Object.keys(detAll).forEach((k) => { if (k === 'rhand') return; Object.keys((detAll[k] || {}).sets || {}).forEach((q) => { armOn[q] = 1; }); }); if (duskOpt) { armOn[duskOpt] = 1; }
 const setLbl = (q) => ((ED && ED.setLabel) || {})[q] || (((ED && ED.setDefs) || {})[q] || [q])[0];

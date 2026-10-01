@@ -420,7 +420,7 @@ const ckSets = Object.assign({}, actSets);
 const duskSl = ['head', 'body', 'hands', 'feet']; const duskAll4 = duskSl.every((k) => String(((gear && gear.eq) || {})[k] || '').indexOf('더스크바운드') >= 0);
 // 스탯 세트 효과 (세트 id → 스탯) · 스킬 강화 세트는 스킬 계산식으로 계산
 // 같은 효과 묶음 — 크리티컬 대미지 3 · 7 · 10%(더스크바운드) 중 가장 높은 값만, 최대 대미지 · 마법 공격력 · 연금술 대미지 세트도 가장 높은 값만
-const SET_ST = { crit: ['cdmg', 7], CriticalDamageUp_3: ['cdmg', 3], dusk: ['cdmg', 10], MaxDamagePlus_8: ['max', 8], MaxDamagePlus_15: ['max', 15], MaxDamagePlus_25: ['max', 25], MaxDamagePlus_50: ['max', 50], max_damage_sp: ['max', 10], MagicAttackPlus_15: ['matk', 15], magicattackplus_sp: ['matk', 15], MagicAttackPlus_100: ['matk', 100], all_alchemy_damage_15: ['alch', 15], all_alchemy_damage_50: ['alch', 50] };
+const SET_ST = { crit: ['cdmg', 7], CriticalDamageUp_3: ['cdmg', 3], dusk: ['cdmg', 10], MaxDamagePlus_8: ['max', 8], MaxDamagePlus_15: ['max', 15], MaxDamagePlus_25: ['max', 25], MaxDamagePlus_50: ['max', 50], max_damage_sp: ['max', 10], MagicAttackPlus_15: ['matk', 15], magicattackplus_sp: ['matk', 15], MagicAttackPlus_100: ['matk', 100], all_alchemy_damage: ['alch', 50], all_alchemy_damage_15: ['alch', 15], all_alchemy_damage_50: ['alch', 50], MagicAttackPlus_30: ['matk', 30], MagicAttackPlus_50: ['matk', 50] };
 const MXK = arcIdx === 2 ? 'matk' : (arcIdx === 7 ? 'alch' : 'max');
 const setStat = (S) => { const o = { max: 0, cdmg: 0, bonus: S.dusk ? 5 : 0 }; Object.keys(S).forEach((q) => { const v = SET_ST[q]; if (!v) return; if (v[0] === 'cdmg') { o.cdmg = Math.max(o.cdmg, v[1]); } else if (v[0] === MXK) { o.max = Math.max(o.max, v[1]); } }); return o; };
 const statDiff = (a, b) => ({ max: b.max - a.max, cdmg: b.cdmg - a.cdmg, bonus: b.bonus - a.bonus });
