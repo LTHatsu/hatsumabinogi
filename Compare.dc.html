@@ -719,7 +719,7 @@ let triFin = 4400 + (yung ? 4500 : 0); let triSyn = yung ? evap : 1;
 const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
 // 알케믹 스팅어 스킬별 대미지 — 위 보호 · 피어싱 · 방어 구조 · w: 재능 보너스 가중치
 const stgParts = (ov, w) => {
-const g = (k) => sv(k) + ((ov.sg || {})[k] || 0); const lv = ov.relic || { fl: rFl, hy: rHy, tr: rTr }; const P = (pct) => MREF * pct / 100;
+const g = (k) => sv(k) + ((ov.sg || {})[k] || 0); const lv = ov.relic || { fl: rFl, hy: rHy, tr: rTr }; const MM = ov.M !== undefined ? ov.M : MREF; const P = (pct) => MM * pct / 100;
 const crashV = (370 + 3.5 * g('crLv') + sv('ogCr')) * wCr * skMul('크래시 샷');
 const dE = ov.dErg !== undefined ? ov.dErg : dErgLv;
 const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * magMul() * wMg;
@@ -763,10 +763,11 @@ const g = (k) => sv('f_' + k) + ((ov.sg || {})['f_' + k] || 0);
 const dE = ov.dErg !== undefined ? ov.dErg : dErgLv; const lv = ov.relic || furyRelicWith('', 0);
 const FURY_OG = { dp: '연속기 : 대쉬 펀치 대미지 배율 증가', up: '연속기 : 스크류 어퍼 대미지 배율 증가', dk: '연속기 : 드롭킥 대미지 배율 증가', cf: '연속기 : 차징 피스트 대미지 배율 증가', ss: '연속기 : 섬머솔트 대미지 배율 증가', pd: '연속기 : 파운딩 대미지 배율 증가' };
 const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1] + ogV(FURY_OG[k])) * soul * (FURY_COMBO_BASE + 0.01 * Math.min(13, g('cm')) + ogV('연속기 마스터리 대미지 배율 증가') / 100) * (1 + dE * 0.0015) * (k === 'dk' ? skMul('연속기 : 드롭킥') * (furyGale ? 1.12 : 1) : 1); };
-const arc = (D, I) => { const r = arcHit(MREF * D / 100, MREF * I / 100, w); return { v: r.v, tal: r.tal }; };
+const MM = ov.M !== undefined ? ov.M : MREF;
+const arc = (D, I) => { const r = arcHit(MM * D / 100, MM * I / 100, w); return { v: r.v, tal: r.tal }; };
 const ultD = furyUlt ? J('up') * (3 * 1.6 + 1.5 * 2.3) : J('up') * 4.5; const ultI = furyUlt ? 2000 * 1.6 + 1500 * 2.3 : 3500;
 const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000 + ogV('익시드 : 체인 블로우 3회 공격 및 피니시 공격의 대미지 배율 증가')), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 60 + 900 + ogV('익시드 : 임팩트 다이브 대미지 배율 증가')), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500 + ogV('익시드 : 포스 슬램 대미지 배율 증가')), '게일피어스': arc(J('cf'), 1300 + ogV('게일 피어스 대미지 배율 증가')), '포스플레어': arc(J('dk') * 0.7, 650 + ogV('포스 플레어 대미지 배율 증가')), '얼티밋스트라이크': arc(ultD, ultI + ogV('얼티밋 스트라이크 2회 공격 및 피니시 공격의 대미지 배율 증가')) };
-const one = (k) => ({ v: hitOut(MREF * J(k) / 100), tal: 0 });
+const one = (k) => ({ v: hitOut(MM * J(k) / 100), tal: 0 });
 const out = { '대쉬펀치': one('dp'), '스크류어퍼': one('up'), '드롭킥': one('dk'), '차징피스트': one('cf'), '섬머솔트': one('ss'), '파운딩': one('pd') };
 // 게일 피어스 조합(닌 · 알름 · 에만콜): 게일 피어스 ×1.2 · 익시드 : 포스 슬램 ×1.12 · 드롭킥 ×1.12(위 J — 드롭킥이 들어간 포스 플레어 재능 부분 포함)
 if (furyGale) { [['게일피어스', 1.2], ['익시드:포스슬램', 1.12]].forEach((q) => { A[q[0]] = { v: A[q[0]].v * q[1], tal: A[q[0]].tal * q[1] }; }); }
@@ -811,10 +812,15 @@ const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent ||
 const sacBaseW = isSacred ? sacEval({}, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)) : {};
 const sacMaxFrac = (() => { if (!isSacred) return 1; let a = 0, t = 0; Object.keys(sacBaseW).forEach((n) => { const sh = sacShare(n); if (!sh || !sacBaseW[n].v) return; a += sh * sacBaseW[n].mx / sacBaseW[n].v; t += sh; }); return Math.max(0.05, a + Math.max(0, 1 - t)); })();
 // 세이크리드 가드 딜 규모 = 최대 대미지 기준값 × Σ 비중 × (스킬 대미지 ÷ 현재 스킬 대미지) — 최대 대미지 · 방어력(def) · 생명력(hp) 변화를 스킬 계산식으로 반영
-const sacScale = (st) => { if (!isSacred) return st.max; const M0 = BASE_STATS.max || 0; if (!M0) return st.max; const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
+// 최대 대미지가 바뀔 때 — 방어 차감 때문에 비례하지 않아서, 아르카나 스킬 계산식에 최대 대미지를 넣어 다시 계산하고 딜 사이클 비중으로 합쳐요 (계산식이 없는 스킬은 비례)
+const wS = (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100);
+const STG_K = { '플레임버스트': 'fla', '하이드로피어스': 'hyE', '트라이어설트': 'trv', '매그넘샷': 'mag' };
+const stgBaseS = isStg ? stgParts({}, wS) : null; const furyBaseS = isFury ? furyEval({}, wS) : null;
+const sacScale = (st) => { const M0 = BASE_STATS.max || 0; if (!M0 || !(isSacred || isStg || isFury)) return st.max; if (isStg || isFury) { let a = 0, t = 0; if (isStg) { const n = stgParts({ M: st.max }, wS); envSkills.forEach((k) => { const key = STG_K[String(k.name).replace(/\s/g, '')]; const sh = shareOf(k.name); if (!key || !sh || !stgBaseS[key].v) return; a += sh * n[key].v / stgBaseS[key].v; t += sh; }); } else { const n = furyEval({ M: st.max }, wS); Object.keys(furyBaseS).forEach((k) => { const sh = furyShare(k); if (!sh || !furyBaseS[k].v) return; a += sh * n[k].v / furyBaseS[k].v; t += sh; }); } return M0 * (a + Math.max(0, 1 - t) * st.max / M0); } const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
 // 총딜 증가율 → 최대 대미지 환산 (세이크리드 가드는 최대 대미지 비례 비율로 나눠요)
-const MXEQ = (BASE_STATS.max || 0) / sacMaxFrac;
 const dealOf = (st) => sacScale(st) * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
+// 최대 대미지 환산 기준 — 최대 대미지 +10일 때의 총딜 증가율로 '총딜 1%가 최대 대미지 몇에 해당하는지' 구해요 (모든 아르카나 같은 방식)
+const MXEQ = (() => { const M0 = BASE_STATS.max || 0; if (!M0) return 0; const b = dealOf(BASE_STATS); const n = dealOf(Object.assign({}, BASE_STATS, { max: M0 + 10 })); return n > b ? 10 * b / (n - b) : M0; })();
 const dealPct = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0), def: d.def || 0, hp: d.hp || 0 }); return Math.round((n / b - 1) * 1000) / 10; };
 // 반올림 없는 총딜 증가율 (%) — 다른 값과 더한 뒤 마지막에 반올림할 때
 const dealPctRaw = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0), def: d.def || 0, hp: d.hp || 0 }); return (n / b - 1) * 100; };
