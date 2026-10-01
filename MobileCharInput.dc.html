@@ -228,7 +228,8 @@ return { cur: 0, savedAt: '', chars: [{ name: '캐릭터 A', info: null, gear: n
 saveStore(v) { try { window.localStorage.setItem('hatz-mabinogi-v1', JSON.stringify(v)); } catch (e) {} }
 nowLabel() { const d = new Date(); const p = (n) => (n < 10 ? '0' : '') + n; return p(d.getHours()) + ':' + p(d.getMinutes()); }
 arcName(i) { return ['엘레멘탈 나이트', '세인트 바드', '다크 메이지', '알케믹 스팅어', '세이크리드 가드', '블래스트 랜서', '배리어블 거너', '포비든 알케미스트', '멜로딕 퍼피티어', '퓨리 파이터'][i] || '아르카나 미선택'; }
-infoOf(c) { if (!c || c.info === null) return {}; if (!c.info || !Object.keys(c.info).length) return { arcana: -1 }; return c.info; }
+// 저장된 딜 사이클 비중도 불러올 때 비중 높은 순으로 정렬 (같으면 넣은 순서, 비중 없는 칸은 아래)
+infoOf(c) { if (!c || c.info === null) return {}; if (!c.info || !Object.keys(c.info).length) return { arcana: -1 }; const info = Object.assign({}, c.info); if (Array.isArray(info.skills)) { const sh = (k) => Number(k && k.share) || 0; info.skills = info.skills.map((k, j) => [k, j]).sort((a, b) => (sh(b[0]) - sh(a[0])) || (a[1] - b[1])).map((q) => q[0]); } return info; }
 upd(patch) {
 const next = Object.assign({}, this.state, patch);
 const st = this.loadStore();
