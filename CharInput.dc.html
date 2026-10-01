@@ -335,7 +335,8 @@ const A = [
 ];
 // 세인트 바드(1)는 선택지에서 숨김 — 저장 번호가 바뀌지 않도록 목록 자체는 유지
 const ARC_HIDDEN = [1];
-const arcanas = A.map((a, i) => Object.assign({ name: a[0], combo: a[1], icon: a[2], pick: () => this.upd({ arcana: i }) }, this.tile(i === s.arcana, accent))).filter((_, i) => ARC_HIDDEN.indexOf(i) < 0);
+// 아르카나를 바꾸면 딜 사이클 비중(스킬별 비중 · 아르카나 스킬 비율)을 초기화해요 — 스킬 목록이 아르카나마다 달라요
+const arcanas = A.map((a, i) => Object.assign({ name: a[0], combo: a[1], icon: a[2], pick: () => { if (i === s.arcana) return; const f = Object.assign({}, s.fields); delete f.arcRatio; this.upd({ arcana: i, skills: [], fields: f }); } }, this.tile(i === s.arcana, accent))).filter((_, i) => ARC_HIDDEN.indexOf(i) < 0);
 const G = [
 ['근접 전투', 'M20.5 3.5l-.6 3.4-8.4 8.4-2.8-2.8 8.4-8.4zM6.8 11.8l5.4 5.4M9.5 14.5l-4.6 4.6M4.2 19.8h.01'],
 ['마법', 'M12 3l7.8 13.5H4.2zM12 21l-7.8-13.5h15.6z'],
