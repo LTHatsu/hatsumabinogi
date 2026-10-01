@@ -565,6 +565,9 @@ const rfBase = rfInfo ? ['rhand', 'lhand'].filter((k) => RFC[k]).reduce((t, k) =
 // 액세서리 1 · 2 중 한 곳에 불완전한 공상의 왕관 헤일로 장착 시 아르카나 보너스 대미지 +3%
 const haloOn = ['acc1', 'acc2'].some((k) => String(((gear && gear.eq) || {})[k] || '').indexOf('불완전한 공상의 왕관 헤일로') >= 0);
 const haloArc = haloOn ? 3 : 0;
+// 무리아스의 유물 전용 접미 인챈트(후회 · 관리자 · 편린 · 자아)는 아르카나 보너스 대미지 +1% — 유물 칸마다
+const RELIC_SUF = ['후회', '관리자', '편린', '자아'];
+const relicArc = ['relic1', 'relic2', 'relic3'].filter((k) => RELIC_SUF.indexOf(String((((gear && gear.det) || {})[k] || {}).sufName || '')) >= 0).length;
 // 정령 실체화 버프 (재능 보너스 대미지 10 + 3 × 실체화 버프 강화 단계 %) — '정령 실체화 보너스 대미지 제외' 체크 시 빼요 (캐릭터별 저장)
 const matLv = spLv(4); const matOn = !(curChar && curChar.simOpt && curChar.simOpt.noMat);
 const matBuff = matOn ? 10 + 3 * matLv : 0;
@@ -700,7 +703,7 @@ const SAC_DEF = { '광휘의단죄': 44, '철벽강타': 7.5, '심판의일격':
 const sacUserShare = envSkills.some((k) => sacRaw[String(k.name).replace(/\s/g, '')]);
 const sacShare = (n) => (sacUserShare ? shareOf(n) : (SAC_DEF[n] || 0) / 100);
 const talentFrac = (name) => { if (isSacred) { const q = sacRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (isFury) { const q = furyRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (!isStg) return 0; if (name === '플레임버스트') return crash * PIERCE2 / flHit; if (name === '하이드로피어스') return gyeok ? magnum * PIERCE2 * 1.15 / flow : magnum * PIERCE2 / hydro; return 0; };
-const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff, talent2: urgentBuff };
+const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc + relicArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff, talent2: urgentBuff };
 // 부가 장비(미니어처·토템·주화) — 예시 [이름, 딜 %, 스탯 변화, 비용(만 G)] · max 최대 대미지, crate 크리티컬 확률(%p), cdmg 크리티컬 대미지(%), bonus 보너스 대미지(%)
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
 // 보너스 대미지 — 같은 종류는 (1 + 합) 배. 일반 보너스: 모든 스킬 · 재능 보너스: 재능 스킬(일반 보너스와 합산 → 1 + 일반 + 재능) · 아르카나 보너스: 아르카나 스킬에 일반 보너스와 합산(1 + 일반 + 아르카나) · 무기 보너스: 모든 스킬
@@ -1064,7 +1067,7 @@ const d = tot[k[0]] || 0; const b = BASE_STATS[k[0]];
 const dollD = k[0] === 'max' ? chosen.filter((c) => c.key === 'x.doll').reduce((sm, c) => sm + ((c.stats && c.stats.max) || 0), 0) : 0;
 // 비전 오브 라데카는 합계에만 반영하고 따로 표기하지 않아요 (칸 크기 유지)
 const talSplit = k[0] === 'talent' ? [].concat(BASE_STATS.talent2 ? ['어전트샷 추가 대미지 +' + r1(BASE_STATS.talent2) + '% (보너스 미적용)'] : []).concat(d ? ['변경 +' + r1(d) + '%'] : []).join(' · ') : '';
-const split = k[0] === 'talent' ? talSplit : k[0] === 'max' ? ['캐릭터 기본 ' + r1(charMax)].concat(dollMax + dollD ? ['인형 가방 ' + (dollMax + dollD > 0 ? '+' : '') + r1(dollMax + dollD)] : []).concat(d - dollD ? ['장비 ' + (d - dollD > 0 ? '+' : '') + r1(d - dollD)] : []).join(' · ') : (k[0] === 'arcana' && haloArc ? ['기본 ' + r1(b - haloArc) + '%', '공상의\u00a0왕관\u00a0헤일로\u00a0+' + haloArc + '%'].concat(d ? ['변경 ' + (d > 0 ? '+' : '') + r1(d) + '%'] : []).join(' · ') : '');
+const split = k[0] === 'talent' ? talSplit : k[0] === 'max' ? ['캐릭터 기본 ' + r1(charMax)].concat(dollMax + dollD ? ['인형 가방 ' + (dollMax + dollD > 0 ? '+' : '') + r1(dollMax + dollD)] : []).concat(d - dollD ? ['장비 ' + (d - dollD > 0 ? '+' : '') + r1(d - dollD)] : []).join(' · ') : (k[0] === 'arcana' && (haloArc || relicArc) ? ['기본 ' + r1(b - haloArc - relicArc) + '%'].concat(haloArc ? ['공상의\u00a0왕관\u00a0헤일로\u00a0+' + haloArc + '%'] : []).concat(relicArc ? ['유물\u00a0인챈트\u00a0+' + relicArc + '%'] : []).concat(d ? ['변경 ' + (d > 0 ? '+' : '') + r1(d) + '%'] : []).join(' · ') : '');
 return { hasToggle: k[0] === 'talent', noMat: !matOn, matNote: matOn ? '정령 실체화 +' + (10 + 3 * matLv) + '%' : '정령 실체화 제외됨', onToggle: (e) => setNoMat(!!e.target.checked), // 설명 줄바꿈 시 수치(+3% 등)만 다음 줄로 떨어지지 않게 앞 단어와 붙여요
 split: typeof split === 'string' ? split.replace(/ ([+\-−]?[\d.,]+%?)(?= ·|$)/g, '\u00a0$1') : split, hasSplit: !!split, label: k[1], value: r1(b + d) + k[2], base: '기존 ' + r1(b) + k[2], delta: d ? (d > 0 ? '▲ +' : '▼ ') + r1(d) + (k[0] === 'crate' ? '%p' : k[2]) : '변동 없음', deltaFg: d ? '#1E3D2E' : '#8C7A62', border: d ? '1.5px solid ' + accent : '1.5px solid transparent', bg: d ? '#F3F8F4' : '#F5EDDC' };
 });
