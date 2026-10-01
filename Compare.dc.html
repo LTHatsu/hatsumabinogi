@@ -390,10 +390,10 @@ const RF_STEP_COST = [5000, 14000, 30000, 50000, 75000, 105000, 140000];
 // 특별 개조 성공 확률 (단계 n: n-1 → n) · 아튼 시미니 모루 ×1.5 · 성공 확률 증가 이벤트 +5%p (8단계 최대 50%)
 const RF_P = [1, 0.5, 0.45, 0.45, 0.45, 0.45, 0.3, 0.3];
 const rfProb = (n) => Math.min(1, (RF_P[n - 1] || 0.3) * (s.rfAnvil ? 1.5 : 1) + (s.rfEvent ? 0.05 : 0));
-// 개조석 시세 — 6 · 7단계는 '보호의 N단계 붉은 · 푸른 개조석', 8단계는 '8단계 붉은 · 푸른 개조석' 중 더 싼 경매장 최저가 (실시간 매물이 없으면 최근 거래가) · 그 아래 단계는 예시 비용
+// 개조석 시세 — 6 · 7단계는 '보호의 N단계 붉은 · 푸른 개조석', 8단계는 '8단계 붉은 · 푸른 개조석', 5단계 이하는 '6단계 붉은 · 푸른 개조석' 중 더 싼 경매장 최저가 (실시간 매물이 없으면 최근 거래가)
 const rfStone1 = (nm) => { const P = s.prices || {}; const x = (P.items || {})[nm] || (P.categoryItems || {})[nm]; const v = Number(x && typeof x === 'object' ? x.min : x); if (v > 0) return v; const h = (P.historyItems || {})[nm]; return h && h.last > 0 ? h.last : 0; };
 // 붉은 · 푸른 개조석 중 더 싼 쪽 (R · S 개조 구분 없이)
-const rfStone = (ty, n) => { const base = (n === 6 || n === 7 ? '보호의 ' : '') + n + '단계 '; const v = [rfStone1(base + '붉은 개조석'), rfStone1(base + '푸른 개조석')].filter((x) => x > 0); return v.length ? Math.min.apply(null, v) : 0; };
+const rfStone = (ty, n) => { const base = n <= 5 ? '6단계 ' : (n === 6 || n === 7 ? '보호의 ' : '') + n + '단계 '; const v = [rfStone1(base + '붉은 개조석'), rfStone1(base + '푸른 개조석')].filter((x) => x > 0); return v.length ? Math.min.apply(null, v) : 0; };
 // 예상 비용 = 단계마다 개조석 가격 ÷ 성공 확률(기대값)의 합 · 개조석 시세가 없는 단계는 예시 비용
 const rfCostTo = (ty, from, tg) => { let c = 0; for (let n = from + 1; n <= tg; n++) { const k = n - from; const st = rfStone(ty, n); c += st ? Math.round(st / rfProb(n) / 10000) : (RF_STEP_COST[k - 1] - (k > 1 ? RF_STEP_COST[k - 2] : 0)); } return c; };
 const rfCtx = (slot) => {
