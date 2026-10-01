@@ -255,7 +255,10 @@ window.addEventListener('storage', this._sync); window.addEventListener('focus',
 try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
 }
 loadStore() {
-try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { return v; } } catch (e) {}
+try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { // 아이템 이름을 경매장 · 아이템 정보 이름으로 맞춰요 (예전 저장값 변환)
+const RN = (x) => (typeof x !== 'string' ? x : x.replace(/소울리버레이트/g, '소울 리버레이트').replace('나이트브링어 어썰트', '나이트브링어 어설트').replace('소울 리버레이트 콜로서스(피에로) 미니어처', '소울 리버레이트 콜로서스 미니어처').replace(/^워리어 실드$/, '소울 리버레이트 워리어 실드'));
+v.chars.forEach((c) => { const f = c && c.info && c.info.fields; if (f) { ['weapon', 'sub'].forEach((k) => { if (f[k]) f[k] = RN(f[k]); }); } const eq = c && c.gear && c.gear.eq; if (eq) { Object.keys(eq).forEach((k) => { eq[k] = RN(eq[k]); }); } });
+return v; } } catch (e) {}
 return null;
 }
 renderVals() {
@@ -313,8 +316,8 @@ const RF_R = [6, 16, 26, 38, 50, 62, 74, 89];
 const RF_S = [[50, 25, 2], [60, 30, 3], [70, 35, 4], [90, 45, 5], [110, 55, 6], [130, 65, 7], [155, 78, 9], [170, 85, 10]];
 const RF_SDM = [[90, 2], [105, 3], [125, 4], [155, 5], [190, 6], [230, 7], [270, 9], [310, 10]];
 // 엘레멘탈 나이트 한손 검 · 한손 둔기 특별 개조 — 다른 아르카나와 다른 효과표, 주무기 · 보조무기 동일
-const EK_ONE_HAND = ['페러시우스 템퍼드 소드', '나이트브링어 어썰트', '소울리버레이트 소드', '소울리버레이트 해머'];
-const EK_SUB_OK = ['소울리버레이트 소드', '소울리버레이트 해머'];
+const EK_ONE_HAND = ['페러시우스 템퍼드 소드', '나이트브링어 어설트', '소울 리버레이트 소드', '소울 리버레이트 해머'];
+const EK_SUB_OK = ['소울 리버레이트 소드', '소울 리버레이트 해머'];
 const RF_R_EK = [4, 11, 18, 26, 34, 42, 50, 60];
 const RF_S_EK = [[60, 30, 2], [70, 35, 2], [80, 40, 3], [90, 45, 3], [100, 50, 4], [110, 55, 4], [120, 60, 5], [170, 85, 7]];
 const rfAt = (type, stage, dark, ek) => {
@@ -331,16 +334,16 @@ const rfFields = (rfInfo && rfInfo.fields) || {};
 const rfName = (ty, st) => (ty ? 'S' : 'R') + st + '강';
 const RF_STEP_PCT = [3.5, 7.8, 12.0, 16.0, 20.0, 24.0, 28.0];
 const RF_STEP_COST = [5000, 14000, 30000, 50000, 75000, 105000, 140000];
-// 슬롯별 특별 개조 — 주무기(rhand)는 항상, 보조무기(lhand)는 엘레멘탈 나이트가 소울리버레이트 소드 · 해머 2개를 장착했을 때만
+// 슬롯별 특별 개조 — 주무기(rhand)는 항상, 보조무기(lhand)는 엘레멘탈 나이트가 소울 리버레이트 소드 · 해머 2개를 장착했을 때만
 const rfCtx = (slot) => {
 const sub = slot === 'lhand';
 const weapon = (sub ? rfFields.sub : rfFields.weapon) || '';
 if (sub && !(arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(weapon) >= 0)) return null;
 const ty0 = rfInfo ? rfInfo[sub ? 'reforge2' : 'reforge'] : undefined; const st0 = rfInfo ? rfInfo[sub ? 'stage2' : 'stage'] : undefined;
-// 엘레멘탈 나이트 한손 2개(소울리버레이트 소드 · 해머)는 주무기 · 보조무기 모두 R 개조만 가능 — 크리티컬 대미지는 두 무기의 합
+// 엘레멘탈 나이트 한손 2개(소울 리버레이트 소드 · 해머)는 주무기 · 보조무기 모두 R 개조만 가능 — 크리티컬 대미지는 두 무기의 합
 const dual = arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(rfFields.sub || '') >= 0;
 const type = dual ? 0 : (typeof ty0 === 'number' ? ty0 : 1);
-const stageMax = weapon && weapon.indexOf('소울리버레이트') !== 0 && weapon !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울리버레이트 · 태양과 달의 검 전용
+const stageMax = weapon && weapon.indexOf('소울 리버레이트') !== 0 && weapon !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울 리버레이트 · 태양과 달의 검 전용
 const stage = Math.min((typeof st0 === 'number' ? st0 : 4) + 1, stageMax);
 const ek = arcIdx === 0 && EK_ONE_HAND.indexOf(weapon) >= 0;
 const at = (ty, st) => rfAt(ty, st, ty === 1 && arcIdx === 2, ek);
@@ -510,7 +513,7 @@ const SG_KEY = { crLv: '크래시샷', mgLv: '매그넘샷', fire: '불 연금�
 const sv = (k) => (SG_KEY[k] ? sgSum(SG_KEY[k]) : (k === 'magi' ? 10 : 0));
 // 무기 세트 효과: 장비 · 오검 페이지 주무기 이름 우선, 없으면 캐릭터 정보의 무기 종류
 const wName = String(((gear && gear.eq) || {}).rhand || '') || (cInfo && cInfo.fields && cInfo.fields.weapon) || '';
-const wSoul = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('보우') >= 0;
+const wSoul = wName.indexOf('소울 리버레이트') >= 0 && wName.indexOf('보우') >= 0;
 const wCr = wSoul ? 1.2 : (wName.indexOf('나이트브링어') >= 0 ? 1.15 : 1);
 const wMg = wSoul ? 1.15 : 1;
 // 매그넘샷 강화 세트 효과(장비 · 오검 페이지 체크) → 매그넘샷 배율 ×1.15
@@ -549,17 +552,17 @@ const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'
 // ── 퓨리 파이터 스킬 계산식 (격투가 스킬배율 계산 시트 · 게일 / 얼티밋 오검 전용 블록) ──
 // 연속기(재능) 배율 J = ((세공 × a + 마기그래프 × b) × 차징 1.75 + 기본 배율) × 소울 보정 × 연속마 배율 × (1 + 어둠의 에르그 × 0.15%)
 // 아르카나 스킬 = 기반 연속기 J × 이중 피어싱 1.45 (재능 부분) + 아르카나 고유 추가 대미지 (유물 · 기본)
-// 마기그래프: 스크류 어퍼 · 차징피스트 · 파운딩 10 고정 · 소울리버레이트 너클이면 드롭킥 ×1.15 · 파운딩 ×1.8 · 오검 워드 효과는 아직 0
+// 마기그래프: 스크류 어퍼 · 차징피스트 · 파운딩 10 고정 · 소울 리버레이트 너클이면 드롭킥 ×1.15 · 파운딩 ×1.8 · 오검 워드 효과는 아직 0
 // 오검 조합: 게일 피어스(닌 · 알름 · 에만콜) → 게일 ×1.2, 드롭킥 · 포스슬램 ×1.12 / 얼티밋 스트라이크(페른 · 케르트 · 일란드) → 얼티밋 1 · 2타 160% + 3타 230%
 const isFury = arcIdx === 9;
-// 연속마 배율 = 기본 1.0 + 연속마 스킬 · 아르카나 상한 0.7 + 너클 에르그 S50 1.0 + 무기(소울리버레이트 너클 0.8 · 나이트브링어 0.7 · 페러시우스 0.65) + 장갑 연속기 마스터리 세공 1레벨당 0.01
-const furyWeaponCombo = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0 ? 0.8 : (wName.indexOf('나이트브링어') >= 0 ? 0.7 : (wName.indexOf('페러시우스') >= 0 ? 0.65 : 0));
+// 연속마 배율 = 기본 1.0 + 연속마 스킬 · 아르카나 상한 0.7 + 너클 에르그 S50 1.0 + 무기(소울 리버레이트 너클 0.8 · 나이트브링어 0.7 · 페러시우스 0.65) + 장갑 연속기 마스터리 세공 1레벨당 0.01
+const furyWeaponCombo = wName.indexOf('소울 리버레이트') >= 0 && wName.indexOf('너클') >= 0 ? 0.8 : (wName.indexOf('나이트브링어') >= 0 ? 0.7 : (wName.indexOf('페러시우스') >= 0 ? 0.65 : 0));
 const FURY_COMBO_BASE = 1.0 + 0.7 + 1.0 + furyWeaponCombo;
 const FURY_SK = { dp: ['대쉬펀치', 460, 3, 2, 0, 1], up: ['스크류 어퍼', 690, 6, 3, 10, 1], dk: ['드롭킥', 800, 9, 4, 0, 1], cf: ['차징피스트', 700, 3, 2, 10, 1.75], ss: ['섬머솔트', 700, 6, 3, 0, 1], pd: ['파운딩', 1000, 9, 4, 10, 1] };
 Object.keys(FURY_SK).forEach((k) => { SG_KEY['f_' + k] = FURY_SK[k][0]; });
 SG_KEY.f_cm = '연속기 마스터리';
 // TODO(오검 연동 후): 오검 워드 '연속기 마스터리' 효과 1개당 최대 2%(0.02)를 장착 수만큼 연속마 배율에 더하기 — 시트의 3.7 = 소울 너클 3.5 + 장갑 세공 10레벨 0.1 + 오검 2% × 5개 0.1
-const furySoul = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0;
+const furySoul = wName.indexOf('소울 리버레이트') >= 0 && wName.indexOf('너클') >= 0;
 const furyGale = ['닌', '알름', '에만콜'].every((x) => stgOgw.indexOf(x) >= 0);
 const furyUlt = !furyGale && ['페른', '케르트', '일란드'].every((x) => stgOgw.indexOf(x) >= 0);
 const FURY_RELIC = { '익시드 : 체인 블로우 피니시 대미지 증가': 'e1', '익시드 : 임팩트 다이브 대미지 증가': 'e2', '익시드 : 포스 슬램 대미지 증가': 'e3' };

@@ -103,7 +103,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <button type="button" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="flex-grow: 1; height: 44px; border-radius: 10px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 15px">{{r.label}}</button>
 </sc-for>
 </div></div>
-<div class="fl"><span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span id="m-st">개조 단계</span><sc-if value="{{stageLimited}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8C7A62">8단계는 소울리버레이트 · 태양과 달의 검만 가능해요</span></sc-if></span>
+<div class="fl"><span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span id="m-st">개조 단계</span><sc-if value="{{stageLimited}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8C7A62">8단계는 소울 리버레이트 · 태양과 달의 검만 가능해요</span></sc-if></span>
 <div role="radiogroup" aria-labelledby="m-st" style="display: grid; grid-template-columns: {{stageCols}}; gap: 4px">
 <sc-for list="{{stages}}" as="r" hint-placeholder-count="8">
 <button type="button" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="height: 44px; border-radius: 10px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 14px">{{r.label}}</button>
@@ -214,7 +214,10 @@ const cur = st.chars[st.cur] ? st.cur : 0;
 this.state = Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false });
 }
 loadStore() {
-try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { return v; } } catch (e) {}
+try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { // 아이템 이름을 경매장 · 아이템 정보 이름으로 맞춰요 (예전 저장값 변환)
+const RN = (x) => (typeof x !== 'string' ? x : x.replace(/소울리버레이트/g, '소울 리버레이트').replace('나이트브링어 어썰트', '나이트브링어 어설트').replace('소울 리버레이트 콜로서스(피에로) 미니어처', '소울 리버레이트 콜로서스 미니어처').replace(/^워리어 실드$/, '소울 리버레이트 워리어 실드'));
+v.chars.forEach((c) => { const f = c && c.info && c.info.fields; if (f) { ['weapon', 'sub'].forEach((k) => { if (f[k]) f[k] = RN(f[k]); }); } const eq = c && c.gear && c.gear.eq; if (eq) { Object.keys(eq).forEach((k) => { eq[k] = RN(eq[k]); }); } });
+return v; } } catch (e) {}
 return { cur: 0, savedAt: '', chars: [{ name: '캐릭터 A', info: null, gear: null }, { name: '캐릭터 B', info: {}, gear: { eq: {}, og: {} } }] };
 }
 saveStore(v) { try { window.localStorage.setItem('hatz-mabinogi-v1', JSON.stringify(v)); } catch (e) {} }
@@ -379,47 +382,47 @@ const spCd = 3 * (s.spirit[0] || 0); const sealCr = s.spirit[1] ? 5 : 0; const s
 const spiritSum = '크리티컬 대미지 +' + spCd + '% · 크리티컬 확률 +' + sealCr + '% · 재능 보너스 +' + spTal + '% · 실체화 버프 ' + spBuff + '%';
 // 아르카나별 무기 종류 (0 엘레멘탈 나이트, 2 다크 메이지, 3 알케믹 스팅어, 4 세이크리드 가드, 5 블래스트 랜서, 6 배리어블 거너, 7 포비든 알케미스트, 8 멜로딕 퍼피티어, 9 퓨리 파이터)
 const WEAPONS = {
-0: ['페러시우스 템퍼드 소드', '페러시우스 타이탄 블레이드', '나이트브링어 어썰트', '나이트브링어 인포서', '나이트브링어 워로드', '태양과 달의 검', '소울리버레이트 소드', '소울리버레이트 해머', '소울리버레이트 블레이드'],
-2: ['페러시우스 아케인 원드', '페러시우스 미스틱 스태프', '나이트브링어 엘리멘토', '나이트브링어 인퀴지터', '소울리버레이트 원드', '소울리버레이트 스태프'],
-3: ['페러시우스 위스퍼링 보우', '페러시우스 메커나이즈 크로스보우', '나이트브링어 프레데터', '나이트브링어 로그', '소울리버레이트 보우', '소울리버레이트 크로스보우'],
-4: ['나이트브링어 바이킹', '태양과 달의 검', '소울리버레이트 액스', '소울리버레이트 블레이드'],
-5: ['페러시우스 게일 랜스', '나이트브링어 스피어헤드', '소울리버레이트 랜스'],
-6: ['페러시우스 나이트스톰 듀얼건', '나이트브링어 뱅퀴셔', '소울리버레이트 듀얼건'],
-7: ['페러시우스 티라누스 실린더', '나이트브링어 테크니션', '소울리버레이트 실린더'],
-8: ['페러시우스 스트러글 핸들', '나이트브링어 트릭스터', '소울리버레이트 핸들'],
-9: ['페러시우스 토멘티드 너클', '나이트브링어 베가본드', '소울리버레이트 너클']
+0: ['페러시우스 템퍼드 소드', '페러시우스 타이탄 블레이드', '나이트브링어 어설트', '나이트브링어 인포서', '나이트브링어 워로드', '태양과 달의 검', '소울 리버레이트 소드', '소울 리버레이트 해머', '소울 리버레이트 블레이드'],
+2: ['페러시우스 아케인 원드', '페러시우스 미스틱 스태프', '나이트브링어 엘리멘토', '나이트브링어 인퀴지터', '소울 리버레이트 원드', '소울 리버레이트 스태프'],
+3: ['페러시우스 위스퍼링 보우', '페러시우스 메커나이즈 크로스보우', '나이트브링어 프레데터', '나이트브링어 로그', '소울 리버레이트 보우', '소울 리버레이트 크로스보우'],
+4: ['나이트브링어 바이킹', '태양과 달의 검', '소울 리버레이트 액스', '소울 리버레이트 블레이드'],
+5: ['페러시우스 게일 랜스', '나이트브링어 스피어헤드', '소울 리버레이트 랜스'],
+6: ['페러시우스 나이트스톰 듀얼건', '나이트브링어 뱅퀴셔', '소울 리버레이트 듀얼건'],
+7: ['페러시우스 티라누스 실린더', '나이트브링어 테크니션', '소울 리버레이트 실린더'],
+8: ['페러시우스 스트러글 핸들', '나이트브링어 트릭스터', '소울 리버레이트 핸들'],
+9: ['페러시우스 토멘티드 너클', '나이트브링어 베가본드', '소울 리버레이트 너클']
 };
-const ONE_HAND_NAMES = ['페러시우스 템퍼드 소드', '나이트브링어 어썰트', '소울리버레이트 소드', '소울리버레이트 해머', '페러시우스 아케인 원드', '나이트브링어 엘리멘토', '소울리버레이트 원드', '나이트브링어 바이킹', '소울리버레이트 액스'].concat(WEAPONS[3], WEAPONS[7], WEAPONS[8]);
-// 8단계 개조가 가능한 무기: 소울리버레이트 계열 + 태양과 달의 검
-const canS8 = (w) => !w || w.indexOf('소울리버레이트') === 0 || w === '태양과 달의 검';
+const ONE_HAND_NAMES = ['페러시우스 템퍼드 소드', '나이트브링어 어설트', '소울 리버레이트 소드', '소울 리버레이트 해머', '페러시우스 아케인 원드', '나이트브링어 엘리멘토', '소울 리버레이트 원드', '나이트브링어 바이킹', '소울 리버레이트 액스'].concat(WEAPONS[3], WEAPONS[7], WEAPONS[8]);
+// 8단계 개조가 가능한 무기: 소울 리버레이트 계열 + 태양과 달의 검
+const canS8 = (w) => !w || w.indexOf('소울 리버레이트') === 0 || w === '태양과 달의 검';
 const wList = WEAPONS[s.arcana] || [];
 const wCur = (s.fields || {}).weapon || '';
 const weaponOpts = [{ v: '', label: wList.length ? '무기 종류 선택' : (s.arcana >= 0 ? '이 아르카나의 무기 목록 준비 중' : '아르카나를 먼저 선택해 주세요') }].concat(wList.map((w) => ({ v: w, label: w + (ONE_HAND_NAMES.indexOf(w) >= 0 ? ' (한손)' : '') })));
 // 8단계 개조는 canS8 무기만 가능 (무기를 고르지 않았으면 제한 없음)
 const wValid = wList.indexOf(wCur) >= 0;
 const stageMax = wValid && !canS8(wCur) ? 7 : 8;
-// 무기 보너스 대미지(양손 기준): 페러시우스 56% · 나이트브링어 84% (수정 가능) / 소울리버레이트 · 태양과 달의 검 112% (고정)
-// 한손 무기는 무기 보너스 대미지 1/2 (페러시우스 28 · 나이트브링어 42 · 소울리버레이트 56)
+// 무기 보너스 대미지(양손 기준): 페러시우스 56% · 나이트브링어 84% (수정 가능) / 소울 리버레이트 · 태양과 달의 검 112% (고정)
+// 한손 무기는 무기 보너스 대미지 1/2 (페러시우스 28 · 나이트브링어 42 · 소울 리버레이트 56)
 const ONE_HAND = ONE_HAND_NAMES;
 const isOneHand = (w) => ONE_HAND.indexOf(w) >= 0;
-const isFixedW = (w) => !!w && (w.indexOf('소울리버레이트') === 0 || w === '태양과 달의 검');
+const isFixedW = (w) => !!w && (w.indexOf('소울 리버레이트') === 0 || w === '태양과 달의 검');
 const wBonusDef = (w) => { if (!w) return null; const base = isFixedW(w) ? 112 : (w.indexOf('나이트브링어') === 0 ? 84 : (w.indexOf('페러시우스') === 0 ? 56 : null)); return base === null ? null : (isOneHand(w) ? base / 2 : base); };
 const SUBS = {
-0: ['페러시우스 센티널 실드', '나이트브링어 뱅가드', '소울리버레이트 실드', '워리어 실드'],
-2: ['페러시우스 포비든 마도서', '나이트브링어 프로핏', '소울리버레이트 마도서'],
-3: ['페러시우스 위스퍼링 애로우', '페러시우스 메커나이즈 볼트', '나이트브링어 샤프슈터', '나이트브링어 호크아이', '소울리버레이트 이터널 애로우', '소울리버레이트 이터널 볼트'],
-4: ['페러시우스 센티널 실드', '나이트브링어 뱅가드', '소울리버레이트 실드', '워리어 실드'],
-7: ['페러시우스 티라누스 가드실린더', '나이트브링어 모더레이터', '소울리버레이트 가드실린더'],
-8: ['몰락자의 피에로 미니어처', '나이트브링어 아이리스 티어', '소울리버레이트 콜로서스(피에로) 미니어처']
+0: ['페러시우스 센티널 실드', '나이트브링어 뱅가드', '소울 리버레이트 실드', '소울 리버레이트 워리어 실드'],
+2: ['페러시우스 포비든 마도서', '나이트브링어 프로핏', '소울 리버레이트 마도서'],
+3: ['페러시우스 위스퍼링 애로우', '페러시우스 메커나이즈 볼트', '나이트브링어 샤프슈터', '나이트브링어 호크아이', '소울 리버레이트 이터널 애로우', '소울 리버레이트 이터널 볼트'],
+4: ['페러시우스 센티널 실드', '나이트브링어 뱅가드', '소울 리버레이트 실드', '소울 리버레이트 워리어 실드'],
+7: ['페러시우스 티라누스 가드실린더', '나이트브링어 모더레이터', '소울 리버레이트 가드실린더'],
+8: ['몰락자의 피에로 미니어처', '나이트브링어 아이리스 티어', '소울 리버레이트 콜로서스 미니어처']
 };
-// 보조무기 보너스 = 같은 계열 한손 무기 보너스 (페러시우스 28 · 나이트브링어 42 · 소울리버레이트 · 워리어 실드 56)
-const isSoulSub = (x) => !!x && (x.indexOf('소울리버레이트') === 0 || x === '워리어 실드');
+// 보조무기 보너스 = 같은 계열 한손 무기 보너스 (페러시우스 28 · 나이트브링어 42 · 소울 리버레이트 · 소울 리버레이트 워리어 실드 56)
+const isSoulSub = (x) => !!x && (x.indexOf('소울 리버레이트') === 0 || x === '소울 리버레이트 워리어 실드');
 const sBonus = (x) => !x ? 0 : (isSoulSub(x) ? 56 : (x.indexOf('나이트브링어') === 0 ? 42 : ((x.indexOf('페러시우스') === 0 || x.indexOf('몰락자') === 0) ? 28 : 0)));
 // 엘레멘탈 나이트 · 세이크리드 가드는 블레이드 · 워로드에도 보조무기 장착 가능
 const canSub = (w) => !!w && (isOneHand(w) || ((s.arcana === 0 || s.arcana === 4) && /(블레이드|워로드)$/.test(w)));
 const BONUS_CAP = 112;
-// 엘레멘탈 나이트: 주무기가 소울리버레이트 소드 · 해머면 보조무기로 소울리버레이트 소드 · 해머도 장착 가능 (보조무기 보너스 56%)
-const EK_SUB_OK = ['소울리버레이트 소드', '소울리버레이트 해머'];
+// 엘레멘탈 나이트: 주무기가 소울 리버레이트 소드 · 해머면 보조무기로 소울 리버레이트 소드 · 해머도 장착 가능 (보조무기 보너스 56%)
+const EK_SUB_OK = ['소울 리버레이트 소드', '소울 리버레이트 해머'];
 const subListOf = (w) => (w && wList.indexOf(w) >= 0 && canSub(w)) ? (SUBS[s.arcana] || []).concat(s.arcana === 0 && EK_SUB_OK.indexOf(w) >= 0 ? EK_SUB_OK : []) : [];
 const subList = subListOf(wCur);
 const sCur = (s.fields || {}).sub || '';
@@ -436,7 +439,7 @@ const RF_R = [6, 16, 26, 38, 50, 62, 74, 89];
 const RF_S = [[50, 25, 2], [60, 30, 3], [70, 35, 4], [90, 45, 5], [110, 55, 6], [130, 65, 7], [155, 78, 9], [170, 85, 10]];
 const RF_SDM = [[90, 2], [105, 3], [125, 4], [155, 5], [190, 6], [230, 7], [270, 9], [310, 10]];
 // 엘레멘탈 나이트 한손 검 · 한손 둔기 특별 개조 — 다른 아르카나와 다른 효과표, 주무기 · 보조무기 동일
-const EK_ONE_HAND = ['페러시우스 템퍼드 소드', '나이트브링어 어썰트', '소울리버레이트 소드', '소울리버레이트 해머'];
+const EK_ONE_HAND = ['페러시우스 템퍼드 소드', '나이트브링어 어설트', '소울 리버레이트 소드', '소울 리버레이트 해머'];
 const RF_R_EK = [4, 11, 18, 26, 34, 42, 50, 60];
 const RF_S_EK = [[60, 30, 2], [70, 35, 2], [80, 40, 3], [90, 45, 3], [100, 50, 4], [110, 55, 4], [120, 60, 5], [170, 85, 7]];
 const rfAt = (type, stage, dark, ek) => {
@@ -449,12 +452,12 @@ const r = (ek ? RF_S_EK : RF_S)[stage - 1]; return Object.assign(z, { max: r[0] 
 const rfText = (x, type, dark) => x.tbd ? '효과 확인 중' : type === 0 ? '크리티컬 대미지 +' + x.cdmg + '%' : (dark ? '마법 공격력 +' + x.matk + ' · 보너스 대미지 +' + x.bonus + '%' : (x.unknown ? '최대 · 최소 대미지 확인 중 · 보너스 대미지 +' + x.bonus + '%' : MX + ' +' + x.max + ' · 최소 대미지 +' + x.min + ' · 보너스 대미지 +' + x.bonus + '%'));
 const rfDelta = (a, b) => ({ cdmg: b.cdmg - a.cdmg, max: b.max - a.max, min: b.min - a.min, bonus: b.bonus - a.bonus, matk: b.matk - a.matk, unknown: a.unknown || b.unknown });
 const rfDeltaText = (d) => [['cdmg', '크리티컬 대미지', '%'], ['max', MX, ''], ['min', '최소 대미지', ''], ['matk', '마법 공격력', ''], ['bonus', '보너스 대미지', '%']].filter((k) => d[k[0]]).map((k) => k[1] + ' ' + (d[k[0]] > 0 ? '+' : '') + d[k[0]] + k[2]).join(' · ') + (d.unknown ? ' (S8 최대·최소 확인 중)' : '');
-// 엘레멘탈 나이트가 소울리버레이트 소드 · 해머 2개를 장착하면 주무기 · 보조무기 모두 R 개조만 가능
+// 엘레멘탈 나이트가 소울 리버레이트 소드 · 해머 2개를 장착하면 주무기 · 보조무기 모두 R 개조만 가능
 const dualEk = s.arcana === 0 && EK_SUB_OK.indexOf(wCur) >= 0 && EK_SUB_OK.indexOf(sEff) >= 0;
 const rfType = dualEk || s.reforge === 0 ? 0 : 1; const rfStage = Math.min((typeof s.stage === 'number' ? s.stage : 0) + 1, stageMax); const rfDark = rfType === 1 && s.arcana === 2;
 const rfEk = s.arcana === 0 && EK_ONE_HAND.indexOf(wCur) >= 0;
 const rfMain = rfAt(rfType, rfStage, rfDark, rfEk);
-// 보조무기 특별 개조 — 엘레멘탈 나이트가 소울리버레이트 소드 · 해머 2개를 장착했을 때만 (R 개조만, 크리티컬 대미지는 두 무기의 합)
+// 보조무기 특별 개조 — 엘레멘탈 나이트가 소울 리버레이트 소드 · 해머 2개를 장착했을 때만 (R 개조만, 크리티컬 대미지는 두 무기의 합)
 const sub2On = dualEk;
 const rfType2 = 0; const rfStage2 = Math.min((typeof s.stage2 === 'number' ? s.stage2 : 4) + 1, 8);
 const rfSub = rfAt(rfType2, rfStage2, false, true);
