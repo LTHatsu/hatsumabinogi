@@ -303,39 +303,51 @@ const won = (m) => { if (!m) return '0 G'; const e = Math.floor(m / 10000); cons
 const RF_R = [6, 16, 26, 38, 50, 62, 74, 89];
 const RF_S = [[50, 25, 2], [60, 30, 3], [70, 35, 4], [90, 45, 5], [110, 55, 6], [130, 65, 7], [155, 78, 9], [170, 85, 10]];
 const RF_SDM = [[90, 2], [105, 3], [125, 4], [155, 5], [190, 6], [230, 7], [270, 9], [310, 10]];
-const rfAt = (type, stage, dark) => {
+// 엘레멘탈 나이트 한손 검 · 한손 둔기 특별 개조 — 다른 아르카나와 다른 효과표, 주무기 · 보조무기 동일 (S8은 확인 중)
+const EK_ONE_HAND = ['페러시우스 템퍼드 소드', '나이트브링어 어썰트', '소울리버레이트 소드', '소울리버레이트 해머'];
+const EK_SUB_OK = ['소울리버레이트 소드', '소울리버레이트 해머'];
+const RF_R_EK = [4, 11, 18, 26, 34, 42, 50, 60];
+const RF_S_EK = [[60, 30, 2], [70, 35, 2], [80, 40, 3], [90, 45, 3], [100, 50, 4], [110, 55, 4], [120, 60, 5], [null, null, null]];
+const rfAt = (type, stage, dark, ek) => {
 const z = { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false };
 if (!stage) return z;
-if (type === 0) return Object.assign(z, { cdmg: RF_R[stage - 1] });
+if (type === 0) return Object.assign(z, { cdmg: (ek ? RF_R_EK : RF_R)[stage - 1] });
 if (dark) { const r = RF_SDM[stage - 1]; return Object.assign(z, { matk: r[0], bonus: r[1] }); }
-const r = RF_S[stage - 1]; return Object.assign(z, { max: r[0] || 0, min: r[1] || 0, bonus: r[2], unknown: r[0] === null });
+const r = (ek ? RF_S_EK : RF_S)[stage - 1]; return Object.assign(z, { max: r[0] || 0, min: r[1] || 0, bonus: r[2] || 0, unknown: r[0] === null });
 };
-const rfText = (x, type, dark) => type === 0 ? '크리티컬 대미지 +' + x.cdmg + '%' : (dark ? '마법 공격력 +' + x.matk + ' · 보너스 대미지 +' + x.bonus + '%' : (x.unknown ? '최대 · 최소 대미지 확인 중 · 보너스 대미지 +' + x.bonus + '%' : MX + ' +' + x.max + ' · 최소 대미지 +' + x.min + ' · 보너스 대미지 +' + x.bonus + '%'));
 const rfDelta = (a, b) => ({ cdmg: b.cdmg - a.cdmg, max: b.max - a.max, min: b.min - a.min, bonus: b.bonus - a.bonus, matk: b.matk - a.matk, unknown: a.unknown || b.unknown });
-const rfDeltaText = (d) => [['cdmg', '크리티컬 대미지', '%'], ['max', MX, ''], ['min', '최소 대미지', ''], ['matk', '마법 공격력', ''], ['bonus', '보너스 대미지', '%']].filter((k) => d[k[0]]).map((k) => k[1] + ' ' + (d[k[0]] > 0 ? '+' : '') + d[k[0]] + k[2]).join(' · ') + (d.unknown ? ' (S8 최대·최소 확인 중)' : '');
+const rfDeltaText = (d) => [['cdmg', '크리티컬 대미지', '%'], ['max', MX, ''], ['min', '최소 대미지', ''], ['matk', '마법 공격력', ''], ['bonus', '보너스 대미지', '%']].filter((k) => d[k[0]]).map((k) => k[1] + ' ' + (d[k[0]] > 0 ? '+' : '') + d[k[0]] + k[2]).join(' · ') + (d.unknown ? ' (S8 효과 확인 중)' : '');
 const rfInfo = store && store.chars[store.cur] ? store.chars[store.cur].info : null;
-const rfType = rfInfo && typeof rfInfo.reforge === 'number' ? rfInfo.reforge : 1;
-const rfWeapon = rfInfo && rfInfo.fields && rfInfo.fields.weapon ? rfInfo.fields.weapon : '';
-const rfStageMax = rfWeapon && rfWeapon.indexOf('소울리버레이트') !== 0 && rfWeapon !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울리버레이트 · 태양과 달의 검 전용
-const rfStage = Math.min((rfInfo && typeof rfInfo.stage === 'number' ? rfInfo.stage : 4) + 1, rfStageMax);
-const rfDark = rfType === 1 && !!rfInfo && rfInfo.arcana === 2;
+const rfFields = (rfInfo && rfInfo.fields) || {};
 const rfName = (ty, st) => (ty ? 'S' : 'R') + st + '강';
-const rfCur = rfAt(rfType, rfStage, rfDark);
 const RF_STEP_PCT = [3.5, 7.8, 12.0, 16.0, 20.0, 24.0, 28.0];
 const RF_STEP_COST = [5000, 14000, 30000, 50000, 75000, 105000, 140000];
-const RF_MAP = {}; const rfOpts = [];
-for (let tg = rfStage + 1; tg <= rfStageMax; tg++) { const d = rfDelta(rfCur, rfAt(rfType, tg, rfDark)); RF_MAP[rfName(rfType, tg)] = d; rfOpts.push([rfName(rfType, tg), RF_STEP_PCT[tg - rfStage - 1], d.max + d.matk, RF_STEP_COST[tg - rfStage - 1]]); }
-DIMS[DIMS.findIndex((dm) => dm[0] === 'sp')] = ['sp', '특별 개조', rfName(rfType, rfStage), true, rfOpts];
-const rfSwapDelta = (v) => { const fs = rfStage + (v || 0); return rfDelta(rfAt(rfType, fs, rfDark), rfAt(1 - rfType, fs, 1 - rfType === 1 && !!rfInfo && rfInfo.arcana === 2)); };
+// 슬롯별 특별 개조 — 주무기(rhand)는 항상, 보조무기(lhand)는 엘레멘탈 나이트가 소울리버레이트 소드 · 해머 2개를 장착했을 때만
+const rfCtx = (slot) => {
+const sub = slot === 'lhand';
+const weapon = (sub ? rfFields.sub : rfFields.weapon) || '';
+if (sub && !(arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(weapon) >= 0)) return null;
+const ty0 = rfInfo ? rfInfo[sub ? 'reforge2' : 'reforge'] : undefined; const st0 = rfInfo ? rfInfo[sub ? 'stage2' : 'stage'] : undefined;
+const type = typeof ty0 === 'number' ? ty0 : 1;
+const stageMax = weapon && weapon.indexOf('소울리버레이트') !== 0 && weapon !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울리버레이트 · 태양과 달의 검 전용
+const stage = Math.min((typeof st0 === 'number' ? st0 : 4) + 1, stageMax);
+const ek = arcIdx === 0 && EK_ONE_HAND.indexOf(weapon) >= 0;
+const at = (ty, st) => rfAt(ty, st, ty === 1 && arcIdx === 2, ek);
+const cur = at(type, stage);
+const map = {}; const opts = [];
+for (let tg = stage + 1; tg <= stageMax; tg++) { const d = rfDelta(cur, at(type, tg)); map[rfName(type, tg)] = d; opts.push([rfName(type, tg), RF_STEP_PCT[tg - stage - 1], d.max + d.matk, RF_STEP_COST[tg - stage - 1]]); }
+return { type: type, stage: stage, cur: cur, map: map, dim: ['sp', '특별 개조', rfName(type, stage), true, opts], swapDelta: (v) => { const fs = stage + (v || 0); return rfDelta(at(type, fs), at(1 - type, fs)); } };
+};
+const RFC = { rhand: rfCtx('rhand'), lhand: rfCtx('lhand') };
+DIMS[DIMS.findIndex((dm) => dm[0] === 'sp')] = RFC.rhand.dim;
 const stepOf = (sl, dm, i) => { const o = dm[4][i]; const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
-const dimsFor = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand') && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')); // 에르그 · 특별 개조는 주무기만
+const dimsFor = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand' || (dm[0] === 'sp' && RFC[sl[0]])) && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')).map((dm) => dm[0] === 'sp' ? RFC[sl[0]].dim : dm); // 특별 개조는 주무기 (엘레멘탈 나이트 한손 2개면 보조무기도)
 const chosen = [];
 SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const st = swapOf(sl, v - 1); chosen.push({ key: sl[0] + '.item', slotKey: sl[0], slot: sl[1], dim: '장비 교체', from: sl[3], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } });
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
 const upv = (key, dm) => { const v = s.up[key] || 0; return v <= dm[4].length ? v : 0; };
-const spDim = DIMS.filter((dm) => dm[0] === 'sp')[0];
-SLOTS.forEach((sl) => dimsFor(sl).forEach((dm) => { const v = upv(sl[0] + '.' + dm[0], dm); if (v > 0) { const st = stepOf(sl, dm, v - 1); chosen.push({ key: sl[0] + '.' + dm[0], slotKey: sl[0], slot: sl[1], dim: dm[1], from: dm[2], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } }));
-SLOTS.filter((sl) => sl[0] === 'rhand').forEach((sl) => { if (s.up[sl[0] + '.spx']) { const spv = upv(sl[0] + '.sp', spDim); const fs = rfStage + spv; const d = rfSwapDelta(spv); const pct = 2.0; const costM = 3000; chosen.push({ key: sl[0] + '.spx', slotKey: sl[0], slot: sl[1], dim: '특별 개조 전환', from: rfName(rfType, fs), to: rfName(1 - rfType, fs), pct: pct, dmg: d.max + d.matk, costM: costM, eff: pct / (costM / 10000), rfd: d }); } });
+SLOTS.forEach((sl) => dimsFor(sl).forEach((dm) => { const v = upv(sl[0] + '.' + dm[0], dm); if (v > 0) { const st = stepOf(sl, dm, v - 1); chosen.push({ key: sl[0] + '.' + dm[0], slotKey: sl[0], slot: sl[1], dim: dm[1], from: dm[2], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000), rfd: dm[0] === 'sp' ? RFC[sl[0]].map[st.name] : null }); } }));
+SLOTS.filter((sl) => RFC[sl[0]]).forEach((sl) => { const R = RFC[sl[0]]; if (s.up[sl[0] + '.spx']) { const spv = upv(sl[0] + '.sp', R.dim); const fs = R.stage + spv; const d = R.swapDelta(spv); const pct = 2.0; const costM = 3000; chosen.push({ key: sl[0] + '.spx', slotKey: sl[0], slot: sl[1], dim: '특별 개조 전환', from: rfName(R.type, fs), to: rfName(1 - R.type, fs), pct: pct, dmg: d.max + d.matk, costM: costM, eff: pct / (costM / 10000), rfd: d }); } });
 const setUp = (k, v) => { const u = Object.assign({}, s.up); if (v > 0) { u[k] = v; } else { delete u[k]; } this.setState({ up: u }); };
 const slots = SLOTS.map((sl) => {
 const on = sl[0] === s.slot;
@@ -354,7 +366,7 @@ const cur = SLOTS.filter((sl) => sl[0] === s.slot)[0];
 // 장비 · 오검에서 입력한 현재 수치 (주무기 최대 대미지, 접두 · 접미 인챈트 최대 대미지)
 const curDet = ((gear && gear.det) || {})[cur[0]] || {};
 // 목표 단계 변경 시 현재 장비 대비 늘어나는 스탯 (시뮬레이터 스탯 계산과 같은 기준)
-const dimStat = (dm, x) => { if (dm[0] === 'sp' && RF_MAP[x.name]) return rfDeltaText(RF_MAP[x.name]); const parts = [MX + ' +' + x.dmg]; if (dm[0] === 'pre') parts.push('크리티컬 확률 +' + +(x.pct * 0.5).toFixed(1) + '%p'); if (dm[0] === 'suf') parts.push('크리티컬 대미지 +' + +(x.pct * 1.5).toFixed(1) + '%'); if (dm[0] === 'ref') parts.push('보너스 대미지 +' + x.pct + '%'); return parts.join(' · '); };
+const dimStat = (dm, x) => { const rm = dm[0] === 'sp' && RFC[cur[0]] ? RFC[cur[0]].map[x.name] : null; if (rm) return rfDeltaText(rm); const parts = [MX + ' +' + x.dmg]; if (dm[0] === 'pre') parts.push('크리티컬 확률 +' + +(x.pct * 0.5).toFixed(1) + '%p'); if (dm[0] === 'suf') parts.push('크리티컬 대미지 +' + +(x.pct * 1.5).toFixed(1) + '%'); if (dm[0] === 'ref') parts.push('보너스 대미지 +' + x.pct + '%'); return parts.join(' · '); };
 const dims = dimsFor(cur).map((dm) => {
 const k = cur[0] + '.' + dm[0]; const v = upv(k, dm); const st = v > 0 ? stepOf(cur, dm, v - 1) : null;
 const opts = [{ v: '0', label: '현재 유지' }].concat(dm[4].map((o, i) => { const x = stepOf(cur, dm, i); return { v: String(i + 1), label: x.name + ' · ' + dimStat(dm, x) }; }));
@@ -364,7 +376,7 @@ pct: st ? st.pct.toFixed(1) : '0', dmg: st ? st.dmg : 0, cost: st ? won(st.costM
 border: st ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: st ? '#F3F8F4' : '#FBF5E8',
 onChange: (e) => setUp(k, Number(e.target.value)),
 head: st ? '▲ ' + dimStat(dm, st) : '', effect: '',
-tEffect: dm[0] === 'sp' ? rfDeltaText(rfSwapDelta(v)) + ' (' + rfName(1 - rfType, rfStage + v) + ' 기준)' : '',
+tEffect: dm[0] === 'sp' ? rfDeltaText(RFC[cur[0]].swapDelta(v)) + ' (' + rfName(1 - RFC[cur[0]].type, RFC[cur[0]].stage + v) + ' 기준)' : '',
 hasToggle: dm[0] === 'sp', toggled: dm[0] === 'sp' && !!s.up[cur[0] + '.spx'], untoggled: dm[0] === 'sp' && !s.up[cur[0] + '.spx'],
 tPct: (2.0 * cur[5]).toFixed(1),
 onToggle: (e) => setUp(cur[0] + '.spx', e.target.checked ? 1 : 0)
@@ -436,7 +448,8 @@ const briCd = Number(bri.crit) || 0; const briArc = Number(bri.arc) || 0;
 // 기존 최대 대미지 = 캐릭터 정보에 입력한 최대 대미지 + 장착한 인형 가방 (각성 · 미니어처 · 성수 · 주화 등은 입력값에 이미 포함)
 // 크리티컬 대미지 등 다른 스탯은 입력 · 선택한 항목이 더해져요
 // 캐릭터 정보의 특별 개조(R: 크리티컬 대미지, S: 보너스 대미지 · 최대 대미지는 입력값에 포함)
-const rfBase = rfInfo ? rfAt(rfType, rfStage, rfDark) : { cdmg: 0, bonus: 0 };
+// 엘레멘탈 나이트 한손 2개면 보조무기 특별 개조 효과를 더해요 (크리티컬 대미지 등은 두 무기 효과의 합)
+const rfBase = rfInfo ? ['rhand', 'lhand'].filter((k) => RFC[k]).reduce((t, k) => ({ cdmg: t.cdmg + RFC[k].cur.cdmg, bonus: t.bonus + RFC[k].cur.bonus }), { cdmg: 0, bonus: 0 }) : { cdmg: 0, bonus: 0 };
 // 액세서리 1 · 2 중 한 곳에 불완전한 공상의 왕관 헤일로 장착 시 아르카나 보너스 대미지 +3%
 const haloOn = ['acc1', 'acc2'].some((k) => String(((gear && gear.eq) || {})[k] || '').indexOf('불완전한 공상의 왕관 헤일로') >= 0);
 const haloArc = haloOn ? 3 : 0;
@@ -595,7 +608,7 @@ const EXTRA = [
 ];
 const STAT_KEYS = [['max', MX, ''], ['crate', '크리티컬 확률', '%p'], ['cdmg', '크리티컬 대미지', '%'], ['bonus', '보너스 대미지', '%']];
 const statText = (st) => STAT_KEYS.filter((k) => st[k[0]]).map((k) => k[1] + ' +' + st[k[0]] + k[2]).join(' · ');
-chosen.forEach((c) => { c.group = '장착 장비'; const rd = c.rfd || (c.dim === '특별 개조' ? RF_MAP[c.to] : null); if (rd) { c.stats = { max: rd.max + rd.matk, crate: 0, cdmg: rd.cdmg, bonus: rd.bonus }; return; } c.stats = { max: c.dmg, crate: c.dim === '인챈트 접두' ? +(c.pct * 0.5).toFixed(1) : 0, cdmg: c.dim === '인챈트 접미' ? +(c.pct * 1.5).toFixed(1) : 0, bonus: c.dim === '세공 랭크' ? c.pct : 0 }; });
+chosen.forEach((c) => { c.group = '장착 장비'; const rd = c.rfd || null; if (rd) { c.stats = { max: rd.max + rd.matk, crate: 0, cdmg: rd.cdmg, bonus: rd.bonus }; return; } c.stats = { max: c.dmg, crate: c.dim === '인챈트 접두' ? +(c.pct * 0.5).toFixed(1) : 0, cdmg: c.dim === '인챈트 접미' ? +(c.pct * 1.5).toFixed(1) : 0, bonus: c.dim === '세공 랭크' ? c.pct : 0 }; });
 EXTRA.forEach((ex) => { const v = s.up['x.' + ex[0]] || 0; if (v > 0 && ex[4][v - 1]) { const o = ex[4][v - 1]; chosen.push({ key: 'x.' + ex[0], slotKey: 'x.' + ex[0], slot: '부가 장비', dim: ex[6] || (ex[1] + (ex[3] === '없음' ? ' 추가' : ' 교체')), from: ex[5] || ex[3], to: o[0], pct: o[1], dmg: o[2].dmgFix !== undefined ? o[2].dmgFix : (o[2].max || 0), costM: o[3], eff: o[3] ? o[1] / (o[3] / 10000) : 0, group: '부가 장비', names: ex[1], stats: Object.assign({ max: 0, crate: 0, cdmg: 0, bonus: 0 }, o[2]) }); } });
 muSlots.filter((m) => m.tgt).forEach((m) => { const st = { max: 0, crate: 0, cdmg: 0, bonus: 0 }; st[m.g[2]] = m.tgt[0] - m.cur; chosen.push({ key: 'm.' + m.k, slotKey: 'm.' + m.k, slot: '부가 장비', dim: m.g[0] + ' ' + m.label + ' 교체', from: m.curName, to: m.tgt[1], pct: dealPct(st), dmg: st.max, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); });
 if (kalBuy) { const st = { max: 0, crate: 1, cdmg: 0, bonus: 0 }; chosen.push({ key: 'm.kaliach', slotKey: 'm.kaliach', slot: '부가 장비', dim: '칼리아흐의 결계 미니어처 구매', from: '없음', to: '칼리아흐의 결계 미니어처', pct: dealPct(st), dmg: 0, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); }

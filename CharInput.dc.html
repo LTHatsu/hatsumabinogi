@@ -126,6 +126,24 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </div>
 </div>
 <div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">{{rfLabel}}</strong><span style="font-size: 14px">{{rfEffect}}</span><sc-if value="{{rfDark}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #E3EDE6">다크 메이지 전용 효과</span></sc-if></div>
+<sc-if value="{{sub2On}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 14px; padding-top: 16px; border-top: 1px dashed #D9C8A6">
+<div class="fl"><span id="rf2-l">보조무기 특별 개조 · {{sub2Name}}</span>
+<div role="radiogroup" aria-labelledby="rf2-l" style="display: flex; gap: 4px">
+<sc-for list="{{reforges2}}" as="r" hint-placeholder-count="2">
+<button type="button" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="flex-grow: 1; height: 46px; border-radius: 10px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 15px">{{r.label}}</button>
+</sc-for>
+</div>
+</div>
+<div class="fl"><span id="st2-l">보조무기 개조 단계</span>
+<div role="radiogroup" aria-labelledby="st2-l" style="display: flex; gap: 4px">
+<sc-for list="{{stages2}}" as="r" hint-placeholder-count="8">
+<button type="button" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="flex-grow: 1; height: 44px; border-radius: 10px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 15px">{{r.label}}</button>
+</sc-for>
+</div>
+</div>
+<div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">{{rf2Label}}</strong><span style="font-size: 14px">{{rf2Effect}}</span></div>
+<div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #2A2119; color: #FBF5E8"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">주무기 + 보조무기 합계</strong><span style="font-size: 14px">{{rfSum}}</span></div>
+</div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start">
 <label class="fl"><span>현재 {{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{fv.maxDmg}}" onChange="{{fc.maxDmg}}"></label>
 <div class="fl"><span>무기 보너스 대미지 (%)</span><sc-if value="{{bonusEditable}}" hint-placeholder-val="{{ true }}"><input class="f" type="number" placeholder="%" max="112" aria-label="무기 보너스 대미지 (%)" value="{{fv.gearBonus}}" onChange="{{fc.gearBonus}}"></sc-if><sc-if value="{{bonusFixed}}" hint-placeholder-val="{{ false }}"><input class="f" type="number" aria-label="무기 보너스 대미지 (%)" value="{{bonusFixedVal}}" readonly style="background: #EFE5CF; color: #4A3D30; cursor: not-allowed"></sc-if><span style="font-size: 12px; color: #8C7A62">{{bonusNote}}</span></div>
@@ -215,7 +233,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 class Component extends DCLogic {
 constructor(props) {
 super(props);
-this.DEF = { fields: {}, arcana: 0, crit: 0, gm: {}, reforge: 1, stage: 4, spirit: [0, 0, 0, 0, 0, 0], pets: {}, goal: 0, kaliach: 0, radeka: 0, breath: 0, might: 0, skills: [], stinger: {} };
+this.DEF = { fields: {}, arcana: 0, crit: 0, gm: {}, reforge: 1, stage: 4, reforge2: 1, stage2: 4, spirit: [0, 0, 0, 0, 0, 0], pets: {}, goal: 0, kaliach: 0, radeka: 0, breath: 0, might: 0, skills: [], stinger: {} };
 const st = this.loadStore();
 const cur = st.chars[st.cur] ? st.cur : 0;
 this.state = Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false });
@@ -424,7 +442,9 @@ const sBonus = (x) => !x ? 0 : (isSoulSub(x) ? 56 : (x.indexOf('나이트브링�
 // 엘레멘탈 나이트 · 세이크리드 가드는 블레이드 · 워로드에도 보조무기 장착 가능
 const canSub = (w) => !!w && (isOneHand(w) || ((s.arcana === 0 || s.arcana === 4) && /(블레이드|워로드)$/.test(w)));
 const BONUS_CAP = 112;
-const subListOf = (w) => (w && wList.indexOf(w) >= 0 && canSub(w)) ? (SUBS[s.arcana] || []) : [];
+// 엘레멘탈 나이트: 주무기가 소울리버레이트 소드 · 해머면 보조무기로 소울리버레이트 소드 · 해머도 장착 가능 (보조무기 보너스 56%)
+const EK_SUB_OK = ['소울리버레이트 소드', '소울리버레이트 해머'];
+const subListOf = (w) => (w && wList.indexOf(w) >= 0 && canSub(w)) ? (SUBS[s.arcana] || []).concat(s.arcana === 0 && EK_SUB_OK.indexOf(w) >= 0 ? EK_SUB_OK : []) : [];
 const subList = subListOf(wCur);
 const sCur = (s.fields || {}).sub || '';
 const sEff = subList.indexOf(sCur) >= 0 ? sCur : '';
@@ -439,17 +459,28 @@ const subOpts = [{ v: '', label: subList.length ? '보조무기 없음' : (wVali
 const RF_R = [6, 16, 26, 38, 50, 62, 74, 89];
 const RF_S = [[50, 25, 2], [60, 30, 3], [70, 35, 4], [90, 45, 5], [110, 55, 6], [130, 65, 7], [155, 78, 9], [170, 85, 10]];
 const RF_SDM = [[90, 2], [105, 3], [125, 4], [155, 5], [190, 6], [230, 7], [270, 9], [310, 10]];
-const rfAt = (type, stage, dark) => {
+// 엘레멘탈 나이트 한손 검 · 한손 둔기 특별 개조 — 다른 아르카나와 다른 효과표, 주무기 · 보조무기 동일 (S8은 확인 중)
+const EK_ONE_HAND = ['페러시우스 템퍼드 소드', '나이트브링어 어썰트', '소울리버레이트 소드', '소울리버레이트 해머'];
+const RF_R_EK = [4, 11, 18, 26, 34, 42, 50, 60];
+const RF_S_EK = [[60, 30, 2], [70, 35, 2], [80, 40, 3], [90, 45, 3], [100, 50, 4], [110, 55, 4], [120, 60, 5], [null, null, null]];
+const rfAt = (type, stage, dark, ek) => {
 const z = { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false };
 if (!stage) return z;
-if (type === 0) return Object.assign(z, { cdmg: RF_R[stage - 1] });
+if (type === 0) return Object.assign(z, { cdmg: (ek ? RF_R_EK : RF_R)[stage - 1] });
 if (dark) { const r = RF_SDM[stage - 1]; return Object.assign(z, { matk: r[0], bonus: r[1] }); }
-const r = RF_S[stage - 1]; return Object.assign(z, { max: r[0] || 0, min: r[1] || 0, bonus: r[2], unknown: r[0] === null });
+const r = (ek ? RF_S_EK : RF_S)[stage - 1]; return Object.assign(z, { max: r[0] || 0, min: r[1] || 0, bonus: r[2] || 0, unknown: r[0] === null, tbd: r[2] === null });
 };
-const rfText = (x, type, dark) => type === 0 ? '크리티컬 대미지 +' + x.cdmg + '%' : (dark ? '마법 공격력 +' + x.matk + ' · 보너스 대미지 +' + x.bonus + '%' : (x.unknown ? '최대 · 최소 대미지 확인 중 · 보너스 대미지 +' + x.bonus + '%' : MX + ' +' + x.max + ' · 최소 대미지 +' + x.min + ' · 보너스 대미지 +' + x.bonus + '%'));
+const rfText = (x, type, dark) => x.tbd ? '효과 확인 중' : type === 0 ? '크리티컬 대미지 +' + x.cdmg + '%' : (dark ? '마법 공격력 +' + x.matk + ' · 보너스 대미지 +' + x.bonus + '%' : (x.unknown ? '최대 · 최소 대미지 확인 중 · 보너스 대미지 +' + x.bonus + '%' : MX + ' +' + x.max + ' · 최소 대미지 +' + x.min + ' · 보너스 대미지 +' + x.bonus + '%'));
 const rfDelta = (a, b) => ({ cdmg: b.cdmg - a.cdmg, max: b.max - a.max, min: b.min - a.min, bonus: b.bonus - a.bonus, matk: b.matk - a.matk, unknown: a.unknown || b.unknown });
 const rfDeltaText = (d) => [['cdmg', '크리티컬 대미지', '%'], ['max', MX, ''], ['min', '최소 대미지', ''], ['matk', '마법 공격력', ''], ['bonus', '보너스 대미지', '%']].filter((k) => d[k[0]]).map((k) => k[1] + ' ' + (d[k[0]] > 0 ? '+' : '') + d[k[0]] + k[2]).join(' · ') + (d.unknown ? ' (S8 최대·최소 확인 중)' : '');
 const rfType = s.reforge === 0 ? 0 : 1; const rfStage = Math.min((typeof s.stage === 'number' ? s.stage : 0) + 1, stageMax); const rfDark = rfType === 1 && s.arcana === 2;
+const rfEk = s.arcana === 0 && EK_ONE_HAND.indexOf(wCur) >= 0;
+const rfMain = rfAt(rfType, rfStage, rfDark, rfEk);
+// 보조무기 특별 개조 — 엘레멘탈 나이트가 소울리버레이트 소드 · 해머 2개를 장착했을 때만 (효과는 주무기와 합산)
+const sub2On = s.arcana === 0 && EK_SUB_OK.indexOf(wCur) >= 0 && EK_SUB_OK.indexOf(sEff) >= 0;
+const rfType2 = s.reforge2 === 0 ? 0 : 1; const rfStage2 = Math.min((typeof s.stage2 === 'number' ? s.stage2 : 4) + 1, 8);
+const rfSub = rfAt(rfType2, rfStage2, false, true);
+const rfSumD = rfDelta({ cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false }, { cdmg: rfMain.cdmg + rfSub.cdmg, max: rfMain.max + rfSub.max, min: rfMain.min + rfSub.min, bonus: rfMain.bonus + rfSub.bonus, matk: 0, unknown: rfMain.unknown || rfSub.unknown });
 const roster = this.loadStore().chars;
 const FK = ["arcLevel", "arcAwake", "totalLevel", "maxDmg", "gearBonus", "miniNormal", "miniMax", "miniMaxEx", "miniMatk", "miniMatkEx", "miniCdmg", "miniCdmgEx", "miniBonus", "miniBonusEx", "miniExtra", "dollBag", "arcRatio", "critRank"];
 // 딜 사이클 비중 — 스킬별 딜 비중 (스킬 명 · 아르카나 스킬 여부 · 딜 비중 %) → 아르카나 스킬 비중을 자동 계산해 fields.arcRatio 에도 저장
@@ -536,7 +567,8 @@ fv: fv, fc: fc,
 bonusFixed: wBonusFixed, bonusEditable: !wBonusFixed, bonusFixedVal: wValid ? String(bDef) : '', bonusNote: wBonusFixed ? '고정값 ' + bNoteCore : (wValid ? bNoteCore + ' · 수정 가능' : '무기를 고르면 자동으로 입력돼요'),
 subOpts: subOpts, subValue: sEff, onSub: (e) => { const o = Object.assign({}, s.fields || {}); o.sub = e.target.value; const bd = totDef(wCur, o.sub); if (bd) { o.gearBonus = String(bd); } this.upd({ fields: o }); },
 rankOpts: rankOpts, rankValue: CRIT_RANK.some((r) => r[0] === (s.fields || {}).critRank) ? (s.fields || {}).critRank : '', mo: mo, mv: mv, mxTitle: MX, fcA: { main: fc[miniA], ex: fc[miniA + 'Ex'] }, dollOpts: dollOpts, dollValue: DOLL_BAGS.some((d) => d[0] === (s.fields || {}).dollBag) ? (s.fields || {}).dollBag : '', weaponOpts: weaponOpts, weaponValue: wList.indexOf(wCur) >= 0 ? wCur : '', onWeapon: (e) => { const o = Object.assign({}, s.fields || {}); o.weapon = e.target.value; if (subListOf(o.weapon).indexOf(o.sub || '') < 0) { o.sub = ''; } const bd = totDef(o.weapon, o.sub || ''); if (bd) { o.gearBonus = String(bd); } const lim = !canS8(o.weapon); this.upd(lim && s.stage > 6 ? { fields: o, stage: 6 } : { fields: o }); },
-rfLabel: (rfType ? 'S' : 'R') + rfStage + '강', rfEffect: rfText(rfAt(rfType, rfStage, rfDark), rfType, rfDark), rfDark: rfDark,
+rfLabel: (rfType ? 'S' : 'R') + rfStage + '강', rfEffect: rfText(rfMain, rfType, rfDark), rfDark: rfDark,
+sub2On: sub2On, sub2Name: sEff, reforges2: this.seg(['R 개조', 'S 개조'], rfType2, 'reforge2'), stages2: this.seg(['1', '2', '3', '4', '5', '6', '7', '8'], rfStage2 - 1, 'stage2'), rf2Label: (rfType2 ? 'S' : 'R') + rfStage2 + '강', rf2Effect: rfText(rfSub, rfType2, false), rfSum: rfDeltaText(rfSumD),
 critGm: critGm + '%', critTotal: (30 + critGm + sealCr) + '%', critSeal: sealCr ? ' + 정령 봉인 해제 5%' : '',
 skillBox: skillBox, dust: dust, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, petSum: '크리티컬 대미지 +' + petCd + '%',
 canAdd: roster.length < 3, isFull: roster.length >= 3, addChar: () => this.addChar(),
