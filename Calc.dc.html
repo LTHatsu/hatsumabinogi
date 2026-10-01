@@ -144,7 +144,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </div>
 <sc-if value="{{det.isSg}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; flex-direction: column; gap: 10px">
-<sc-for list="{{det.sgRows}}" as="g" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 14px"><label class="fl">{{g.label}}<select class="f" value="{{g.value}}" onChange="{{g.onOpt}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl"><span>세공 레벨</span><input class="f" type="text" inputmode="numeric" placeholder="1~50" value="{{g.lv}}" onChange="{{g.onLv}}"></label></div></sc-for>
+<sc-for list="{{det.sgRows}}" as="g" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 14px"><label class="fl">{{g.label}}<select class="f" value="{{g.value}}" onChange="{{g.onOpt}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl"><span>세공 레벨</span><input class="f" type="text" inputmode="numeric" placeholder="{{g.ph}}" value="{{g.lv}}" onChange="{{g.onLv}}"></label></div></sc-for>
 </div>
 </sc-if>
 <sc-if value="{{det.setOk}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #4A3D30">세트 효과</span><div style="display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 2px"><sc-if value="{{det.duskOk}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setDusk}}" onChange="{{det.onDusk}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">더스크바운드 시리즈 (보너스 대미지 +5% · 크리티컬 대미지 +10%)</label></sc-if><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setCrit}}" onChange="{{det.onCrit}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">크리티컬 대미지 증가 (+7%)</label><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setMagnum}}" onChange="{{det.onMagnum}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">매그넘샷 강화 (매그넘샷 배율 ×1.15)</label></div></div></sc-if>
@@ -391,13 +391,16 @@ const setDet = (k, v) => { const all = Object.assign({}, detAll); const o = Obje
 const SG_OPTS = { '알케믹 스팅어': ['크래시샷', '매그넘샷', '불 연금술 마스터리', '물 연금술 마스터리', '바람 연금술 마스터리'], '퓨리 파이터': ['대쉬펀치', '스크류 어퍼', '드롭킥', '차징피스트', '섬머솔트', '파운딩', '연속기 마스터리'] };
 // 장갑에만 붙는 세공 옵션
 const SG_HANDS_ONLY = ['연속기 마스터리'];
+// 세공 레벨 상한 — 기본 50, 연속기 마스터리는 장갑 세공 10레벨 · 한계돌파 13레벨이 끝
+const SG_LV_MAX = { '연속기 마스터리': 13 };
+const sgMax = (o) => SG_LV_MAX[o] || 50;
 const setToggle = (k) => (e) => { const o = Object.assign({}, dCur.sets || {}); if (e.target.checked) { o[k] = 1; } else { delete o[k]; } setDet('sets', Object.keys(o).length ? o : ''); };
 const isWeaponSlot = selKey === 'rhand' || selKey === 'lhand';
 const isArmorSlot = ['head', 'body', 'hands', 'feet', 'robe'].indexOf(selKey) >= 0;
 const sgArr = Array.isArray(dCur.sg) ? dCur.sg : [];
 const sgList = (SG_OPTS[s.charArcana] || []).filter((o) => selKey === 'hands' || SG_HANDS_ONLY.indexOf(o) < 0);
 const setSg = (i, p) => { const arr = [0, 1, 2].map((k) => Object.assign({}, sgArr[k] || {})); Object.assign(arr[i], p); if (!arr[i].o) { arr[i] = {}; } setDet('sg', arr.some((q) => q.o) ? arr : ''); };
-const sgRows = [0, 1, 2].map((i) => { const q = sgArr[i] || {}; return { label: '세공 옵션 ' + (i + 1), value: q.o || '', lv: q.lv || '', opts: [{ v: '', label: sgList.length ? '옵션 선택' : '이 아르카나의 세공 옵션 준비 중' }].concat(sgList.filter((o) => o === q.o || !sgArr.some((z, k) => k !== i && z && z.o === o)).map((o) => ({ v: o, label: o }))), onOpt: (e) => setSg(i, { o: e.target.value, lv: e.target.value ? (q.lv || '1') : '' }), onLv: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setSg(i, { lv: raw === '' ? '' : String(Math.min(50, Math.max(1, Number(raw)))) }); } else { e.target.value = q.lv || ''; } }, lvOff: !q.o }; });
+const sgRows = [0, 1, 2].map((i) => { const q = sgArr[i] || {}; return { label: '세공 옵션 ' + (i + 1), value: q.o || '', lv: q.lv || '', opts: [{ v: '', label: sgList.length ? '옵션 선택' : '이 아르카나의 세공 옵션 준비 중' }].concat(sgList.filter((o) => o === q.o || !sgArr.some((z, k) => k !== i && z && z.o === o)).map((o) => ({ v: o, label: o }))), onOpt: (e) => setSg(i, { o: e.target.value, lv: e.target.value ? String(Math.min(sgMax(e.target.value), Number(q.lv) || 1)) : '' }), onLv: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setSg(i, { lv: raw === '' ? '' : String(Math.min(sgMax(q.o), Math.max(1, Number(raw)))) }); } else { e.target.value = q.lv || ''; } }, lvOff: !q.o, ph: '1~' + sgMax(q.o) }; });
 // 인챈트 유동 옵션 범위 — 인챈트별 범위가 정해지면 ENC_RANGE에 추가 (지금은 모두 8~12)
 const ENC_RANGE = {};
 // 에르그는 S등급 50레벨 고정 (입력 없음) · 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30

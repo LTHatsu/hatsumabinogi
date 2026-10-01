@@ -580,7 +580,7 @@ const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3:
 const furyEval = (ov, w) => {
 const g = (k) => sv('f_' + k) + ((ov.sg || {})['f_' + k] || 0);
 const dE = ov.dErg !== undefined ? ov.dErg : dErgLv; const lv = ov.relic || furyRelicWith('', 0);
-const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1]) * soul * (FURY_COMBO_BASE + 0.01 * g('cm')) * (1 + dE * 0.0015); };
+const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1]) * soul * (FURY_COMBO_BASE + 0.01 * Math.min(13, g('cm'))) * (1 + dE * 0.0015); };
 const arc = (D, I) => ({ v: D * PIERCE2 * w + I, tal: D * PIERCE2 });
 const ultD = furyUlt ? J('up') * (3 * 1.6 + 1.5 * 2.3) : J('up') * 4.5; const ultI = furyUlt ? 2000 * 1.6 + 1500 * 2.3 : 3500;
 const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 60 + 900), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500), '게일피어스': arc(J('cf'), 1300), '포스플레어': arc(J('dk') * 0.7, 650), '얼티밋스트라이크': arc(ultD, ultI) };
@@ -1024,7 +1024,7 @@ const SG_SLOTS = ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'robe'];
 const slotName = (k) => (SLOTS.filter((sl) => sl[0] === k)[0] || [k, k])[1];
 const pctTxt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0));
 // 목표 레벨 후보 (현재 +1 ~ 최대) — [키, 이름, 현재, 최대, 이득 함수]
-const stgTargets = (k) => { if (!isStg && !isFury) return []; const d = (((gear && gear.det) || {})[k]) || {}; const out = []; (Array.isArray(d.sg) ? d.sg : []).forEach((q, i) => { const key = q && SG_OPT_KEY[q.o]; if (!key) return; out.push([k + '.sg' + i, '세공 · ' + q.o, Number(q.lv) || 0, 50, (n) => skGain({ sg: { [key]: n - (Number(q.lv) || 0) } })]); }); if (k === 'rhand') out.push([k + '.derg', '어둠의 에르그', dErgLv, 50, (n) => skGain({ dErg: n })]); return out; };
+const stgTargets = (k) => { if (!isStg && !isFury) return []; const d = (((gear && gear.det) || {})[k]) || {}; const out = []; (Array.isArray(d.sg) ? d.sg : []).forEach((q, i) => { const key = q && SG_OPT_KEY[q.o]; if (!key) return; out.push([k + '.sg' + i, '세공 · ' + q.o, Number(q.lv) || 0, key === 'f_cm' ? 13 : 50, (n) => skGain({ sg: { [key]: n - (Number(q.lv) || 0) } })]); }); if (k === 'rhand') out.push([k + '.derg', '어둠의 에르그', dErgLv, 50, (n) => skGain({ dErg: n })]); return out; };
 SG_SLOTS.forEach((k) => stgTargets(k).forEach((t) => { const tg = Number(s.up[t[0]]) || 0; if (tg > t[2] && tg <= t[3]) { const gn = t[4](tg); chosen.push({ key: t[0], slotKey: k, slot: slotName(k), dim: t[1], from: 'Lv.' + t[2], to: 'Lv.' + tg, pct: Math.round(gn * 1000) / 10, dmg: Math.round(gn * (BASE_STATS.max || 0)), costM: 0, eff: 0, group: '장착 장비', names: t[1], stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); } }));
 const stgDims = (() => { if ((!isStg && !isFury) || SG_SLOTS.indexOf(cur[0]) < 0) return []; const ts = stgTargets(cur[0]); const blank = { pct: '0', dmg: 0, tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
 const rows = ts.map((t) => { const tg = Number(s.up[t[0]]) || 0; const on = tg > t[2] && tg <= t[3]; const gn = on ? t[4](tg) : 0; const one = t[2] < t[3] ? t[4](t[2] + 1) : 0;
