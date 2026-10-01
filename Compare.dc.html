@@ -453,14 +453,20 @@ if (ED2 && this._edKRef !== ED2) { this._edKRef = ED2; this._edK = {}; Object.ke
 // 체크박스에서 숨긴 세트(setHide)는 예전에 체크해 둔 값이 남아 있어도 빼요 · 주무기 아이템의 세트 효과는 체크 없이 항상 켜져요
 const SET_HIDE = (s.eqData && s.eqData.setHide) || [];
 const actSets = {}; Object.keys((gear && gear.det) || {}).forEach((k) => { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { if (SET_HIDE.indexOf(q) < 0) { actSets[q] = 1; } }); });
-const wSets = (((s.eqData && s.eqData.itemSetList) || {})[String(((gear && gear.eq) || {}).rhand || '') || fInfo.weapon || ''] || []).map((x) => x[0]); wSets.forEach((q) => { actSets[q] = 1; });
+// actSets = 방어구 · 장신구 세트(체크 + 더스크바운드 개조 옵션), wSetMap = 주무기 세트 — 이름이 같은 효과는 같은 쪽 안에서 가장 높은 값 하나만 적용, 주무기 세트와 방어구 세트는 서로 중첩
+const wSets = (((s.eqData && s.eqData.itemSetList) || {})[String(((gear && gear.eq) || {}).rhand || '') || fInfo.weapon || ''] || []).map((x) => x[0]); const wSetMap = {}; wSets.forEach((q) => { wSetMap[q] = 1; });
 const ckSets = Object.assign({}, actSets);
 const duskSl = ['head', 'body', 'hands', 'feet']; const duskAll4 = duskSl.every((k) => String(((gear && gear.eq) || {})[k] || '').indexOf('더스크바운드') >= 0);
 // 스탯 세트 효과 (세트 id → 스탯) · 스킬 강화 세트는 스킬 계산식으로 계산
-const SET_ST = { crit: { cdmg: 7 }, CriticalDamageUp_3: { cdmg: 3 }, dusk: { bonus: 5, cdmg: 10 } };
+// 같은 효과 묶음 — 크리티컬 대미지 3 · 7 · 10%(더스크바운드) 중 가장 높은 값만, 최대 대미지 · 마법 공격력 · 연금술 대미지 세트도 가장 높은 값만
+const SET_ST = { crit: ['cdmg', 7], CriticalDamageUp_3: ['cdmg', 3], dusk: ['cdmg', 10], MaxDamagePlus_8: ['max', 8], MaxDamagePlus_15: ['max', 15], MaxDamagePlus_25: ['max', 25], MaxDamagePlus_50: ['max', 50], max_damage_sp: ['max', 10], MagicAttackPlus_15: ['matk', 15], magicattackplus_sp: ['matk', 15], MagicAttackPlus_100: ['matk', 100], all_alchemy_damage_15: ['alch', 15], all_alchemy_damage_50: ['alch', 50] };
+const MXK = arcIdx === 2 ? 'matk' : (arcIdx === 7 ? 'alch' : 'max');
+const setStat = (S) => { const o = { max: 0, cdmg: 0, bonus: S.dusk ? 5 : 0 }; Object.keys(S).forEach((q) => { const v = SET_ST[q]; if (!v) return; if (v[0] === 'cdmg') { o.cdmg = Math.max(o.cdmg, v[1]); } else if (v[0] === MXK) { o.max = Math.max(o.max, v[1]); } }); return o; };
+const statDiff = (a, b) => ({ max: b.max - a.max, cdmg: b.cdmg - a.cdmg, bonus: b.bonus - a.bonus });
 const duskCur = duskAll4 ? (duskSl.map((k) => ((((gear && gear.det) || {})[k]) || {}).duskOpt).filter(Boolean)[0] || '') : ''; if (duskCur) { actSets[duskCur] = 1; }
 // 재능 스킬 강화 세트 효과 — 해당 재능 스킬 대미지 ×(1 + n%) · 그 재능 스킬이 들어간 아르카나 스킬의 재능 부분에도 똑같이 적용 · 다른 세트끼리는 곱해요
-const skMul = (label) => { const D = (s.eqData && s.eqData.skillSets) || {}; return Object.keys(actSets).reduce((m, q) => (D[q] && D[q][1] === label ? m * (1 + D[q][2] / 100) : m), 1); };
+const skMul = (label) => { const D = (s.eqData && s.eqData.skillSets) || {}; return [actSets, wSetMap].reduce((m, S) => { const p = Object.keys(S).reduce((x, q) => (D[q] && D[q][1] === label ? Math.max(x, D[q][2]) : x), 0); return m * (1 + p / 100); }, 1); };
+const magMul = () => (actSets.magnum ? 1.15 : 1) * (wSetMap.magnum ? 1.15 : 1);
 const pItemG = (n) => { const x = pAllE[n]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? v : 0; };
 const curWB = Number(fInfo.gearBonus) || 0;
 const swapList = (sl) => {
@@ -473,11 +479,11 @@ return EPK.weapon.filter((n) => n !== curN && km[n] === ck && EPK.wstat[n]).map(
 }
 // 방어구 · 장신구: 장비에 있는 모든 세트 효과(에린 데이터) 중 아직 안 켜진 딜 세트를 더하고, 이 칸에서 켠 세트가 새 장비에 없으면 빼요 (다른 장비에서도 켜져 있으면 유지)
 // 스킬 강화 세트(매그넘샷 · 크래시샷 · 윈드밀 등)는 스킬 계산식(아르카나 스킬 안의 재능 부분 포함)으로 구한 총딜 증가율 (sgMemo, 아래에서 계산)
-const SG = this._sgMemo || { add: {}, loss: {} }; const SLS = ED2.itemSetList || {}; const nm0 = (q) => (q === 'crit' ? '크리티컬 대미지 7% 세트' : (q === 'CriticalDamageUp_3' ? '크리티컬 대미지 3% 세트' : ((ED2.setDefs || {})[q] || [q])[0]));
-const elseOn = {}; wSets.forEach((q) => { elseOn[q] = 1; }); Object.keys((gear && gear.det) || {}).forEach((k) => { if (k !== sl[0]) { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { elseOn[q] = 1; }); } });
+const SG = this._sgMemo || { add: {}, loss: {} }; const SLS = ED2.itemSetList || {}; const nm0 = (q) => (ED2.setLabel || {})[q] || ((ED2.setDefs || {})[q] || [q])[0];
+const elseOn = {}; Object.keys((gear && gear.det) || {}).forEach((k) => { if (k !== sl[0]) { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { elseOn[q] = 1; }); } });
 const mySets = Object.keys((((gear && gear.det) || {})[sl[0]] || {}).sets || {}).filter((q) => SET_HIDE.indexOf(q) < 0).concat(duskCur && duskSl.indexOf(sl[0]) >= 0 ? [duskCur] : []);
 const pool = {}; EPK.armor.forEach((n) => { pool[n] = 1; }); Object.keys(SLS).forEach((n) => { if (SLS[n].some((x) => SET_HIDE.indexOf(x[0]) < 0 && (SG.add[x[0]] || 0) > 0)) { pool[n] = 1; } });
-return Object.keys(pool).filter((n) => n !== curN && km[n] !== undefined).map((n) => { const ids = (SLS[n] || []).map((x) => x[0]); const dk = n.indexOf('더스크바운드') >= 0; const lost = mySets.filter((q, i) => mySets.indexOf(q) === i && !elseOn[q] && ids.indexOf(q) < 0 && !(q === duskCur && dk)); const add = ids.filter((q) => SET_HIDE.indexOf(q) < 0 && !actSets[q] && (SG.add[q] || 0) > 0); const st = { cdmg: 0, bonus: 0 }; let sk = 0; let tot = 0; add.forEach((q) => { tot += SG.add[q]; if (SET_ST[q]) { st.cdmg += SET_ST[q].cdmg || 0; st.bonus += SET_ST[q].bonus || 0; } else { sk += SG.add[q]; } }); lost.forEach((q) => { const l = SG.loss[q] || 0; tot -= l; if (SET_ST[q]) { st.cdmg -= SET_ST[q].cdmg || 0; st.bonus -= SET_ST[q].bonus || 0; } else { sk -= l; } }); const t = add.map((q) => nm0(q) + ' +' + SG.add[q] + '%').concat(lost.filter((q) => SG.loss[q]).map((q) => nm0(q) + ' 해제 -' + SG.loss[q] + '%')); return { name: n, stats: st, skPct: Math.round(sk * 10) / 10, tot: tot, txt: t.join(' · ') + ' (세트 완성 시)', price: pItemG(n) }; }).filter((x) => x.tot > 0).sort((p, q) => q.tot - p.tot).slice(0, 12);
+return Object.keys(pool).filter((n) => n !== curN && km[n] !== undefined).map((n) => { const ids = (SLS[n] || []).map((x) => x[0]); const dk = n.indexOf('더스크바운드') >= 0; const lost = mySets.filter((q, i) => mySets.indexOf(q) === i && !elseOn[q] && ids.indexOf(q) < 0 && !(q === duskCur && dk)); const add = ids.filter((q) => SET_HIDE.indexOf(q) < 0 && !actSets[q] && (SG.add[q] || 0) > 0); const nx = Object.assign({}, actSets); lost.forEach((q) => { delete nx[q]; }); ids.forEach((q) => { if (SET_HIDE.indexOf(q) < 0) { nx[q] = 1; } }); const st = statDiff(setStat(actSets), setStat(nx)); let sk = 0; add.forEach((q) => { if (!SET_ST[q]) { sk += SG.add[q]; } }); lost.forEach((q) => { if (!SET_ST[q]) { sk -= SG.loss[q] || 0; } }); const u = SG.u || { max: 0, cdmg: 0, bonus: 0 }; const tot = sk + st.max * u.max + st.cdmg * u.cdmg + st.bonus * u.bonus; const t = add.map((q) => nm0(q) + ' +' + SG.add[q] + '%').concat(lost.filter((q) => SG.loss[q]).map((q) => nm0(q) + ' 해제 -' + SG.loss[q] + '%')); return { name: n, stats: st, skPct: Math.round(sk * 10) / 10, tot: tot, txt: t.join(' · ') + ' (세트 완성 시)', price: pItemG(n) }; }).filter((x) => x.tot > 0).sort((p, q) => q.tot - p.tot).slice(0, 12);
 };
 // 장비 교체 시세 — 기본은 경매장 최저가, 직접 입력하면(예: 15억, 1억 4천만, 150000000) 이 페이지에서는 그 값으로 계산해요 · 고른 장비가 바뀌면 입력값은 초기화
 const parseGold = (t) => { const s0 = String(t || '').replace(/[,\sGg]|골드/g, ''); if (!s0) return 0; if (/^\d+(\.\d+)?$/.test(s0)) return Number(s0); let v = 0; let rest = s0; const m1 = s0.match(/(\d+(?:\.\d+)?)억/); if (m1) { v += Number(m1[1]) * 1e8; rest = s0.slice(s0.indexOf('억') + 1); } const m2 = rest.match(/(\d+(?:\.\d+)?)천만/); const m3 = rest.match(/(\d+(?:\.\d+)?)백만/); const m4 = rest.match(/(\d+(?:\.\d+)?)만/); if (m2) { v += Number(m2[1]) * 1e7; } else if (m3) { v += Number(m3[1]) * 1e6; } else if (m4) { v += Number(m4[1]) * 1e4; } return Math.round(v); };
@@ -486,7 +492,7 @@ const fmtNum = (t) => { const x = String(t); return /^[\d,]+$/.test(x.trim()) ? 
 const readG = (raw) => { const g = parseGold(raw); return g > 0 ? '= ' + goldE(g) : (String(raw || '').trim() ? '숫자로 입력해 주세요' : ''); };
 const swapCustom = (sl, nm) => { const q = (s.swapPrice || {})[sl[0]]; return q && q.name === nm ? parseGold(q.raw) : 0; };
 // 지금 장비의 스탯 (무기: 기본 최대 대미지 · 무기 보너스, 방어구: 딜 세트 효과)
-const swapCurStat = (sl) => { if (!EPK || !ED2) return ''; const n = String(sl[3] || ''); if (kindOf(sl) === 'weapon') { const c = EPK.wstat[n]; if (!c) return ''; const w = sl[0] === 'rhand' ? (curWB || c[1]) : c[1]; return [arcIdx !== 2 ? MX + ' ' + (arcIdx === 7 ? c[2] : c[0]) : '', '무기 보너스 ' + w + '%'].filter(Boolean).join(' · '); } const SG = this._sgMemo || { add: {}, loss: {} }; const t = ((ED2.itemSetList || {})[n] || []).map((x) => x[0]).filter((q) => SET_ST[q] || SG.add[q] || SG.loss[q]).map((q) => (q === 'crit' ? '크리티컬 대미지 7%' : (q === 'CriticalDamageUp_3' ? '크리티컬 대미지 3%' : ((ED2.setDefs || {})[q] || [q])[0])) + ' 세트'); return t.length ? t.join(' · ') : '딜 세트 효과 없음'; };
+const swapCurStat = (sl) => { if (!EPK || !ED2) return ''; const n = String(sl[3] || ''); if (kindOf(sl) === 'weapon') { const c = EPK.wstat[n]; if (!c) return ''; const w = sl[0] === 'rhand' ? (curWB || c[1]) : c[1]; return [arcIdx !== 2 ? MX + ' ' + (arcIdx === 7 ? c[2] : c[0]) : '', '무기 보너스 ' + w + '%'].filter(Boolean).join(' · '); } const SG = this._sgMemo || { add: {}, loss: {} }; const t = ((ED2.itemSetList || {})[n] || []).map((x) => x[0]).filter((q) => SET_ST[q] || SG.add[q] || SG.loss[q]).map((q) => ((ED2.setLabel || {})[q] || ((ED2.setDefs || {})[q] || [q])[0]) + ' 세트'); return t.length ? t.join(' · ') : '딜 세트 효과 없음'; };
 const swapOf = (sl, i) => { const o = swapList(sl)[i]; if (!o) return null; const cp = swapCustom(sl, o.name); const g = cp || o.price; return { newTxt: o.newTxt || o.txt, name: o.name, skPct: o.skPct || 0, pct: 0, dmg: o.stats.max || 0, costM: Math.round(g / 10000), stats: o.stats, txt: o.txt, auction: o.price, custom: cp }; };
 const stepOf = (sl, dm, i) => { const o = dm[4][i]; if (dm[5] && dm[5].enc) { return { name: o[0], pct: 0, dmg: o[2], costM: o[3], idx: i }; } const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
 const dimsFor0 = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand' || (dm[0] === 'sp' && RFC[sl[0]])) && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')).map((dm) => dm[0] === 'sp' ? RFC[sl[0]].dim : dm); // 특별 개조는 주무기 (엘레멘탈 나이트 한손 2개면 보조무기도)
@@ -630,9 +636,10 @@ const tmStat = (t) => { const lv = Number(t.albanLv) || 0; return { max: (Number
 const tmCur = tmStat(tmGear);
 const charMax = fNum('maxDmg'); const dollMax = dollMain(DOLL_FULL[curDoll]);
 // 장비 세트 효과 (장비 · 오검 페이지 체크, 여러 장비에 체크해도 1회만) — 크리티컬 대미지 증가: 크리티컬 대미지 +7% · 더스크바운드 시리즈: 보너스 대미지 +5% · 크리티컬 대미지 +10%
-const setAny = (key) => !!actSets[key];
-const setCd = (setAny('crit') ? 7 : 0) + (setAny('CriticalDamageUp_3') ? 3 : 0) + (setAny('dusk') ? 10 : 0);
-const setBonus = setAny('dusk') ? 5 : 0;
+// 최대 대미지 계열 세트는 캐릭터 정보 스탯에 이미 들어 있어서 여기선 크리티컬 대미지 · 보너스 대미지만 더해요
+const setStA = setStat(actSets); const setStW = setStat(wSetMap);
+const setCd = setStA.cdmg + setStW.cdmg;
+const setBonus = setStA.bonus + setStW.bonus;
 // 딜 사이클 비중 — 캐릭터 정보에서 입력한 스킬별 딜 비중을 합계 100%로 환산 (연속공격 · 스타더스트는 제외)
 // 스킬별 효율 계산: 총딜 증가율 = 해당 스킬 보정 비중 × 해당 스킬 대미지 증가율 (shareOf 사용)
 // 분모: 연속공격은 항상 제외 · 스타더스트(블래스트 · 플레어)도 항상 제외
@@ -659,7 +666,7 @@ const wSoul = wName.indexOf('소울 리버레이트') >= 0 && wName.indexOf('보
 const wCr = wSoul ? 1.2 : 1;
 const wMg = wSoul ? 1.15 : 1;
 // 매그넘샷 강화 세트 효과(장비 · 오검 페이지 체크) → 매그넘샷 배율 ×1.15
-const setMg = actSets.magnum ? 1.15 : 1;
+const setMg = magMul();
 const dErgLv = Number((((gear && gear.det) || {}).rhand || {}).dErg) || 0;
 const relicLv = (fx) => ['relic1', 'relic2', 'relic3'].reduce((m, k) => { const d = (((gear && gear.det) || {})[k]) || {}; return d.rFx === fx ? Math.max(m, Number(d.rLv) || 0) : m; }, 0);
 const rFl = relicLv('플레임 버스트 대미지 증가'), rHy = relicLv('하이드로 피어스 대미지 증가'), rTr = relicLv('트라이 어설트 피니시 대미지 증가');
@@ -1168,7 +1175,7 @@ const lv = ov.relic || relicLvWith('', 0);
 const crashV = (370 + 3.5 * g('crLv') + sv('ogCr')) * wCr * skMul('크래시 샷');
 const fla = (crashV * PIERCE2 * wT + 1080 + 45 * lv.fl + sv('ogFl')) * (bun ? 1.09 * 4 : 3);
 const dE = ov.dErg !== undefined ? ov.dErg : dErgLv;
-const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * (actSets.magnum ? 1.15 : 1) * wMg;
+const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * magMul() * wMg;
 const hyd = magV * PIERCE2 * wT + (3280 + 110 * lv.hy + sv('ogHy')) * 1.3;
 const hyE = gyeok ? (magV * PIERCE2 * wT + hyd * 0.15) * 7 : hyd;
 const tM = 1 + (0.1 + g('fire') * 0.005) + (0.1 + g('water') * 0.005) + (0.1 + g('wind') * 0.005) + 0.1;
@@ -1188,11 +1195,10 @@ const relicGain = (slotKey, newLv, fxNew) => (isSacred ? sacGain({ judge: sacJud
 // ── 더스크바운드 개조 옵션 변경 (머리 · 의상 · 장갑 · 신발 4부위가 모두 더스크바운드일 때만, 장비 · 오검에서 고른 옵션이 현재) ──
 // 고른 옵션은 같은 이름의 세트 효과와 완전히 같고 이미 켜진 세트와 중복되지 않아요 · 스킬 강화는 스킬 계산식(아르카나 스킬 안의 재능 부분 포함)으로, 스탯 옵션은 스탯 증가로 총딜 증가율을 구해요
 // 세트 효과별 총딜 증감 — add: 아직 안 켜진 세트를 켤 때 · loss: 켜진 세트가 꺼질 때 (%) · 장비 교체 후보(위 swapList)가 다음 렌더에서 써요
-{ const ids = Object.assign({ magnum: 1 }, SET_ST, (s.eqData && s.eqData.skillSets) || {}); const add = {}; const loss = {}; const evalG = () => (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; const neg = (st) => { const o = {}; Object.keys(st).forEach((k) => { o[k] = -st[k]; }); return o; };
-Object.keys(ids).forEach((q) => { const keep = Object.assign({}, actSets); const on = !!actSets[q]; let g; if (SET_ST[q]) { g = on ? -dealPct(neg(SET_ST[q])) : dealPct(SET_ST[q]); } else { if (on) { delete actSets[q]; } else { actSets[q] = 1; } g = Math.abs(evalG()); Object.keys(actSets).forEach((k) => { delete actSets[k]; }); Object.assign(actSets, keep); } g = Math.round(g * 10) / 10; if (g > 0) { (on ? loss : add)[q] = g; } });
-const key = JSON.stringify([add, loss]); if (key !== this._sgKey) { this._sgKey = key; this._sgMemo = { add: add, loss: loss }; setTimeout(() => this.setState({ sgV: key }), 0); } }
-const DUSK_ST = { MaxDamagePlus_50: MX === '최대 대미지' ? 50 : 0, MagicAttackPlus_100: MX === '마법 공격력' ? 100 : 0, all_alchemy_damage_50: MX === '연금술 대미지' ? 50 : 0 };
-const duskGain = (id) => { if (id === duskCur) return 0; const keep = Object.assign({}, actSets); if (duskCur && !ckSets[duskCur]) { delete actSets[duskCur]; } actSets[id] = 1; let g = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; Object.keys(actSets).forEach((q) => { delete actSets[q]; }); Object.assign(actSets, keep); const stOf = (q) => (q && !ckSets[q] ? DUSK_ST[q] || 0 : 0); const dm = stOf(id) - stOf(duskCur); if (dm) { g += dealPct({ max: dm }); } return Math.round(g * 10) / 10; };
+{ const ids = Object.assign({ magnum: 1 }, SET_ST, (s.eqData && s.eqData.skillSets) || {}); const add = {}; const loss = {}; const evalG = () => (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; const u = { max: dealPct({ max: 10 }) / 10, cdmg: dealPct({ cdmg: 1 }), bonus: dealPct({ bonus: 1 }) };
+Object.keys(ids).forEach((q) => { const keep = Object.assign({}, actSets); const on = !!actSets[q]; let g; if (SET_ST[q]) { const nx = Object.assign({}, actSets); if (on) { delete nx[q]; } else { nx[q] = 1; } g = Math.abs(dealPct(statDiff(setStat(actSets), setStat(nx)))); } else { if (on) { delete actSets[q]; } else { actSets[q] = 1; } g = Math.abs(evalG()); Object.keys(actSets).forEach((k) => { delete actSets[k]; }); Object.assign(actSets, keep); } g = Math.round(g * 10) / 10; if (g > 0) { (on ? loss : add)[q] = g; } });
+const key = JSON.stringify([add, loss, u]); if (key !== this._sgKey) { this._sgKey = key; this._sgMemo = { add: add, loss: loss, u: u }; setTimeout(() => this.setState({ sgV: key }), 0); } }
+const duskGain = (id) => { if (id === duskCur) return 0; const keep = Object.assign({}, actSets); const st0 = setStat(actSets); if (duskCur && !ckSets[duskCur]) { delete actSets[duskCur]; } actSets[id] = 1; let g = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; const st1 = setStat(actSets); Object.keys(actSets).forEach((q) => { delete actSets[q]; }); Object.assign(actSets, keep); g += dealPct(statDiff(st0, st1)); return Math.round(g * 10) / 10; };
 const DUSK_OPTS = (s.eqData && s.eqData.duskOpts) || [];
 const duskName = (id) => { const q = DUSK_OPTS.filter((x) => x[0] === id)[0]; return q ? q[1] : '개조 옵션 없음'; };
 // 세팅 시뮬레이터에서 장비 교체로 4부위가 모두 더스크바운드가 되면(교체 목표 기준) 개조 옵션도 고를 수 있어요
