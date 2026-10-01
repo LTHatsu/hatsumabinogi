@@ -267,7 +267,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <sc-for list="{{og.effects}}" as="x" hint-placeholder-count="3">
 <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr) 140px 96px; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 14px; border: {{x.border}}; background: {{x.bg}}">
 <strong style="font-size: 15px">{{x.label}}</strong>
-<select class="f" aria-label="{{x.label}} 오검 워드 효과" value="{{x.value}}" onChange="{{x.onEffect}}"><option value="">{{x.first}}</option><sc-for list="{{x.aGroups}}" as="g" hint-placeholder-count="1"><optgroup label="{{g.label}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></optgroup></sc-for><sc-for list="{{x.tGroups}}" as="g" hint-placeholder-count="1"><optgroup label="{{g.label}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></optgroup></sc-for></select>
+<select class="f" aria-label="{{x.label}} 오검 워드 효과" value="{{x.value}}" onChange="{{x.onEffect}}"><option value="">{{x.first}}</option><sc-for list="{{x.groups}}" as="g" hint-placeholder-count="2"><optgroup label="{{g.label}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></optgroup></sc-for></select>
 <select class="f" aria-label="{{x.label}} 레벨" value="{{x.lv}}" onChange="{{x.onLevel}}"><sc-for list="{{x.lvOpts}}" as="l" hint-placeholder-count="10"><option value="{{l.v}}">{{l.label}}</option></sc-for></select>
 <span style="text-align: right; font-size: 14px; color: {{x.maxFg}}">{{x.max}}</span>
 </div>
@@ -713,7 +713,8 @@ const mk = (list) => list.filter((q) => taken.indexOf(q[0]) < 0).map((q) => ({ v
 return {
 label: '효과 ' + (i + 1), value: cur ? cur.e : '',
 first: tpSel ? '효과 선택' : '오검 종류를 먼저 골라 주세요',
-tOpts: tpSel ? mk(OG_TAL) : [], tGroups: tpSel ? [{ label: '재능 스킬 효과', opts: mk(OG_TAL) }] : [], // 오검 종류를 고르기 전에는 효과 목록 없이 안내 문구만 aGroups: tpSel && isSpecialOg(tpSel) ? [{ label: '아르카나 스킬 효과', opts: mk(OG_ARC) }] : [],
+tOpts: tpSel ? mk(OG_TAL) : [], // 오검 종류를 고르기 전에는 효과 목록 없이 안내 문구만 · 특수 오검은 아르카나 스킬 효과 + 재능 스킬 효과
+groups: (tpSel && isSpecialOg(tpSel) ? [{ label: '아르카나 스킬 효과', opts: mk(OG_ARC) }] : []).concat(tpSel ? [{ label: '재능 스킬 효과', opts: mk(OG_TAL) }] : []), aGroups: tpSel && isSpecialOg(tpSel) ? [{ label: '아르카나 스킬 효과', opts: mk(OG_ARC) }] : [],
 lv: cur ? String(cur.lv) : '', lvOpts: cur ? Array.from({ length: mx }, (_, k) => ({ v: String(k + 1), label: 'Lv.' + (k + 1) + fxVal(cur.e, k + 1) })) : [{ v: '', label: '—' }],
 max: cur ? '최대 Lv.' + mx : '—', maxFg: cur ? '#2A2119' : '#8C7A62',
 border: cur ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: cur ? '#F3F8F4' : '#FBF5E8',
