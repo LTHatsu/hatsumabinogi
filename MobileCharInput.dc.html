@@ -123,7 +123,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <button type="button" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="height: 44px; border-radius: 10px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 14px">{{r.label}}</button>
 </sc-for>
 </div></div>
-<div role="status" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><span style="display: flex; align-items: center; gap: 8px"><strong style="font-family: 'Gowun Batang', serif; font-size: 15px">{{rfPair}}</strong></span><span style="font-size: 13px; line-height: 1.5">{{rfSum}}</span><span style="font-size: 11px; line-height: 1.5; color: #4A3D30">쌍수 장착 시 S 개조는 대미지 증가율 산출 공식이 확인되지 않아 딜 상승량을 제공하지 않으며, R 개조만 선택할 수 있어요.</span></div>
+<div role="status" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><span style="display: flex; align-items: center; gap: 8px"><strong style="font-family: 'Gowun Batang', serif; font-size: 15px">{{rfPair}}</strong></span><span style="font-size: 13px; line-height: 1.5">{{rfSum}}</span><span style="font-size: 11px; line-height: 1.5; color: #4A3D30">쌍수 장착 시 S 개조는 대미지 증가율 산출 공식이 확인되지 않아 딜 상승량을 제공하지 않으며, R 개조만 선택할 수 있어요.</span></div>
 </div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start">
 <label class="fl"><span>현재 {{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{fv.maxDmg}}" onChange="{{fc.maxDmg}}"></label>
