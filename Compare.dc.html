@@ -72,6 +72,12 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 </sc-for>
 <div style="border-radius: 12px; padding: 14px 16px; background: #F5EDDC; border: 1.5px solid transparent; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #6B5A45">재능 한정 효과</span><sc-for list="{{talOnly}}" as="q" hint-placeholder-count="1"><div style="display: flex; flex-direction: column; gap: 1px"><strong style="font-size: 14px; color: #2A2119">{{q.name}}</strong><span style="font-size: 12px; line-height: 1.4; color: #1E3D2E">{{q.fx}}</span></div></sc-for><sc-if value="{{talOnlyNone}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #8C7A62">적용 중인 효과가 없어요</span></sc-if><span style="margin-top: auto; font-size: 11px; line-height: 1.4; color: #8C7A62">해당 계열 재능 스킬에만 적용돼요</span></div>
 </div>
+<sc-if value="{{sacDH.on}}" hint-placeholder-val="{{ false }}"><div style="display: grid; grid-template-columns: 200px 160px 160px minmax(0, 1fr); gap: 14px; align-items: end; padding: 14px 16px; border-radius: 12px; background: {{sacDH.bg}}; border: {{sacDH.border}}">
+<div style="display: flex; flex-direction: column; gap: 4px; align-self: center"><strong style="font-size: 15px">방어력 · 생명력 변화</strong><span style="font-size: 12px; line-height: 1.4; color: #6B5A45">{{sacDH.eqDef}}</span><span style="font-size: 12px; line-height: 1.4; color: #6B5A45">{{sacDH.eqHp}}</span></div>
+<label class="fl" style="font-size: 13px">방어력<input class="f" type="text" inputmode="decimal" placeholder="예: +100" value="{{sacDH.def}}" onChange="{{sacDH.onDef}}"></label>
+<label class="fl" style="font-size: 13px">생명력<input class="f" type="text" inputmode="decimal" placeholder="예: -200" value="{{sacDH.hp}}" onChange="{{sacDH.onHp}}"></label>
+<span style="align-self: center; font-size: 14px; line-height: 1.4; color: {{sacDH.fg}}">{{sacDH.res}}</span>
+</div></sc-if>
 </div>
 <div style="background: #2A2119; color: #FBF5E8; border-radius: 22px; padding: 24px 28px; display: flex; flex-direction: column; gap: 14px">
 <span style="font-size: 14px; color: #E8D9B8">예상 딜 상승 (단순 합산)</span>
@@ -133,12 +139,6 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 </sc-for>
 </div>
 
-<sc-if value="{{sacDH.on}}" hint-placeholder-val="{{ false }}"><div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) minmax(0, 1fr) 300px; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 14px; border: {{sacDH.border}}; background: {{sacDH.bg}}">
-<span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">방어력 · 생명력 변화</strong><span style="font-size: 12px; color: #6B5A45">세이크리드 가드 전용</span></span>
-<label class="fl" style="font-size: 13px">방어력<input class="f" type="text" inputmode="decimal" placeholder="예: +100 / -50" value="{{sacDH.def}}" onChange="{{sacDH.onDef}}"></label>
-<label class="fl" style="font-size: 13px">생명력<input class="f" type="text" inputmode="decimal" placeholder="예: +500 / -200" value="{{sacDH.hp}}" onChange="{{sacDH.onHp}}"></label>
-<span style="font-size: 14px; line-height: 1.4; color: {{sacDH.fg}}">{{sacDH.res}}</span>
-</div></sc-if>
 <div style="display: flex; justify-content: flex-end">
 <button type="button" onClick="{{resetSlot}}" style="min-height: 48px; padding: 0 22px; border: 1.5px solid #B6A27E; border-radius: 999px; background: transparent; color: #2A2119; font-size: 15px">이 장비 변경 초기화</button>
 </div>
@@ -1063,14 +1063,17 @@ const sacBase = isSacred ? sacEval({}, wT) : {};
 const sacGain = (ov) => { if (!isSacred) return 0; const n = sacEval(ov, wT); return Object.keys(n).reduce((t, k) => t + sacShare(k) * (sacBase[k].v ? n[k].v / sacBase[k].v - 1 : 0), 0); };
 const skGain = (ov) => (isFury ? furyGain(ov) : stgGain(ov));
 const relicGain = (slotKey, newLv, fxNew) => (isSacred ? sacGain({ judge: sacJudgeLvWith(slotKey, newLv, fxNew) }) : isFury ? furyGain({ relic: furyRelicWith(slotKey, newLv, fxNew) }) : stgGain({ relic: relicLvWith(slotKey, newLv, fxNew) }));
-// ── 세이크리드 가드: 장비별 방어력 · 생명력 변화 (직접 입력 · 음수 가능) → 스킬 계산식으로 총딜 변화 계산 ──
+// ── 세이크리드 가드: 방어력 · 생명력 변화 (현재 값은 장비에서 얻는 수치까지 포함된 캐릭터 정보 입력값 · 변화량만 입력, 음수 가능) ──
 const dhS = s.dh || {};
-const dhOf = (k) => { const o = dhS[k] || {}; return { def: Number(o.def) || 0, hp: Number(o.hp) || 0 }; };
-const dhTxt = (v) => [v.def ? '방어력 ' + (v.def > 0 ? '+' : '') + v.def : '', v.hp ? '생명력 ' + (v.hp > 0 ? '+' : '') + v.hp : ''].filter(Boolean).join(' · ');
-if (isSacred) SLOTS.forEach((sl) => { if (sl[4] === 'relic') return; const v = dhOf(sl[0]); if (!v.def && !v.hp) return; const pc = dealPct({ def: v.def, hp: v.hp }); chosen.push({ key: sl[0] + '.dh', slotKey: sl[0], slot: sl[1], dim: '방어력 · 생명력 변화', from: '현재', to: dhTxt(v), pct: pc, dmg: Math.round(pc / 100 * MXEQ), costM: 0, eff: 0, group: '장착 장비', names: '방어력 · 생명력', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); });
-const setDh = (f, val) => { const raw = String(val).trim(); if (raw !== '' && !/^[+-]?\d*\.?\d*$/.test(raw)) return; const all = Object.assign({}, this.state.dh); const o = Object.assign({}, all[cur[0]]); if (raw === '' || raw === '+' || raw === '-') { delete o[f]; } else { o[f] = raw.replace(/^\+/, ''); } if (Object.keys(o).length) { all[cur[0]] = o; } else { delete all[cur[0]]; } this.setState({ dh: all }); };
-const dhCur = dhOf(cur[0]); const dhOn = !!(dhCur.def || dhCur.hp); const dhPc = dhOn ? dealPct({ def: dhCur.def, hp: dhCur.hp }) : 0;
-const sacDHv = { on: isSacred && cur[4] !== 'relic', def: (dhS[cur[0]] || {}).def || '', hp: (dhS[cur[0]] || {}).hp || '', onDef: (e) => setDh('def', e.target.value), onHp: (e) => setDh('hp', e.target.value), res: dhOn ? '총딜 ' + (dhPc >= 0 ? '+' : '') + dhPc + '% · ' + MX + ' ' + (dhPc >= 0 ? '+' : '') + Math.round(dhPc / 100 * MXEQ) + ' 환산' : '변경 없음', fg: dhOn ? '#1E3D2E' : '#8C7A62', border: dhOn ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: dhOn ? '#F3F8F4' : '#FBF5E8' };
+const dhV = { def: Number(dhS.def) || 0, hp: Number(dhS.hp) || 0 };
+const dhOn = isSacred && !!(dhV.def || dhV.hp);
+const dhPc = dhOn ? dealPct({ def: dhV.def, hp: dhV.hp }) : 0;
+const dhTxt = [dhV.def ? '방어력 ' + (dhV.def > 0 ? '+' : '') + dhV.def : '', dhV.hp ? '생명력 ' + (dhV.hp > 0 ? '+' : '') + dhV.hp : ''].filter(Boolean).join(' · ');
+if (dhOn) chosen.push({ key: 'x.dh', slotKey: 'x.dh', slot: '세이크리드 가드', dim: '방어력 · 생명력 변화', from: '현재', to: dhTxt, pct: dhPc, dmg: Math.round(dhPc / 100 * MXEQ), costM: 0, eff: 0, group: '부가 장비', names: '방어력 · 생명력', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } });
+// 스탯 1당 최대 대미지 환산 (100 변화 기준으로 계산)
+const dhEq = (k) => { if (!isSacred) return 0; const gm = dealOf(Object.assign({}, BASE_STATS, { max: (BASE_STATS.max || 0) + 100 })); const b0 = dealOf(BASE_STATS); const gk = dealOf(Object.assign({}, BASE_STATS, { [k]: 100 })); return gm - b0 ? (gk - b0) / (gm - b0) : 0; };
+const setDh = (f, val) => { const raw = String(val).trim(); if (raw !== '' && !/^[+-]?\d*\.?\d*$/.test(raw)) return; const o = Object.assign({}, this.state.dh); if (raw === '' || raw === '+' || raw === '-') { delete o[f]; } else { o[f] = raw.replace(/^\+/, ''); } this.setState({ dh: o }); };
+const sacDHv = { on: isSacred, def: dhS.def || '', hp: dhS.hp || '', onDef: (e) => setDh('def', e.target.value), onHp: (e) => setDh('hp', e.target.value), eqDef: '방어력 1 = ' + MX + ' ' + (Math.round(dhEq('def') * 100) / 100), eqHp: '생명력 1 = ' + MX + ' ' + (Math.round(dhEq('hp') * 100) / 100), res: dhOn ? '총딜 ' + (dhPc >= 0 ? '+' : '') + dhPc + '% · ' + MX + ' ' + (dhPc >= 0 ? '+' : '') + Math.round(dhPc / 100 * MXEQ) + ' 환산' : '변화값을 입력하면 딜 변화가 계산돼요', fg: dhOn ? '#1E3D2E' : '#8C7A62', border: dhOn ? '1.5px solid ' + accent : '1.5px solid transparent', bg: dhOn ? '#F3F8F4' : '#F5EDDC' };
 const RELIC_SLOTS = [['relic1', '유물 1'], ['relic2', '유물 2'], ['relic3', '유물 3']];
 const rfxNew = (k) => { const d = (((gear && gear.det) || {})[k]) || {}; return d.rFx ? '' : ((s.rfx || {})[k] || ''); };
 RELIC_SLOTS.forEach((rs) => { const d0 = (((gear && gear.det) || {})[rs[0]]) || {}; const nf = rfxNew(rs[0]); const d = nf ? { rFx: nf, rLv: 0 } : d0; const tg = Number(s.up[rs[0] + '.rlv']) || 0; const lv = Number(d.rLv) || 0; if (d.rFx && tg > lv && tg <= 10) { const g = relicGain(rs[0], tg, nf); chosen.push({ key: rs[0] + '.rlv', slotKey: rs[0], slot: rs[1], dim: nf ? '유물 새로 장착' : '유물 효과 레벨', from: nf ? '미장착' : d.rFx + ' Lv.' + lv, to: nf ? nf + ' Lv.' + tg : 'Lv.' + tg, pct: Math.round(g * 1000) / 10, dmg: Math.round(g * MXEQ), costM: 0, eff: 0, group: '장착 장비', names: '유물', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); } });
@@ -1116,7 +1119,7 @@ rank: i + 1, slot: a.slot, dim: a.dim, from: a.from, to: a.to, pct: a.pct.toFixe
 bar: Math.max(6, Math.round(a.eff / maxEff * 100)) + '%',
 rowBg: i === 0 ? '#F3F8F4' : 'transparent',
 rankBg: i === 0 ? accent : 'transparent', rankFg: i === 0 ? '#FBF5E8' : (i < 3 ? '#8A5E17' : '#6B5A45'), rankBorder: i === 0 ? 'none' : (i < 3 ? '2px solid #8A5E17' : '1.5px solid #B6A27E'),
-remove: () => (/\.dh$/.test(a.key) ? (() => { const dh = Object.assign({}, this.state.dh); delete dh[a.key.split('.')[0]]; this.setState({ dh: dh }); })() : a.key === 'c.coin' ? this.setState({ coin: {} }) : a.key === 't.totem' ? this.setState({ totem: {}, totErr: '' }) : setUp(a.key, 0))
+remove: () => (a.key === 'x.dh' ? this.setState({ dh: {} }) : a.key === 'c.coin' ? this.setState({ coin: {} }) : a.key === 't.totem' ? this.setState({ totem: {}, totErr: '' }) : setUp(a.key, 0))
 }));
 return {
 mxLabel: MX,
@@ -1130,7 +1133,7 @@ dims: relicDims.concat(dims).concat(stgDims),
 extras: extras, miniCard: miniCard, coinCard: coinCard, totemCard: totemCard, talOnly: talOnly, talOnlyNone: talOnly.length === 0, stgCard: stgCard, envShares: envShares, envHas: envShares.length > 0, envNone: envShares.length === 0, envNote: '입력 합계 ' + (Math.round(envTot * 10) / 10) + '% → 100% 환산',
 ogSlots: ogSlots, og: ogPanel, ogPoints: ogPos.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '), ogCount: Array.from(new Set(Object.keys(og).concat(Object.keys(ogw)))).length, combo: combo, ogDiff: ogDiff,
 live: live,
-resetSlot: () => { const u = Object.assign({}, s.up); Object.keys(u).forEach((k) => { if (k.indexOf(cur[0] + '.') === 0) delete u[k]; }); const dh = Object.assign({}, s.dh); delete dh[cur[0]]; this.setState({ up: u, dh: dh }); },
+resetSlot: () => { const u = Object.assign({}, s.up); Object.keys(u).forEach((k) => { if (k.indexOf(cur[0] + '.') === 0) delete u[k]; }); this.setState({ up: u }); },
 list: list,
 listCount: rows.length,
 listEmpty: rows.length === 0,
