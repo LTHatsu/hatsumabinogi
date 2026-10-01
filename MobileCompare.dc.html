@@ -543,16 +543,16 @@ const muSlots = [];
 MU_GROUPS.forEach((g) => [[g[1], '미니어처'], [g[1] + 'Ex', '엑스트라 미니어처']].forEach((sk) => { const k = sk[0]; const cur = miniVal(k); const all = muGroupsOf(k); const ups = all.filter((x) => x[0] > cur); const sel = Number(s.up['m.' + k]) || 0; const curHit = all.filter((x) => x[0] === cur)[0]; muSlots.push({ g: g, k: k, label: sk[1], cur: cur, curName: cur ? (curHit ? curHit[1] : '') : '없음', ups: ups, tgt: ups.filter((x) => x[0] === sel)[0] || null }); }));
 const kalOwned = !!(cInfo && cInfo.kaliach);
 const kalBuy = !kalOwned && !!s.up['m.kaliach'];
-// 스타더스트 형상 — 안락의 파편 스타더스트의 형상 장착 시 지원효과 대미지 +10%p (예: 120% → 130%)
+// 스타더스트 형상 — 지원효과 대미지는 120% 고정, 안락의 파편 스타더스트의 형상 장착 시에만 130% (+10%p)
 // 플레어(발동 스킬의 40%) · 블래스트(50%) 대미지는 모두 지원효과 대미지에 비례 → 각 스킬 딜 증가율 = 10 ÷ 현재 지원효과 %. 입력한 비중이 이미 40 · 50% 차이를 담고 있어 총딜 증가 = 플레어 비중 × 증가율 + 블래스트 비중 × 증가율
 // 비중은 스타더스트를 포함한 전체 딜 기준 (캐릭터 정보 입력, 예전 스킬 목록에 넣은 값은 그대로 이어 써요)
 const SOLACE = '안락의 파편 스타더스트의 형상';
 const dustF0 = (cInfo && cInfo.fields) || {}; const dustLegacy = (n) => { const q = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && String(k.name || '').replace(/\s/g, '') === n)[0]; return q ? Number(q.share) || 0 : 0; };
 const dustNum = (k, n) => (dustF0[k] !== undefined && dustF0[k] !== '' ? Number(dustF0[k]) || 0 : dustLegacy(n));
-const dustFl = dustNum('dustFlare', '플레어'), dustBl = dustNum('dustBlast', '블래스트'); const dustSup = Number(dustF0.dustSupport) || 120; const dustOwned = !!dustF0.dustSolace;
+const dustFl = dustNum('dustFlare', '플레어'), dustBl = dustNum('dustBlast', '블래스트'); const dustSup = 120; const dustOwned = !!dustF0.dustSolace;
 const dustRate = 10 / dustSup; const dustGF = +(dustFl * dustRate).toFixed(2), dustGB = +(dustBl * dustRate).toFixed(2); const dustPct = +(dustGF + dustGB).toFixed(2);
 const dustUp = !dustOwned && dustPct > 0 ? [[SOLACE, dustPct, { dmgFix: Math.round((BASE_STATS.max || 0) * dustPct / 100) }, priceOf(SOLACE), '지원효과 ' + dustSup + '% → ' + (dustSup + 10) + '% · 플레어 +' + dustGF + '% · 블래스트 +' + dustGB + '% (총딜)']] : [];
-const dustCur = dustOwned ? SOLACE + ' 장착 중' : '지원효과 대미지 ' + dustSup + '%' + (dustF0.dustSupport ? '' : ' (기본값)') + (dustFl || dustBl ? ' · 플레어 ' + dustFl + '% · 블래스트 ' + dustBl + '%' : ' · 캐릭터 정보에서 플레어 · 블래스트 비중을 입력하면 계산돼요');
+const dustCur = dustOwned ? SOLACE + ' 장착 중 · 지원효과 대미지 130%' : '지원효과 대미지 ' + dustSup + '%' + (dustFl || dustBl ? ' · 플레어 ' + dustFl + '% · 블래스트 ' + dustBl + '%' : ' · 캐릭터 정보에서 플레어 · 블래스트 비중을 입력하면 계산돼요');
 const EXTRA = [
 ['doll', '인형 가방', I.doll, curDoll || '없음', dollUp],
 ['dust', '스타더스트 형상', 'M12 3l2.2 5.6L20 9.3l-4.6 3.9 1.4 5.8L12 16l-4.8 3 1.4-5.8L4 9.3l5.8-.7z', dustCur, dustUp, dustOwned ? SOLACE : '지원효과 ' + dustSup + '%', '스타더스트 형상 장착']
