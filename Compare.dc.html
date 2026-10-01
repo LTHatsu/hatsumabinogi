@@ -508,9 +508,9 @@ const charMax = fNum('maxDmg'); const dollMax = dollMain(DOLL_FULL[curDoll]);
 const setAny = (key) => Object.keys((gear && gear.det) || {}).some((k) => ((gear.det[k] || {}).sets || {})[key]);
 const setCd = (setAny('crit') ? 7 : 0) + (setAny('dusk') ? 10 : 0);
 const setBonus = setAny('dusk') ? 5 : 0;
-// 전투 환경 딜 비중 — 캐릭터 정보에서 입력한 스킬별 딜 비중을 합계 100%로 환산 (연속공격 · 스타더스트 포함 여부는 전투 환경 입력을 그대로 따름)
+// 딜 사이클 비중 — 캐릭터 정보에서 입력한 스킬별 딜 비중을 합계 100%로 환산 (연속공격 · 스타더스트는 제외)
 // 스킬별 효율 계산: 총딜 증가율 = 해당 스킬 보정 비중 × 해당 스킬 대미지 증가율 (shareOf 사용)
-// 분모: 연속공격은 항상 제외 · 스타더스트(블래스트 · 플레어)는 전투 환경에 입력했을 때만 포함
+// 분모: 연속공격은 항상 제외 · 스타더스트(블래스트 · 플레어)도 항상 제외
 // 스타더스트(플레어 · 블래스트)는 판마다 발동 편차가 커서 일반 딜 계산에서 빼요 — 비중은 캐릭터 정보의 스타더스트 칸에 따로 받아 스타더스트 형상 효과 계산에만 써요
 const isDust = (n) => ['블래스트', '플레어'].indexOf(String(n || '').replace(/\s/g, '')) >= 0;
 const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && k.name && k.name.replace(/\s/g, '') !== '연속공격' && !isDust(k.name) && Number(k.share) > 0);
@@ -562,7 +562,7 @@ const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (r
 // 부가 장비(미니어처·토템·주화) — 예시 [이름, 딜 %, 스탯 변화, 비용(만 G)] · max 최대 대미지, crate 크리티컬 확률(%p), cdmg 크리티컬 대미지(%), bonus 보너스 대미지(%)
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
 // 보너스 대미지 — 같은 종류는 (1 + 합) 배. 일반 보너스: 모든 스킬 · 재능 보너스: 재능 스킬(일반 보너스와 합산 → 1 + 일반 + 재능) · 아르카나 보너스: 아르카나 스킬에 일반 보너스와 합산(1 + 일반 + 아르카나) · 무기 보너스: 모든 스킬
-// 아르카나 스킬 안의 재능 스킬 부분(talentFrac)은 (1 + 일반 + 재능 + 아르카나), 나머지는 (1 + 일반 + 아르카나). 스킬 비중은 전투 환경 입력값(합계 100% 환산)
+// 아르카나 스킬 안의 재능 스킬 부분(talentFrac)은 (1 + 일반 + 재능 + 아르카나), 나머지는 (1 + 일반 + 아르카나). 스킬 비중은 딜 사이클 비중 입력값(합계 100% 환산)
 const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); return (1 + W) * envSkills.reduce((sum, k) => { const sh = shareOf(k.name); if (!k.arc) return sum + sh * (1 + G + T); const tf = talentFrac(k.name); return sum + sh * ((1 - tf) * (1 + G + A) + tf * (1 + G + T + A)); }, 0); };
 const dealOf = (st) => st.max * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
 const dealPct = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0) }); return Math.round((n / b - 1) * 1000) / 10; };
@@ -940,7 +940,7 @@ const RELIC_FX = {
 };
 const ARC_NAMES = ['엘레멘탈 나이트', '세인트 바드', '다크 메이지', '알케믹 스팅어', '세이크리드 가드', '블래스트 랜서', '배리어블 거너', '포비든 알케미스트', '멜로딕 퍼피티어', '퓨리 파이터'];
 const relicList = RELIC_FX[ARC_NAMES[arcIdx]] || [];
-// ── 유물 효과 레벨 변경 (세팅 시뮬레이터 유물 1 · 2 · 3) · 미장착 유물 칸은 효과를 골라 새로 장착 가능 — 알케믹 스팅어는 스킬 계산식 · 전투 환경 딜 비중으로 총딜 증가 계산 ──
+// ── 유물 효과 레벨 변경 (세팅 시뮬레이터 유물 1 · 2 · 3) · 미장착 유물 칸은 효과를 골라 새로 장착 가능 — 알케믹 스팅어는 스킬 계산식 · 딜 사이클 비중으로 총딜 증가 계산 ──
 const RELIC_KEY = { '플레임 버스트 대미지 증가': 'fl', '하이드로 피어스 대미지 증가': 'hy', '트라이 어설트 피니시 대미지 증가': 'tr' };
 // 재능 스킬 부분(크래시샷 · 매그넘샷)은 재능 보너스 대미지 가중치 wT = (1 + 일반 + 재능) ÷ (1 + 일반)
 const wT = (1 + BASE_STATS.bonus / 100 + BASE_STATS.talent / 100 + BASE_STATS.arcana / 100) / (1 + BASE_STATS.bonus / 100 + BASE_STATS.arcana / 100);
@@ -958,7 +958,7 @@ return pickDim.concat([{ label: '유물 효과 레벨', current: nf ? '미장착
 opts: [{ v: '0', label: nf ? '레벨 선택' : (lv >= 10 ? '최대 레벨' : '현재 유지') }].concat(Array.from({ length: 10 - lv }, (_, i) => { const n = lv + i + 1; return { v: String(n), label: 'Lv.' + n + (calc ? ' · ' + fmt(relicGain(cur[0], n, nf)) : ' · 계산식 준비 중') }; })),
 on: on, off: !on, pct: on ? (Math.round(st * 1000) / 10).toFixed(1) : '0', dmg: on ? Math.round(st * (BASE_STATS.max || 0)) : 0, cost: on ? '가격 미정' : '—', costFg: on ? '#2A2119' : '#8C7A62',
 border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(k, Number(e.target.value)),
-head: on ? (calc ? '▲ ' + fmt(st) : '▲ Lv.' + lv + ' → Lv.' + tg) : '', effect: on ? (calc ? '전투 환경 딜 비중 기준 예상치' : '이 효과는 스킬 계산식 준비 중이에요') : '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }]); })();
+head: on ? (calc ? '▲ ' + fmt(st) : '▲ Lv.' + lv + ' → Lv.' + tg) : '', effect: on ? (calc ? '딜 사이클 비중 기준 예상치' : '이 효과는 스킬 계산식 준비 중이에요') : '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }]); })();
 // ── 크리티컬 효율 (모든 아르카나) — 평균 대미지 배율 A = 1 − 크리확률 + 크리배율 × 크리확률 (크리배율 = 100% + 크리티컬 대미지)
 // 크리티컬 대미지 +Δ → 평균 증가율 = 크리확률 ÷ A × Δ · 크리티컬 확률 +Δ → 크리티컬 대미지 ÷ A × Δ (둘 다 바뀌면 A'/A − 1)
 // 최대 대미지 환산 = 현재 최대 대미지 × 평균 증가율
