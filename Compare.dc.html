@@ -514,12 +514,9 @@ const setBonus = setAny('dusk') ? 5 : 0;
 const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && k.name && k.name.replace(/\s/g, '') !== '연속공격' && Number(k.share) > 0);
 const envTot = envSkills.reduce((a, k) => a + Number(k.share), 0);
 const SHARE = {}; envSkills.forEach((k) => { SHARE[k.name] = envTot ? Number(k.share) / envTot : 0; });
-// 스타더스트(블래스트 · 플레어) — 이미 적중한 아르카나 스킬 대미지의 일정 비율(40 · 50%)로 추가 공격해요. 보너스 대미지를 따로 받지 않고 발동시킨 아르카나 스킬과 같은 비율로만 늘어나므로,
-// 스타더스트 비중을 스타더스트가 아닌 아르카나 스킬들에 비중대로 나눠 더해요. 발동 아르카나 스킬이 입력되지 않았으면 스타더스트 비중은 고정값(증가 없음)으로 둬요
+// 스타더스트(블래스트 · 플레어) — 입력한 딜 비중 그대로 아르카나 스킬 비중에 포함해요 (발동 스킬이 모두 아르카나 스킬일 때만 입력). 이미 적중한 아르카나 스킬 대미지의 40 · 50%로 추가 공격하는 스킬이라
+// 보너스 대미지(일반 · 아르카나 · 무기)로 따로 늘어나지 않아요 → 딜 계산에서 비중을 고정값으로 둬요
 const isDust = (n) => ['블래스트', '플레어'].indexOf(String(n || '').replace(/\s/g, '')) >= 0;
-const dustSh = envSkills.filter((k) => isDust(k.name)).reduce((a, k) => a + (SHARE[k.name] || 0), 0);
-const dustPar = envSkills.filter((k) => k.arc && !isDust(k.name)); const dustParTot = dustPar.reduce((a, k) => a + (SHARE[k.name] || 0), 0);
-if (dustSh && dustParTot) { dustPar.forEach((k) => { SHARE[k.name] += dustSh * SHARE[k.name] / dustParTot; }); envSkills.filter((k) => isDust(k.name)).forEach((k) => { SHARE[k.name] = 0; }); }
 const shareOf = (name) => SHARE[name] || 0;
 const envShares = envSkills.map((k) => ({ name: k.name, pct: (Math.round(shareOf(k.name) * 1000) / 10) + '%', fg: k.arc ? '#1E3D2E' : '#4A3D30', bg: k.arc ? '#E3EDE6' : '#FBF5E8' }));
 // ── 알케믹 스팅어 스킬 효율 (계산 시트 기준) ──
