@@ -386,6 +386,8 @@ const rfName = (ty, st) => (ty ? 'S' : 'R') + st + '강';
 const RF_STEP_PCT = [3.5, 7.8, 12.0, 16.0, 20.0, 24.0, 28.0];
 const RF_STEP_COST = [5000, 14000, 30000, 50000, 75000, 105000, 140000];
 // 슬롯별 특별 개조 — 주무기(rhand)는 항상, 보조무기(lhand)는 엘레멘탈 나이트가 소울 리버레이트 소드 · 해머 2개를 장착했을 때만
+// 특별 개조 8단계 비용 — 8단계 개조석 경매장 최저가 (R: 붉은 · S: 푸른, 실시간 매물이 없으면 최근 거래가) · 7단계 미만에서 8단계 목표면 7단계까지 예상 비용을 더해요
+const rfStone8 = (ty) => { const n = ty ? '8단계 푸른 개조석' : '8단계 붉은 개조석'; const P = s.prices || {}; const x = (P.items || {})[n] || (P.categoryItems || {})[n]; const v = Number(x && typeof x === 'object' ? x.min : x); if (v > 0) return v; const h = (P.historyItems || {})[n]; return h && h.last > 0 ? h.last : 0; };
 const rfCtx = (slot) => {
 const sub = slot === 'lhand';
 const weapon = (sub ? rfFields.sub : rfFields.weapon) || '';
@@ -401,7 +403,7 @@ const at = (ty, st) => rfAt(ty, st, ty === 1 && arcIdx === 2, ek);
 const cur = at(type, stage);
 const map = {}; const opts = [];
 // 효과가 확인되지 않은 단계(엘레멘탈 나이트 한손 S8)는 목표 단계에서 빼요
-for (let tg = stage + 1; tg <= stageMax; tg++) { if (at(type, tg).tbd) continue; const d = rfDelta(cur, at(type, tg)); map[rfName(type, tg)] = d; opts.push([rfName(type, tg), RF_STEP_PCT[tg - stage - 1], d.max + d.matk, RF_STEP_COST[tg - stage - 1]]); }
+for (let tg = stage + 1; tg <= stageMax; tg++) { if (at(type, tg).tbd) continue; const d = rfDelta(cur, at(type, tg)); map[rfName(type, tg)] = d; opts.push([rfName(type, tg), RF_STEP_PCT[tg - stage - 1], d.max + d.matk, tg === 8 && rfStone8(type) ? (tg - 1 > stage ? RF_STEP_COST[tg - 2 - stage] : 0) + Math.round(rfStone8(type) / 10000) : RF_STEP_COST[tg - stage - 1]]); }
 return { noSwap: dual, type: type, stage: stage, cur: cur, map: map, dim: ['sp', '특별 개조', rfName(type, stage), true, opts], swapDelta: (v) => { const fs = stage + (v || 0); const a = at(type, fs); const b = at(1 - type, fs); return a.tbd || b.tbd ? { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: true } : rfDelta(a, b); } };
 };
 const RFC = { rhand: rfCtx('rhand'), lhand: rfCtx('lhand') };
