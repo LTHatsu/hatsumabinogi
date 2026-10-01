@@ -142,7 +142,7 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 <section aria-label="부가 장비" style="padding: 0 80px 36px; display: flex; flex-direction: column; gap: 14px">
 <div style="display: flex; justify-content: space-between; align-items: baseline">
 <h2 style="margin: 0; padding-left: 8px; font-family: 'Gowun Batang', serif; font-size: 30px">부가 장비</h2>
-<span style="font-size: 14px; color: #6B5A45">미니어처 · 토템 · 주화 · 인형 가방을 목록에서 골라 추가하거나 다른 것으로 바꿔 볼 수 있어요</span>
+<span style="font-size: 14px; color: #6B5A45">미니어처 · 토템 · 주화 · 인형 가방 · 스타더스트 형상을 목록에서 골라 추가하거나 다른 것으로 바꿔 볼 수 있어요</span>
 </div>
 <span role="status" style="margin-top: -6px; padding-left: 8px; font-size: 13px; color: #8C7A62">{{priceNote}}</span>
 <div style="background: #FFFBF2; border: {{miniCard.border}}; border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 16px">
@@ -274,7 +274,7 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 </footer>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2F5A45","options":["#2F5A45","#7A3B2E","#2E4A6B"]},"$preview":{"width":1440,"height":4400}}'>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2F5A45","options":["#2F5A45","#7A3B2E","#2E4A6B"]},"$preview":{"width":1440,"height":4700}}'>
 class Component extends DCLogic {
 constructor(props) {
 super(props);
@@ -511,16 +511,11 @@ const setBonus = setAny('dusk') ? 5 : 0;
 // 전투 환경 딜 비중 — 캐릭터 정보에서 입력한 스킬별 딜 비중을 합계 100%로 환산 (연속공격 · 스타더스트 포함 여부는 전투 환경 입력을 그대로 따름)
 // 스킬별 효율 계산: 총딜 증가율 = 해당 스킬 보정 비중 × 해당 스킬 대미지 증가율 (shareOf 사용)
 // 분모: 연속공격은 항상 제외 · 스타더스트(블래스트 · 플레어)는 전투 환경에 입력했을 때만 포함
-const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && k.name && k.name.replace(/\s/g, '') !== '연속공격' && Number(k.share) > 0);
+// 스타더스트(플레어 · 블래스트)는 판마다 발동 편차가 커서 일반 딜 계산에서 빼요 — 비중은 캐릭터 정보의 스타더스트 칸에 따로 받아 스타더스트 형상 효과 계산에만 써요
+const isDust = (n) => ['블래스트', '플레어'].indexOf(String(n || '').replace(/\s/g, '')) >= 0;
+const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && k.name && k.name.replace(/\s/g, '') !== '연속공격' && !isDust(k.name) && Number(k.share) > 0);
 const envTot = envSkills.reduce((a, k) => a + Number(k.share), 0);
 const SHARE = {}; envSkills.forEach((k) => { SHARE[k.name] = envTot ? Number(k.share) / envTot : 0; });
-// 스타더스트(블래스트 · 플레어) — 입력한 딜 비중 그대로 아르카나 스킬 비중에 포함해요 (발동 스킬이 모두 아르카나 스킬일 때만 입력).
-// 이미 적중한 아르카나 스킬 대미지의 40 · 50%로 추가 공격하는 스킬이라 보너스 대미지를 따로 받지 않고, 발동시킨 아르카나 스킬이 세지는 비율만큼만 함께 세져요
-// → 스타더스트 몫은 스타더스트가 아닌 아르카나 스킬들의 증가율(비중 가중 평균)을 따라가요. 그런 스킬이 입력되지 않았으면 고정값으로 둬요
-const isDust = (n) => ['블래스트', '플레어'].indexOf(String(n || '').replace(/\s/g, '')) >= 0;
-const dustSh = envSkills.filter((k) => isDust(k.name)).reduce((a, k) => a + (SHARE[k.name] || 0), 0);
-const dustParTot = envSkills.filter((k) => k.arc && !isDust(k.name)).reduce((a, k) => a + (SHARE[k.name] || 0), 0);
-const dustCarry = dustParTot ? 1 + dustSh / dustParTot : 1; // 발동 아르카나 스킬의 비중에 스타더스트 몫을 얹는 배수
 const shareOf = (name) => SHARE[name] || 0;
 const envShares = envSkills.map((k) => ({ name: k.name, pct: (Math.round(shareOf(k.name) * 1000) / 10) + '%', fg: k.arc ? '#1E3D2E' : '#4A3D30', bg: k.arc ? '#E3EDE6' : '#FBF5E8' }));
 // ── 알케믹 스팅어 스킬 효율 (계산 시트 기준) ──
@@ -560,8 +555,7 @@ const evap = 1.1 + 0.005 * (sv('fire') + sv('water'));
 // 융합 (페른 · 이다드 · 에바드) — 1 · 2타는 그대로, 피니시 배율 +4500%p · 알케믹 시너지 중 증발 계수를 곱해요 (과열 · 전류 · 분진 · 냉각 · 부식 계수는 받는 대로 추가)
 const triFin = 4400 + (yung ? 4500 : 0); const triSyn = yung ? evap : 1;
 const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
-// 아르카나 스킬(플레임버스트 · 하이드로피어스 · 트라이어설트)은 자기가 발동시킨 스타더스트 몫까지 함께 세져요
-const shF = shareOf('플레임버스트') * dustCarry, shH = shareOf('하이드로피어스') * dustCarry, shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트') * dustCarry;
+const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'), shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트');
 // 아르카나 스킬 계산식 안의 재능 스킬 비율 (재능 보너스 대미지가 이 부분에만 적용) — 알케믹 스팅어: 플레임버스트(크래시샷) · 하이드로피어스(매그넘샷)
 const talentFrac = (name) => { if (!isStg) return 0; if (name === '플레임버스트') return crash / flHit; if (name === '하이드로피어스') return gyeok ? magnum * 1.15 / flow : magnum / hydro; return 0; };
 const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff + urgentBuff };
@@ -569,7 +563,7 @@ const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (r
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
 // 보너스 대미지 — 같은 종류는 (1 + 합) 배. 일반 보너스: 모든 스킬 · 재능 보너스: 재능 스킬(일반 보너스와 합산 → 1 + 일반 + 재능) · 아르카나 보너스: 아르카나 스킬에 일반 보너스와 합산(1 + 일반 + 아르카나) · 무기 보너스: 모든 스킬
 // 아르카나 스킬 안의 재능 스킬 부분(talentFrac)은 (1 + 일반 + 재능 + 아르카나), 나머지는 (1 + 일반 + 아르카나). 스킬 비중은 전투 환경 입력값(합계 100% 환산)
-const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); const dustFix = dustParTot ? 0 : dustSh; return dustFix + (1 + W) * envSkills.reduce((sum, k) => { if (isDust(k.name)) return sum; const sh = shareOf(k.name) * (k.arc ? dustCarry : 1); if (!k.arc) return sum + sh * (1 + G + T); const tf = talentFrac(k.name); return sum + sh * ((1 - tf) * (1 + G + A) + tf * (1 + G + T + A)); }, 0); };
+const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); return (1 + W) * envSkills.reduce((sum, k) => { const sh = shareOf(k.name); if (!k.arc) return sum + sh * (1 + G + T); const tf = talentFrac(k.name); return sum + sh * ((1 - tf) * (1 + G + A) + tf * (1 + G + T + A)); }, 0); };
 const dealOf = (st) => st.max * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
 const dealPct = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0) }); return Math.round((n / b - 1) * 1000) / 10; };
 // 경매장 최저가 (골드) → 만 G. 프리미엄 버전도 함께 보고 더 싼 쪽을 써요
@@ -592,13 +586,24 @@ const muSlots = [];
 MU_GROUPS.forEach((g) => [[g[1], '미니어처'], [g[1] + 'Ex', '엑스트라 미니어처']].forEach((sk) => { const k = sk[0]; const cur = miniVal(k); const all = muGroupsOf(k); const ups = all.filter((x) => x[0] > cur); const sel = Number(s.up['m.' + k]) || 0; const curHit = all.filter((x) => x[0] === cur)[0]; muSlots.push({ g: g, k: k, label: sk[1], cur: cur, curName: cur ? (curHit ? curHit[1] : '') : '없음', ups: ups, tgt: ups.filter((x) => x[0] === sel)[0] || null }); }));
 const kalOwned = !!(cInfo && cInfo.kaliach);
 const kalBuy = !kalOwned && !!s.up['m.kaliach'];
+// 스타더스트 형상 — 안락의 파편 스타더스트의 형상 장착 시 지원효과 대미지 +10%p (예: 120% → 130%)
+// 플레어(발동 스킬의 40%) · 블래스트(50%) 대미지는 모두 지원효과 대미지에 비례 → 각 스킬 딜 증가율 = 10 ÷ 현재 지원효과 %. 입력한 비중이 이미 40 · 50% 차이를 담고 있어 총딜 증가 = 플레어 비중 × 증가율 + 블래스트 비중 × 증가율
+// 비중은 스타더스트를 포함한 전체 딜 기준 (캐릭터 정보 입력, 예전 스킬 목록에 넣은 값은 그대로 이어 써요)
+const SOLACE = '안락의 파편 스타더스트의 형상';
+const dustF0 = (cInfo && cInfo.fields) || {}; const dustLegacy = (n) => { const q = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && String(k.name || '').replace(/\s/g, '') === n)[0]; return q ? Number(q.share) || 0 : 0; };
+const dustNum = (k, n) => (dustF0[k] !== undefined && dustF0[k] !== '' ? Number(dustF0[k]) || 0 : dustLegacy(n));
+const dustFl = dustNum('dustFlare', '플레어'), dustBl = dustNum('dustBlast', '블래스트'); const dustSup = Number(dustF0.dustSupport) || 120; const dustOwned = !!dustF0.dustSolace;
+const dustRate = 10 / dustSup; const dustGF = +(dustFl * dustRate).toFixed(2), dustGB = +(dustBl * dustRate).toFixed(2); const dustPct = +(dustGF + dustGB).toFixed(2);
+const dustUp = !dustOwned && dustPct > 0 ? [[SOLACE, dustPct, { dmgFix: Math.round((BASE_STATS.max || 0) * dustPct / 100) }, priceOf(SOLACE), '지원효과 ' + dustSup + '% → ' + (dustSup + 10) + '% · 플레어 +' + dustGF + '% · 블래스트 +' + dustGB + '% (총딜)']] : [];
+const dustCur = dustOwned ? SOLACE + ' 장착 중' : '지원효과 대미지 ' + dustSup + '%' + (dustF0.dustSupport ? '' : ' (기본값)') + (dustFl || dustBl ? ' · 플레어 ' + dustFl + '% · 블래스트 ' + dustBl + '%' : ' · 캐릭터 정보에서 플레어 · 블래스트 비중을 입력하면 계산돼요');
 const EXTRA = [
-['doll', '인형 가방', I.doll, curDoll || '없음', dollUp]
+['doll', '인형 가방', I.doll, curDoll || '없음', dollUp],
+['dust', '스타더스트 형상', 'M12 3l2.2 5.6L20 9.3l-4.6 3.9 1.4 5.8L12 16l-4.8 3 1.4-5.8L4 9.3l5.8-.7z', dustCur, dustUp, dustOwned ? SOLACE : '지원효과 ' + dustSup + '%', '스타더스트 형상 장착']
 ];
 const STAT_KEYS = [['max', MX, ''], ['crate', '크리티컬 확률', '%p'], ['cdmg', '크리티컬 대미지', '%'], ['bonus', '보너스 대미지', '%']];
 const statText = (st) => STAT_KEYS.filter((k) => st[k[0]]).map((k) => k[1] + ' +' + st[k[0]] + k[2]).join(' · ');
 chosen.forEach((c) => { c.group = '장착 장비'; const rd = c.rfd || (c.dim === '특별 개조' ? RF_MAP[c.to] : null); if (rd) { c.stats = { max: rd.max + rd.matk, crate: 0, cdmg: rd.cdmg, bonus: rd.bonus }; return; } c.stats = { max: c.dmg, crate: c.dim === '인챈트 접두' ? +(c.pct * 0.5).toFixed(1) : 0, cdmg: c.dim === '인챈트 접미' ? +(c.pct * 1.5).toFixed(1) : 0, bonus: c.dim === '세공 랭크' ? c.pct : 0 }; });
-EXTRA.forEach((ex) => { const v = s.up['x.' + ex[0]] || 0; if (v > 0 && ex[4][v - 1]) { const o = ex[4][v - 1]; chosen.push({ key: 'x.' + ex[0], slotKey: 'x.' + ex[0], slot: '부가 장비', dim: ex[1] + (ex[3] === '없음' ? ' 추가' : ' 교체'), from: ex[5] || ex[3], to: o[0], pct: o[1], dmg: o[2].max || 0, costM: o[3], eff: o[3] ? o[1] / (o[3] / 10000) : 0, group: '부가 장비', names: ex[1], stats: Object.assign({ max: 0, crate: 0, cdmg: 0, bonus: 0 }, o[2]) }); } });
+EXTRA.forEach((ex) => { const v = s.up['x.' + ex[0]] || 0; if (v > 0 && ex[4][v - 1]) { const o = ex[4][v - 1]; chosen.push({ key: 'x.' + ex[0], slotKey: 'x.' + ex[0], slot: '부가 장비', dim: ex[6] || (ex[1] + (ex[3] === '없음' ? ' 추가' : ' 교체')), from: ex[5] || ex[3], to: o[0], pct: o[1], dmg: o[2].dmgFix !== undefined ? o[2].dmgFix : (o[2].max || 0), costM: o[3], eff: o[3] ? o[1] / (o[3] / 10000) : 0, group: '부가 장비', names: ex[1], stats: Object.assign({ max: 0, crate: 0, cdmg: 0, bonus: 0 }, o[2]) }); } });
 muSlots.filter((m) => m.tgt).forEach((m) => { const st = { max: 0, crate: 0, cdmg: 0, bonus: 0 }; st[m.g[2]] = m.tgt[0] - m.cur; chosen.push({ key: 'm.' + m.k, slotKey: 'm.' + m.k, slot: '부가 장비', dim: m.g[0] + ' ' + m.label + ' 교체', from: m.curName, to: m.tgt[1], pct: dealPct(st), dmg: st.max, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); });
 if (kalBuy) { const st = { max: 0, crate: 1, cdmg: 0, bonus: 0 }; chosen.push({ key: 'm.kaliach', slotKey: 'm.kaliach', slot: '부가 장비', dim: '칼리아흐의 결계 미니어처 구매', from: '없음', to: '칼리아흐의 결계 미니어처', pct: dealPct(st), dmg: 0, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); }
 const muChosen = chosen.filter((c) => c.names === '미니어처' && c.key.indexOf('m.') === 0);
@@ -617,7 +622,7 @@ const k = 'x.' + ex[0]; const v = s.up[k] || 0; const o = v > 0 ? ex[4][v - 1] |
 return {
 name: ex[1], icon: ex[2], current: ex[3], value: o ? String(v) : '0',
 opts: [{ v: '0', label: ex[3] === '없음' ? '장착 안 함' : '현재 유지' }].concat(ex[4].map((q, i) => ({ v: String(i + 1), label: q[0] + ' · +' + q[1] + '%' }))),
-on: !!o, off: !o, pct: o ? o[1].toFixed(1) : '0', statLine: o ? statText(o[2]) : '', cost: o ? (o[3] ? won(o[3]) : '가격 미정') : '—',
+on: !!o, off: !o, pct: o ? o[1].toFixed(1) : '0', statLine: o ? (o[4] || statText(o[2])) : '', cost: o ? (o[3] ? won(o[3]) : '가격 미정') : '—',
 border: o ? '1.5px solid ' + accent : '1px solid #D9C8A6', bg: o ? '#F3F8F4' : '#F5EDDC',
 onChange: (e) => setUp(k, Number(e.target.value))
 };
