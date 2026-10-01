@@ -23,7 +23,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 .f{height:44px;box-sizing:border-box;padding:0 12px;border:1px solid #B6A27E;border-radius:10px;background:#FBF5E8;font-family:'Gowun Dodum',sans-serif;font-size:14px;color:#2A2119;width:100%}
 </style>
 </helmet>
-<div style="width: 390px; min-height: 100vh; margin: 0 auto; position: relative; word-break: keep-all; overflow-wrap: break-word; box-sizing: border-box; background: #F5EDDC; font-family: 'Gowun Dodum', sans-serif; color: #2A2119; display: flex; flex-direction: column">
+<div style="width: 100%; max-width: 390px; min-height: 100vh; margin: 0 auto; position: relative; word-break: keep-all; overflow-wrap: break-word; box-sizing: border-box; background: #F5EDDC; font-family: 'Gowun Dodum', sans-serif; color: #2A2119; display: flex; flex-direction: column">
 
 <header style="height: 60px; box-sizing: border-box; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #D9C8A6; background: #FBF5E8">
 <a href="MobileCharInput.dc.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #2A2119">
@@ -40,7 +40,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 
 <section style="padding: 24px 16px 16px; display: flex; flex-direction: column; gap: 12px">
 <p style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 15px; font-weight: 700; color: #8A5E17; letter-spacing: 0.02em">스펙업 계산기</p>
-<ol aria-label="진행 단계" style="white-space: nowrap; margin: 0; padding: 0; list-style: none; display: flex; align-items: center; gap: 6px; font-size: 12px">
+<ol aria-label="진행 단계" style="white-space: nowrap; margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 12px">
 <li><a href="MobileCharInput.dc.html" style="display: flex; align-items: center; gap: 4px; color: #6B5A45; text-decoration: none"><span style="width: 20px; height: 20px; border-radius: 50%; background: #E8DCC2; display: flex; align-items: center; justify-content: center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6B5A45" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span>캐릭터 정보</a></li>
 <li aria-hidden="true" style="width: 10px; height: 1px; background: #B6A27E"></li>
 <li><a href="MobileCalc.dc.html" style="display: flex; align-items: center; gap: 4px; color: #6B5A45; text-decoration: none"><span style="width: 20px; height: 20px; border-radius: 50%; background: #E8DCC2; display: flex; align-items: center; justify-content: center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6B5A45" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span>장비 · 오검</a></li>
@@ -135,7 +135,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <div style="background: #FFFBF2; border: {{x.border}}; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
 <div style="display: flex; align-items: center; gap: 12px">
 <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: {{accent}}; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FBF5E8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{x.icon}}"></path></svg></span>
-<div style="min-width: 0; flex-grow: 1; display: flex; flex-direction: column; gap: 2px"><h3 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 17px">{{x.name}}</h3><span title="{{x.current}}" style="font-size: 12px; color: #6B5A45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">현재 · {{x.current}}</span></div>
+<div style="min-width: 0; flex-grow: 1; display: flex; flex-direction: column; gap: 2px"><h3 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 17px">{{x.name}}</h3><span style="font-size: 12px; line-height: 1.4; color: #6B5A45">현재 · {{x.current}}</span></div>
 </div>
 <select class="f" aria-label="{{x.name}} 변경" value="{{x.value}}" onChange="{{x.onChange}}"><sc-for list="{{x.opts}}" as="o" hint-placeholder-count="4"><option value="{{o.v}}">{{o.label}}</option></sc-for></select>
 <sc-if value="{{x.on}}" hint-placeholder-val="{{ true }}"><div style="border-radius: 10px; background: {{x.bg}}; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px"><div style="display: flex; justify-content: space-between; font-size: 13px"><strong style="color: #1E3D2E">▲ +{{x.pct}}%</strong><span style="color: #4A3D30">{{x.cost}}</span></div><span style="font-size: 12px; color: #4A3D30">{{x.statLine}}</span></div></sc-if>
@@ -149,8 +149,8 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <h2 style="margin: 0; padding-left: 4px; font-family: 'Gowun Batang', serif; font-size: 22px">오검 워드</h2>
 <span style="font-size: 12px; color: #6B5A45">저장되지 않아요</span>
 </div>
-<div role="group" aria-label="오검 칸" style="position: relative; width: 358px; height: 330px; background: #EFE5CF; border-radius: 16px">
-<svg width="358" height="330" viewBox="0 0 358 330" fill="none" aria-hidden="true" style="position: absolute; left: 0; top: 0"><polygon points="{{ogPoints}}" stroke="#C9A25A" stroke-width="2"></polygon></svg>
+<div role="group" aria-label="오검 칸" style="position: relative; width: 100%; max-width: 358px; height: 330px; background: #EFE5CF; border-radius: 16px">
+<svg width="100%" height="330" viewBox="0 0 358 330" preserveAspectRatio="none" fill="none" aria-hidden="true" style="position: absolute; left: 0; top: 0"><polygon points="{{ogPoints}}" stroke="#C9A25A" stroke-width="2"></polygon></svg>
 <sc-for list="{{ogSlots}}" as="o" hint-placeholder-count="5">
 <button type="button" aria-pressed="{{o.checked}}" onClick="{{o.pick}}" style="position: absolute; left: {{o.left}}; top: {{o.top}}; width: 80px; height: 80px; box-sizing: border-box; border-radius: 12px; border: {{o.border}}; background: {{o.bg}}; box-shadow: {{o.shadow}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px; color: #2A2119">
 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{o.iconFg}}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{o.icon}}"></path></svg>
@@ -158,7 +158,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <span style="font-size: 10px; line-height: 1.2; color: {{o.subFg}}; text-align: center">{{o.sub}}</span>
 </button>
 </sc-for>
-<div style="position: absolute; left: 121px; top: 115px; width: 116px; height: 112px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center">
+<div style="position: absolute; left: calc(50% - 58px); top: 115px; width: 116px; height: 112px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center">
 <span style="font-size: 11px; font-weight: 700; color: #6B5A45">오검 조합</span>
 <sc-if value="{{combo.on}}" hint-placeholder-val="{{ false }}"><span style="width: 40px; height: 40px; border-radius: 50%; background: {{accent}}; box-shadow: 0 0 0 4px #EFE5CF, 0 0 0 5.5px #C9A25A; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FBF5E8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{combo.icon}}"></path></svg></span><strong role="status" style="margin-top: 2px; font-family: 'Gowun Batang', serif; font-size: 14px; line-height: 1.25; color: #1E3D2E">{{combo.name}}</strong><span style="font-size: 10px; color: #6B5A45">{{combo.sub}}</span></sc-if>
 </div>
@@ -830,7 +830,7 @@ const ogSel = s.ogSel || 1;
 const ogSlots = ogPos.map((p, k) => {
 const n = k + 1; const tp = ogw[n] || ''; const fx = (og[n] || []).filter((q) => q && tp && (OG_TAL.some((z) => z[0] === q.e) || (isSpecialOg(tp) && OG_ARC.some((z) => z[0] === q.e)))); const w = tp ? (isSpecialOg(tp) ? '특수' : '일반') + (fx.length ? ' · 효과 ' + fx.length : '') : (fx.length ? '효과 ' + fx.length + ' / 3' : null); const on = ogSel === n;
 return {
-name: tp || '오검 ' + n, sub: w || '비어 있음', icon: ogIconOf(tp), left: (p[0] - 40.0).toFixed(1) + 'px', top: (p[1] - 40.0).toFixed(1) + 'px',
+name: tp || '오검 ' + n, sub: w || '비어 있음', icon: ogIconOf(tp), left: 'calc(' + (p[0] / 3.58).toFixed(2) + '% - 40px)', top: (p[1] - 40.0).toFixed(1) + 'px',
 checked: on ? 'true' : 'false',
 bg: on ? '#FFFBF2' : (w ? '#FBF5E8' : '#F5EDDC'),
 border: on ? '2px solid ' + accent : (w ? '1px solid #D9C8A6' : '1.5px dashed #B6A27E'),
