@@ -1095,7 +1095,7 @@ const combo = hit ? { on: true, off: false, name: hit[0], icon: SK[hit[2]], sub:
 const ogPanel = {
 name: '오검 ' + ogSel + (ogw[ogSel] ? ' · ' + ogw[ogSel] : ''), icon: ogIconOf(ogw[ogSel]), effects: effects,
 type: ogw[ogSel] || '', spOpts: OG_SPECIAL.map((x) => ({ v: x, label: x })), spNote: '', nmOpts: OG_NORMAL.map((x) => ({ v: x, label: x })),
-onType: (e) => { const v = e.target.value; const o = Object.assign({}, ogw); if (v) { o[ogSel] = v; } else { delete o[ogSel]; } ogUpd({ ogw: o, ogSaved: ogSel }); },
+onType: (e) => { const v = e.target.value; if (v === (ogw[ogSel] || '')) return; const o = Object.assign({}, ogw); if (v) { o[ogSel] = v; } else { delete o[ogSel]; } const f = Object.assign({}, og); delete f[ogSel]; ogUpd({ ogw: o, og: f, ogSaved: ogSel }); }, // 오검 종류를 바꾸면 그 칸의 효과는 모두 지우고 처음부터 골라요
 status: '마스터 등급 · ' + (fxCount ? '효과 ' + fxCount + ' / 3 설정됨' : '비어 있음 · 효과를 골라 현재 오검과 비교해 보세요'),
 saved: JSON.stringify([ogBase.ogw[ogSel] || '', ogBase.og[ogSel] || null]) !== JSON.stringify([ogw[ogSel] || '', og[ogSel] || null]),
 clear: () => { const o = Object.assign({}, og); delete o[ogSel]; const w2 = Object.assign({}, ogw); delete w2[ogSel]; ogUpd({ og: o, ogw: w2, ogSaved: null }); }
