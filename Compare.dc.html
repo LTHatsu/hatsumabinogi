@@ -236,6 +236,7 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 <select class="f" aria-label="{{x.label}} 오검 워드 효과" value="{{x.value}}" onChange="{{x.onEffect}}"><option value="">{{x.first}}</option><sc-for list="{{x.groups}}" as="g" hint-placeholder-count="2"><optgroup label="{{g.label}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></optgroup></sc-for></select>
 <select class="f" aria-label="{{x.label}} 레벨" value="{{x.lv}}" onChange="{{x.onLevel}}"><sc-for list="{{x.lvOpts}}" as="l" hint-placeholder-count="10"><option value="{{l.v}}">{{l.label}}</option></sc-for></select>
 <span style="text-align: right; font-size: 14px; color: {{x.maxFg}}">{{x.max}}</span>
+<sc-if value="{{x.gainOn}}" hint-placeholder-val="{{ false }}"><span style="grid-column: 2 / -1; font-size: 13px; color: #1E3D2E">{{x.gainTxt}}</span></sc-if>
 </div>
 </sc-for>
 </div>
@@ -689,20 +690,26 @@ const stgCombo = (list) => list.every((x) => stgOgw.indexOf(x) >= 0);
 let gyeok = stgCombo(['살', '다르', '에다드']); let bun = stgCombo(['닌', '케르트', '에만콜']); let yung = stgCombo(['페른', '이다드', '에바드']);
 // 크래시샷 → 플레임버스트 (3타, 분출: ×1.09 · 4타)
 const crash = (370 + 3.5 * sv('crLv') + sv('ogCr')) * wCr * skMul('크래시 샷');
-// 이중 피어싱 — 아르카나 스킬 계산식 안의 기반(재능) 스킬 부분에만 피어싱이 두 번 적용돼 보호 차감이 줄어요 (약 ×1.45 근사).
-// 재능 스킬 단독 사용 · 아르카나 고유 추가 대미지에는 적용하지 않아요. 앞으로 추가하는 아르카나 스킬의 기반 스킬 부분에도 같이 적용해요
-// 이중 피어싱 배율 — 피어싱 1회 적용 후 남은 보호 P에서 피어싱 45를 한 번 더 깎았을 때 남는 피해의 비율
-// 피해감소율(%) = (100 / √2) × log10((보호 + 10√2) / (10√2)) — 마비노기 월드 위키 Stats/Protection
-// 기준 보호 131 = 레넨의 미이르 보호 297 − 기본 디버프 120.67 − 피어싱 45 (피어싱 1회 적용 후 남은 보호)
-const PROT_RED = (p) => Math.max(0, Math.log10((p + 10 * Math.SQRT2) / (10 * Math.SQRT2)) / Math.SQRT2);
-const protV = 131;
-const PIERCE2 = (1 - PROT_RED(protV - 45)) / (1 - PROT_RED(protV));
-const flHit = crash * PIERCE2 + 1080 + 45 * rFl + sv('ogFl');
+// ── 보호 · 피어싱 · 방어 — 마도카 '오검 옵션 효율 계산 및 추천 우선순위 (단죄 오검 기준)'(HP 짜오) 구조 ──
+// 레넨의 미이르 목인 방어 1205 · 보호 297 → 디버프(어퍼 −11% −28 · 프라 −15 · 야옹 −15 · 미르 −10 · 물풍선 −3) 후 보호 194 → 대미지 감소 82%
+// 피어싱 9(보호 −45) 적용 시 보호 149 → 대미지 감소 74% → 피어싱 대미지 증가 (100 − 74) ÷ (100 − 82) = 1.4444배
+// 아르카나 스킬 안의 재능(기반) 스킬은 피어싱 증폭(×1.4444)을 먼저 받고, 아르카나 배율과 합산이 끝난 뒤 스킬 전체가 피어싱 증폭을 한 번 더 받아요 · 보호 피해감소 · 방어는 마지막에 한 번
+// 아르카나 스킬 = ((재능 부분 × 1.4444) × (1 + 재능 보너스) + 고유 부분) × 1.4444 × (1 − 0.82) − 방어 772 (대미지는 최대 대미지 × 배율 ÷ 100) · 재능 스킬 단독 = 대미지 × 1.4444 × (1 − 0.82) − 방어
+const PROT_V = 194, PROT_RED0 = 0.82, PROT_RED1 = 0.74, DEF_V = 772;
+const PIERCE_G = (1 - PROT_RED1) / (1 - PROT_RED0); // 피어싱 증폭 1.4444
+const PROT_K = (1 - PROT_RED0) * PIERCE_G; // 피어싱 증폭 × 보호 피해감소 = 0.26
+const hitOut = (raw) => Math.max(0, raw * PROT_K - DEF_V);
+// 방어 차감 때문에 절대 대미지가 필요해요 — 최대 대미지를 입력하지 않았으면 3000 기준
+const MREF = charMax + dollMax > 0 ? charMax + dollMax : 3000;
+// tal · own: 재능 부분 · 고유 부분 절대 대미지, w: 재능 보너스 가중치, mul: 스킬 전체에 곱하는 계수(증발 등)
+const arcHit = (tal, own, w, mul) => { const m = mul || 1; const inW = Math.max(0, tal) * PIERCE_G * w; const pre = (inW + own) * m; const v = Math.max(0, pre * PROT_K - DEF_V); return { v: v, tal: inW * m * PROT_K, pre: pre, inW: inW * m }; };
+// 화면 표시용 스킬 배율 (보호 · 피어싱 적용 전)
+const flHit = crash + 1080 + 45 * rFl + sv('ogFl');
 const flame = flHit * (bun ? 1.09 * 4 : 3);
 // 매그넘샷 → 하이드로피어스 (격류: (매그넘 + 하이드로×0.15) × 7)
 const magnum = (590 + (sv('mgLv') + sv('magi')) * 10 + dErgLv * 3 + sv('ogMg')) * setMg * wMg;
-const hydro = magnum * PIERCE2 + (3280 + 110 * rHy + sv('ogHy')) * 1.3;
-const flow = magnum * PIERCE2 + hydro * 0.15;
+const hydro = magnum + (3280 + 110 * rHy + sv('ogHy')) * 1.3;
+const flow = magnum + hydro * 0.15;
 // 트라이어설트 (1·2타 + 3타, 연금술 마스터리 계수 · 끝의 0.1은 흙 연금술 마스터리 기본 계수)
 const triM = 1 + (0.1 + sv('fire') * 0.005) + (0.1 + sv('water') * 0.005) + (0.1 + sv('wind') * 0.005) + 0.1;
 // 증발 (플레임버스트 · 하이드로피어스 · 트라이어설트) 계수 — 불 · 물 연금술 마스터리로만 오름
@@ -710,11 +717,28 @@ const evap = 1.1 + 0.005 * (sv('fire') + sv('water'));
 // 융합 (페른 · 이다드 · 에바드) — 1 · 2타는 그대로, 피니시 배율 +4500%p · 알케믹 시너지 중 증발 계수를 곱해요 (과열 · 전류 · 분진 · 냉각 · 부식 계수는 받는 대로 추가)
 let triFin = 4400 + (yung ? 4500 : 0); let triSyn = yung ? evap : 1;
 const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
+// 알케믹 스팅어 스킬별 대미지 — 위 보호 · 피어싱 · 방어 구조 · w: 재능 보너스 가중치
+const stgParts = (ov, w) => {
+const g = (k) => sv(k) + ((ov.sg || {})[k] || 0); const lv = ov.relic || { fl: rFl, hy: rHy, tr: rTr }; const MM = ov.M !== undefined ? ov.M : MREF; const P = (pct) => MM * pct / 100;
+const crashV = (370 + 3.5 * g('crLv') + sv('ogCr')) * wCr * skMul('크래시 샷');
+const dE = ov.dErg !== undefined ? ov.dErg : dErgLv;
+const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * magMul() * wMg;
+const ev = 1.1 + 0.005 * (g('fire') + g('water'));
+const tM = 1 + (0.1 + g('fire') * 0.005) + (0.1 + g('water') * 0.005) + (0.1 + g('wind') * 0.005) + 0.1;
+// 플레임 버스트 1타 = 크래시샷(재능) + 고유 1080% · 3타 (분출: × 1.09 · 4타) · 증발 계수
+const fh = arcHit(P(crashV), P(1080 + 45 * lv.fl + sv('ogFl')), w, ev); const fn = bun ? 1.09 * 4 : 3;
+// 하이드로 피어스 = 매그넘샷(재능) + 고유 (3280% + 유물 + 오검) × 1.3 · 격류: 7타 × (매그넘 + 하이드로 × 0.15)
+const arm = P((3280 + 110 * lv.hy + sv('ogHy')) * 1.3); let hy;
+if (gyeok) { const inW = P(magV) * PIERCE_G * w; const per = Math.max(0, (inW * 1.15 + arm * 0.15) * ev * PROT_K - DEF_V); hy = { v: per * 7, tal: inW * 1.15 * ev * PROT_K * 7 }; } else { const r = arcHit(P(magV), arm, w, ev); hy = { v: r.v, tal: r.tal }; }
+// 트라이 어설트 (고유만) = 1 · 2타 + 피니시 · 연금술 마스터리 계수 · 융합이면 증발 계수
+const tSyn = yung ? ev : 1; const trv = hitOut(P((1500 + sv('ogTr')) * tM * tSyn)) * 2 + hitOut(P((triFin + 150 * lv.tr + sv('ogTr')) * tM * tSyn));
+return { fla: { v: fh.v * fn, tal: fh.tal * fn }, hyE: hy, trv: { v: trv, tal: 0 }, mag: { v: hitOut(P(magV)), tal: 0 } };
+};
 const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'), shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트');
 // 아르카나 스킬 계산식 안의 재능 스킬 비율 (재능 보너스 대미지가 이 부분에만 적용) — 알케믹 스팅어: 플레임버스트(크래시샷) · 하이드로피어스(매그넘샷)
 // ── 퓨리 파이터 스킬 계산식 (격투가 스킬배율 계산 시트 · 게일 / 얼티밋 오검 전용 블록) ──
 // 연속기(재능) 배율 J = ((세공 × a + 마기그래프 × b) × 차징 1.75 + 기본 배율) × 소울 보정 × 연속마 배율 × (1 + 어둠의 에르그 × 0.15%)
-// 아르카나 스킬 = 기반 연속기 J × 이중 피어싱 1.45 (재능 부분) + 아르카나 고유 추가 대미지 (유물 · 기본)
+// 아르카나 스킬 = (기반 연속기 J × 피어싱 증폭(재능 부분) + 아르카나 고유 추가 대미지 (유물 · 기본)) × 피어싱 증폭 × 보호 피해감소 − 방어
 // 마기그래프: 스크류 어퍼 · 차징피스트 · 파운딩 10 고정 · 소울 리버레이트 너클이면 드롭킥 ×1.15 · 파운딩 ×1.8
 // 오검 조합: 게일 피어스(닌 · 알름 · 에만콜) → 게일 ×1.2, 드롭킥 · 포스슬램 ×1.12 / 얼티밋 스트라이크(페른 · 케르트 · 일란드) → 얼티밋 1 · 2타 160% + 3타 230%
 const isFury = arcIdx === 9;
@@ -739,10 +763,12 @@ const g = (k) => sv('f_' + k) + ((ov.sg || {})['f_' + k] || 0);
 const dE = ov.dErg !== undefined ? ov.dErg : dErgLv; const lv = ov.relic || furyRelicWith('', 0);
 const FURY_OG = { dp: '연속기 : 대쉬 펀치 대미지 배율 증가', up: '연속기 : 스크류 어퍼 대미지 배율 증가', dk: '연속기 : 드롭킥 대미지 배율 증가', cf: '연속기 : 차징 피스트 대미지 배율 증가', ss: '연속기 : 섬머솔트 대미지 배율 증가', pd: '연속기 : 파운딩 대미지 배율 증가' };
 const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1] + ogV(FURY_OG[k])) * soul * (FURY_COMBO_BASE + 0.01 * Math.min(13, g('cm')) + ogV('연속기 마스터리 대미지 배율 증가') / 100) * (1 + dE * 0.0015) * (k === 'dk' ? skMul('연속기 : 드롭킥') * (furyGale ? 1.12 : 1) : 1); };
-const arc = (D, I) => ({ v: D * PIERCE2 * w + I, tal: D * PIERCE2 });
+const MM = ov.M !== undefined ? ov.M : MREF;
+const arc = (D, I) => { const r = arcHit(MM * D / 100, MM * I / 100, w); return { v: r.v, tal: r.tal }; };
 const ultD = furyUlt ? J('up') * (3 * 1.6 + 1.5 * 2.3) : J('up') * 4.5; const ultI = furyUlt ? 2000 * 1.6 + 1500 * 2.3 : 3500;
 const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000 + ogV('익시드 : 체인 블로우 3회 공격 및 피니시 공격의 대미지 배율 증가')), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 60 + 900 + ogV('익시드 : 임팩트 다이브 대미지 배율 증가')), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500 + ogV('익시드 : 포스 슬램 대미지 배율 증가')), '게일피어스': arc(J('cf'), 1300 + ogV('게일 피어스 대미지 배율 증가')), '포스플레어': arc(J('dk') * 0.7, 650 + ogV('포스 플레어 대미지 배율 증가')), '얼티밋스트라이크': arc(ultD, ultI + ogV('얼티밋 스트라이크 2회 공격 및 피니시 공격의 대미지 배율 증가')) };
-const out = { '대쉬펀치': { v: J('dp'), tal: 0 }, '스크류어퍼': { v: J('up'), tal: 0 }, '드롭킥': { v: J('dk'), tal: 0 }, '차징피스트': { v: J('cf'), tal: 0 }, '섬머솔트': { v: J('ss'), tal: 0 }, '파운딩': { v: J('pd'), tal: 0 } };
+const one = (k) => ({ v: hitOut(MM * J(k) / 100), tal: 0 });
+const out = { '대쉬펀치': one('dp'), '스크류어퍼': one('up'), '드롭킥': one('dk'), '차징피스트': one('cf'), '섬머솔트': one('ss'), '파운딩': one('pd') };
 // 게일 피어스 조합(닌 · 알름 · 에만콜): 게일 피어스 ×1.2 · 익시드 : 포스 슬램 ×1.12 · 드롭킥 ×1.12(위 J — 드롭킥이 들어간 포스 플레어 재능 부분 포함)
 if (furyGale) { [['게일피어스', 1.2], ['익시드:포스슬램', 1.12]].forEach((q) => { A[q[0]] = { v: A[q[0]].v * q[1], tal: A[q[0]].tal * q[1] }; }); }
 Object.keys(A).forEach((n) => { out[n] = A[n]; }); return out;
@@ -753,25 +779,28 @@ const FURY_DEF = furyUlt ? { '대쉬펀치': 6.8, '스크류어퍼': 6.8, '드�
 const furyUserShare = envSkills.some((k) => furyRaw[String(k.name).replace(/\s/g, '')]);
 const furyShare = (n) => (furyUserShare ? shareOf(n) : (FURY_DEF[n] || 0) / 100);
 // ── 세이크리드 가드 스킬 계산식 (마도카 실측 글 기준 · 실측 오차 0.05~2.5%) ──
-// 아르카나 스킬 = 기반 재능 몫(최대 대미지 × 윈드밀 7.48 · 돌진 5.38 × 배쉬 스택 1.15 × 계수 × 이중 피어싱) + 고유 몫(최대 대미지 · 방어력 · 생명력 × 계수)
+// 아르카나 스킬 = 기반 재능 몫(최대 대미지 × 윈드밀 7.48 · 돌진 5.38 × 배쉬 스택 1.10 × 계수 × 피어싱 증폭) + 고유 몫(최대 대미지 · 방어력 · 생명력 × 계수), 전체에 피어싱 증폭 × 보호 피해감소 − 방어
 // 링크 · 성찰의 흔적 · 방패 피해 감소율처럼 스킬 전체에 곱해지는 배율은 효율(비율) 계산에서 약분돼 생략 · 오검 효과는 레벨별 수치로 반영
 // 심판의 일격 유물은 1레벨당 최대 대미지 계수 +1 (실측 '35 + 유물 9레벨') · 방어력 · 생명력은 캐릭터 정보의 세이크리드 가드 칸 입력값
 const isSacred = arcIdx === 4;
 const sacDef = Number(fInfo.sgDef) || 0; const sacHp = Number(fInfo.sgHp) || 0;
-const SAC_WM = 7.48, SAC_DASH = 5.38, SAC_BASH = 1.15;
+// 배쉬 스택: 5타 이후 근접 전투 스킬 대미지 +10% (에린 데이터 배쉬 최고 랭크) — 단독 윈드밀과 아르카나 스킬 안의 윈드밀 · 돌진 부분 모두에 곱해요
+const SAC_WM = 7.48, SAC_DASH = 5.38, SAC_BASH = 1.10;
 const sacJudgeLvWith = (slotKey, newLv, fxNew) => ['relic1', 'relic2', 'relic3'].reduce((m, k) => { const d = (((gear && gear.det) || {})[k]) || {}; const fx = k === slotKey && fxNew ? fxNew : d.rFx; if (fx !== '심판의 일격 대미지 증가') return m; return Math.max(m, k === slotKey ? newLv : (Number(d.rLv) || 0)); }, 0);
 const sacEval = (ov, w) => {
-const M = (ov.M !== undefined ? ov.M : (charMax + dollMax)) || 1; const jl = ov.judge !== undefined ? ov.judge : sacJudgeLvWith('', 0); const Dv = ov.D !== undefined ? ov.D : sacDef; const Hv = ov.H !== undefined ? ov.H : sacHp;
-const T = (c, base) => M * (base + (base === SAC_DASH ? ogV('돌진 대미지 배율 증가') : ogV('윈드밀 대미지 배율 증가')) / 100) * SAC_BASH * c * PIERCE2 * skMul(base === SAC_DASH ? '돌진' : '윈드밀');
-const sk = (tal, mI, dI, hI) => ({ v: tal * w + M * mI + Dv * dI + Hv * hI, tal: tal, mx: tal * w + M * mI });
-return { '광휘의단죄': sk(T(1.75, SAC_WM), 45, 27, 4.5), '심판의일격': sk(T(2, SAC_WM), 35 + jl + ogV('심판의 일격 대미지 배율 증가') / 100, 20, 5), '철벽강타': sk(T(1.5, SAC_WM), 12 + ogV('철벽 강타 대미지 배율 증가') / 100, 6, 1), '격돌': sk(T(1.5, SAC_DASH), 8 + ogV('격돌 대미지 배율 증가') / 100, 6, 0.5), '성역전개': sk(0, 3 + ogV('성역 전개 대미지 배율 증가') / 100, 1.5, 0.2), '희생의응징': sk(0, 60, 40, 15), '참회': sk(0, 350, 100, 40), '윈드밀': { v: M * (SAC_WM + ogV('윈드밀 대미지 배율 증가') / 100) * SAC_BASH * skMul('윈드밀'), tal: 0, mx: M * (SAC_WM + ogV('윈드밀 대미지 배율 증가') / 100) * SAC_BASH * skMul('윈드밀') } };
+const M = (ov.M !== undefined ? ov.M : MREF) || 1; const jl = ov.judge !== undefined ? ov.judge : sacJudgeLvWith('', 0); const Dv = ov.D !== undefined ? ov.D : sacDef; const Hv = ov.H !== undefined ? ov.H : sacHp;
+const T = (c, base) => M * (base + (base === SAC_DASH ? ogV('돌진 대미지 배율 증가') : ogV('윈드밀 대미지 배율 증가')) / 100) * SAC_BASH * c * skMul(base === SAC_DASH ? '돌진' : '윈드밀');
+const sk = (tal, mI, dI, hI) => { const r = arcHit(tal, M * mI + Dv * dI + Hv * hI, w); return { v: r.v, tal: r.tal, mx: r.pre > 0 ? r.v * (r.inW + M * mI) / r.pre : 0 }; };
+// 광휘의 단죄 오검 '2단계부터 단계당 대미지 배율 증가' — k = 오검 수치 × 2 ÷ 100, 고유 계수 45 · 27 · 4.5에 15 · 9 · 1.5 × k를 더해요 (마도카 '오검 옵션 효율 계산 및 추천 우선순위 (단죄 오검 기준)')
+const kDan = ogV('광휘의 단죄 2단계부터 단계당 대미지 배율 증가') * 2 / 100;
+return { '광휘의단죄': sk(T(1.75, SAC_WM), 45 + 15 * kDan, 27 + 9 * kDan, 4.5 + 1.5 * kDan), '심판의일격': sk(T(2, SAC_WM), 35 + jl + ogV('심판의 일격 대미지 배율 증가') / 100, 20, 5), '철벽강타': sk(T(1.5, SAC_WM), 12 + ogV('철벽 강타 대미지 배율 증가') / 100, 6, 1), '격돌': sk(T(1.5, SAC_DASH), 8 + ogV('격돌 대미지 배율 증가') / 100, 6, 0.5), '성역전개': sk(0, 3 + ogV('성역 전개 대미지 배율 증가') / 100, 1.5, 0.2), '희생의응징': sk(0, 60, 40, 15), '참회': sk(0, 350, 100, 40), '윈드밀': (() => { const v = hitOut(M * (SAC_WM + ogV('윈드밀 대미지 배율 증가') / 100) * SAC_BASH * skMul('윈드밀')); return { v: v, tal: 0, mx: v }; })() };
 };
 const sacRaw = isSacred ? sacEval({}, 1) : {};
 // 딜 사이클 비중을 입력하지 않았으면 실측 글의 비중(단죄 44 · 심판 15 · 응징 15.1 · 격돌 8.1 · 철강 7.5 · 성역 6.3 · 윈드밀 3)을 써요
 const SAC_DEF = { '광휘의단죄': 44, '철벽강타': 7.5, '심판의일격': 15, '성역전개': 6.3, '격돌': 8.1, '희생의응징': 15.1, '윈드밀': 3 };
 const sacUserShare = envSkills.some((k) => sacRaw[String(k.name).replace(/\s/g, '')]);
 const sacShare = (n) => (sacUserShare ? shareOf(n) : (SAC_DEF[n] || 0) / 100);
-const talentFrac = (name) => { if (isSacred) { const q = sacRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (isFury) { const q = furyRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (!isStg) return 0; if (name === '플레임버스트') return crash * PIERCE2 / flHit; if (name === '하이드로피어스') return gyeok ? magnum * PIERCE2 * 1.15 / flow : magnum * PIERCE2 / hydro; return 0; };
+const talentFrac = (name) => { if (isSacred) { const q = sacRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (isFury) { const q = furyRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (!isStg) return 0; const q = stgParts({}, 1); if (name === '플레임버스트') return q.fla.v ? q.fla.tal / q.fla.v : 0; if (name === '하이드로피어스') return q.hyE.v ? q.hyE.tal / q.hyE.v : 0; return 0; };
 const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc + relicArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff, talent2: urgentBuff };
 // 부가 장비(미니어처·토템·주화) — 예시 [이름, 딜 %, 스탯 변화, 비용(만 G)] · max 최대 대미지, crate 크리티컬 확률(%p), cdmg 크리티컬 대미지(%), bonus 보너스 대미지(%)
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
@@ -783,10 +812,15 @@ const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent ||
 const sacBaseW = isSacred ? sacEval({}, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)) : {};
 const sacMaxFrac = (() => { if (!isSacred) return 1; let a = 0, t = 0; Object.keys(sacBaseW).forEach((n) => { const sh = sacShare(n); if (!sh || !sacBaseW[n].v) return; a += sh * sacBaseW[n].mx / sacBaseW[n].v; t += sh; }); return Math.max(0.05, a + Math.max(0, 1 - t)); })();
 // 세이크리드 가드 딜 규모 = 최대 대미지 기준값 × Σ 비중 × (스킬 대미지 ÷ 현재 스킬 대미지) — 최대 대미지 · 방어력(def) · 생명력(hp) 변화를 스킬 계산식으로 반영
-const sacScale = (st) => { if (!isSacred) return st.max; const M0 = BASE_STATS.max || 0; if (!M0) return st.max; const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
+// 최대 대미지가 바뀔 때 — 방어 차감 때문에 비례하지 않아서, 아르카나 스킬 계산식에 최대 대미지를 넣어 다시 계산하고 딜 사이클 비중으로 합쳐요 (계산식이 없는 스킬은 비례)
+const wS = (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100);
+const STG_K = { '플레임버스트': 'fla', '하이드로피어스': 'hyE', '트라이어설트': 'trv', '매그넘샷': 'mag' };
+const stgBaseS = isStg ? stgParts({}, wS) : null; const furyBaseS = isFury ? furyEval({}, wS) : null;
+const sacScale = (st) => { const M0 = BASE_STATS.max || 0; if (!M0 || !(isSacred || isStg || isFury)) return st.max; if (isStg || isFury) { let a = 0, t = 0; if (isStg) { const n = stgParts({ M: st.max }, wS); envSkills.forEach((k) => { const key = STG_K[String(k.name).replace(/\s/g, '')]; const sh = shareOf(k.name); if (!key || !sh || !stgBaseS[key].v) return; a += sh * n[key].v / stgBaseS[key].v; t += sh; }); } else { const n = furyEval({ M: st.max }, wS); Object.keys(furyBaseS).forEach((k) => { const sh = furyShare(k); if (!sh || !furyBaseS[k].v) return; a += sh * n[k].v / furyBaseS[k].v; t += sh; }); } return M0 * (a + Math.max(0, 1 - t) * st.max / M0); } const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
 // 총딜 증가율 → 최대 대미지 환산 (세이크리드 가드는 최대 대미지 비례 비율로 나눠요)
-const MXEQ = (BASE_STATS.max || 0) / sacMaxFrac;
 const dealOf = (st) => sacScale(st) * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
+// 최대 대미지 환산 기준 — 최대 대미지 +10일 때의 총딜 증가율로 '총딜 1%가 최대 대미지 몇에 해당하는지' 구해요 (모든 아르카나 같은 방식)
+const MXEQ = (() => { const M0 = BASE_STATS.max || 0; if (!M0) return 0; const b = dealOf(BASE_STATS); const n = dealOf(Object.assign({}, BASE_STATS, { max: M0 + 10 })); return n > b ? 10 * b / (n - b) : M0; })();
 const dealPct = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0), def: d.def || 0, hp: d.hp || 0 }); return Math.round((n / b - 1) * 1000) / 10; };
 // 반올림 없는 총딜 증가율 (%) — 다른 값과 더한 뒤 마지막에 반올림할 때
 const dealPctRaw = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0), def: d.def || 0, hp: d.hp || 0 }); return (n / b - 1) * 100; };
@@ -1075,7 +1109,7 @@ const raw = ogCur[i]; const cur = raw && allowFx(raw.e) ? raw : null; const mx =
 const taken = ogCur.filter((q, k) => k !== i && q && allowFx(q.e)).map((q) => q.e);
 const mk = (list) => list.filter((q) => taken.indexOf(q[0]) < 0).map((q) => ({ v: q[0], label: q[0] }));
 return {
-label: '효과 ' + (i + 1), value: cur ? cur.e : '',
+label: '효과 ' + (i + 1), value: cur ? cur.e : '', gainOn: false, gainTxt: '',
 first: tpSel ? '효과 선택' : '오검 종류를 먼저 골라 주세요',
 tOpts: tpSel ? mk(OG_TAL) : [], // 오검 종류를 고르기 전에는 효과 목록 없이 안내 문구만 · 특수 오검은 아르카나 스킬 효과 + 재능 스킬 효과
 groups: (tpSel && isSpecialOg(tpSel) ? [{ label: '아르카나 스킬 효과', opts: mk(OG_ARC) }] : []).concat(tpSel ? [{ label: '재능 스킬 효과', opts: mk(OG_TAL) }] : []), aGroups: tpSel && isSpecialOg(tpSel) ? [{ label: '아르카나 스킬 효과', opts: mk(OG_ARC) }] : [],
@@ -1152,23 +1186,11 @@ split: typeof split === 'string' ? split.replace(/ ([+\-−]?[\d.,]+%?)(?= ·|$)
 });
 // 재능 한정 효과 — 특정 계열 재능 스킬에만 적용되는 효과 (재능 보너스 대미지 합계와 별도로 표기)
 const talOnly = [].concat(urgentBuff ? [{ name: '어전트샷', fx: '레인지 계열 추가 대미지 +' + urgentBuff + '% (보너스 미적용)' }] : []).concat(radekaBuff ? [{ name: '비전 오브 라데카', fx: '재능 보너스 대미지 +' + radekaBuff + '%' }] : []).concat(breathBuff ? [{ name: '브레스 오브 라데카', fx: '재능 보너스 대미지 +' + breathBuff + '%' }] : []).concat(mightOn ? [{ name: '마이트 오브 라데카', fx: '근접 재능 대미지 ×1.15' }] : []);
-const dMag = 10 * setMg * wMg; const dErgStep = 3 * setMg * wMg;
-const hyRate = (d) => (gyeok ? d * PIERCE2 * 1.15 / flow : d * PIERCE2 / hydro);
-const stgRows = [
-['크래시샷 세공 +1', '플레임버스트', shF * (3.5 * wCr * skMul('크래시 샷') * PIERCE2 / flHit), false],
-['매그넘샷 세공 · 마기그래프 +1', '매그넘샷 · 하이드로피어스' + (gyeok ? '(격류)' : ''), shM * (dMag / magnum) + shH * hyRate(dMag), false],
-['어둠의 에르그 +1', '매그넘샷 · 하이드로피어스' + (gyeok ? '(격류)' : ''), shM * (dErgStep / magnum) + shH * hyRate(dErgStep), dErgLv >= 50],
-['무리아스의 유물 · 플레임 버스트 +1', '플레임버스트' + (bun ? '(분출)' : ''), shF * (45 / flHit), rFl >= 10],
-['무리아스의 유물 · 하이드로 피어스 +1', '하이드로피어스' + (gyeok ? '(격류)' : ''), shH * (gyeok ? 143 * 0.15 / flow : 143 / hydro), rHy >= 10],
-['무리아스의 유물 · 트라이 어설트 +1', '트라이어설트', shT * (150 / (3000 + triFin + 150 * rTr + 3 * sv('ogTr'))), rTr >= 10],
-['불 · 물 연금술 마스터리 +1', '증발(플레임 · 하이드로 · 트라이) + 트라이어설트 마스터리 계수', (shF + shH) * (0.005 / evap) + shT * ((1 + 0.005 / evap) * (1 + 0.005 / triM) - 1), false],
-['바람 연금술 마스터리 +1', '트라이어설트', shT * (0.005 / triM), false]
-];
 const r2 = (n) => (Math.round(n * 100) / 100).toLocaleString();
 const stgCard = {
 on: isStg,
 mults: [['크래시샷', crash], ['플레임버스트' + (bun ? ' (분출)' : ''), flame], ['매그넘샷', magnum], ['하이드로피어스' + (gyeok ? ' (격류)' : ''), gyeok ? flow * 7 : hydro], ['트라이어설트' + (yung ? ' (융합)' : ''), tri]].map((q) => ({ name: q[0], v: r2(q[1]) + '%' })),
-rows: stgRows.map((q) => ({ name: q[0], via: q[1], pct: q[3] ? '최대' : '+' + r2(q[2] * 100) + '%', mx: q[3] ? '—' : '+' + r2(q[2] * (BASE_STATS.max || 0)), fg: q[3] ? '#8C7A62' : (q[2] > 0 ? '#1E3D2E' : '#8C7A62') })),
+rows: [], rowsOf: (stgRows) => stgRows.map((q) => ({ name: q[0], via: q[1], pct: q[3] ? '최대' : '+' + r2(q[2] * 100) + '%', mx: q[3] ? '—' : '+' + r2(q[2] * (BASE_STATS.max || 0)), fg: q[3] ? '#8C7A62' : (q[2] > 0 ? '#1E3D2E' : '#8C7A62') })),
 combo: [gyeok ? '격류(하이드로 피어스 조합)' : '', bun ? '분출(플레임 버스트 조합)' : '', yung ? '융합(트라이 어설트 조합)' : ''].filter(Boolean).join(' · ') || '활성화된 오검 조합 없음',
 info: '무기 ' + (wName || '미선택') + ' · 세공 크래시샷 ' + sv('crLv') + ' · 매그넘샷 ' + sv('mgLv') + ' (마기그래프 ' + sv('magi') + ') · 연금술 마스터리 불 ' + sv('fire') + ' / 물 ' + sv('water') + ' / 바람 ' + sv('wind') + ' · 어둠의 에르그 ' + dErgLv + ' · 유물 플레임 ' + rFl + ' / 하이드로 ' + rHy + ' / 트라이 ' + rTr + (setMg > 1 ? ' · 매그넘샷 강화 세트' : ''),
 noShare: !(shF || shH || shM || shT)
@@ -1193,28 +1215,24 @@ const relicList = RELIC_FX[ARC_NAMES[arcIdx]] || [];
 const RELIC_KEY = { '플레임 버스트 대미지 증가': 'fl', '하이드로 피어스 대미지 증가': 'hy', '트라이 어설트 피니시 대미지 증가': 'tr' };
 // 아르카나 스킬 안의 재능 몫(크래시샷 · 매그넘샷 · 연속기 · 윈드밀 등)은 재능 보너스 대미지 가중치 wT = 1 + 재능 (곱연산)
 const wT = (1 + BASE_STATS.talent / 100) + (BASE_STATS.talent2 / 100) / (1 + BASE_STATS.bonus / 100 + BASE_STATS.arcana / 100);
-const stgWith = (lv) => { const fh = crash * PIERCE2 * wT + 1080 + 45 * lv.fl + sv('ogFl'); const fla = fh * (bun ? 1.09 * 4 : 3); const hyArm = (3280 + 110 * lv.hy + sv('ogHy')) * 1.3; const hyd = magnum * PIERCE2 * wT + hyArm; const hyE = gyeok ? (magnum * PIERCE2 * wT + hyd * 0.15) * 7 : hyd; const trv = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * lv.tr + sv('ogTr'))) * triM * triSyn; return { fla: fla, hyE: hyE, trv: trv }; };
 const relicLvWith = (slotKey, newLv, fxNew) => { const o = { fl: 0, hy: 0, tr: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = RELIC_KEY[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
 // ── 알케믹 스팅어 세공 · 어둠의 에르그 목표 레벨 (장착 장비 목표 단계 · 추천 순위) ──
 // 세공 레벨 · 연금술 마스터리 · 어둠의 에르그를 바꿨을 때 스킬 계산식으로 다시 계산해, 딜 사이클 비중대로 총딜 증가율을 구해요
 // 증발 계수는 플레임버스트 · 하이드로피어스 · 트라이어설트에 적용 (불 · 물 마스터리 변화 반영) · 재능 부분(크래시샷 · 매그넘샷)은 wT 가중치
-const stgEval = (ov) => {
-const g = (k) => sv(k) + ((ov.sg || {})[k] || 0);
-const lv = ov.relic || relicLvWith('', 0);
-const crashV = (370 + 3.5 * g('crLv') + sv('ogCr')) * wCr * skMul('크래시 샷');
-const fla = (crashV * PIERCE2 * wT + 1080 + 45 * lv.fl + sv('ogFl')) * (bun ? 1.09 * 4 : 3);
-const dE = ov.dErg !== undefined ? ov.dErg : dErgLv;
-const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * magMul() * wMg;
-const hyd = magV * PIERCE2 * wT + (3280 + 110 * lv.hy + sv('ogHy')) * 1.3;
-const hyE = gyeok ? (magV * PIERCE2 * wT + hyd * 0.15) * 7 : hyd;
-const tM = 1 + (0.1 + g('fire') * 0.005) + (0.1 + g('water') * 0.005) + (0.1 + g('wind') * 0.005) + 0.1;
-const ev = 1.1 + 0.005 * (g('fire') + g('water'));
-const trv = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * lv.tr + sv('ogTr'))) * tM;
-return { fla: fla * ev, hyE: hyE * ev, trv: trv * (yung ? ev : 1), mag: magV };
-};
+const stgEval = (ov) => { const p = stgParts(ov, wT); return { fla: p.fla.v, hyE: p.hyE.v, trv: p.trv.v, mag: p.mag.v }; };
 const stgBase = stgEval({});
 const stgGain = (ov) => { if (!isStg) return 0; const n = stgEval(ov); return shF * (n.fla / stgBase.fla - 1) + shH * (n.hyE / stgBase.hyE - 1) + shT * (n.trv / stgBase.trv - 1) + shM * (n.mag / stgBase.mag - 1); };
-const stgBaseM = stgWith(relicLvWith('', 0));
+// 알케믹 스팅어 효율 카드 — 항목마다 스킬 계산식으로 다시 계산한 총딜 증가율
+if (isStg) { const rl = { fl: rFl, hy: rHy, tr: rTr }; stgCard.rows = stgCard.rowsOf([
+['크래시샷 세공 +1', '플레임버스트', stgGain({ sg: { crLv: 1 } }), false],
+['매그넘샷 세공 · 마기그래프 +1', '매그넘샷 · 하이드로피어스' + (gyeok ? '(격류)' : ''), stgGain({ sg: { mgLv: 1 } }), false],
+['어둠의 에르그 +1', '매그넘샷 · 하이드로피어스' + (gyeok ? '(격류)' : ''), stgGain({ dErg: dErgLv + 1 }), dErgLv >= 50],
+['무리아스의 유물 · 플레임 버스트 +1', '플레임버스트' + (bun ? '(분출)' : ''), stgGain({ relic: Object.assign({}, rl, { fl: rFl + 1 }) }), rFl >= 10],
+['무리아스의 유물 · 하이드로 피어스 +1', '하이드로피어스' + (gyeok ? '(격류)' : ''), stgGain({ relic: Object.assign({}, rl, { hy: rHy + 1 }) }), rHy >= 10],
+['무리아스의 유물 · 트라이 어설트 +1', '트라이어설트', stgGain({ relic: Object.assign({}, rl, { tr: rTr + 1 }) }), rTr >= 10],
+['불 · 물 연금술 마스터리 +1', '증발(플레임 · 하이드로 · 트라이) + 트라이어설트 마스터리 계수', stgGain({ sg: { fire: 1 } }), false],
+['바람 연금술 마스터리 +1', '트라이어설트', stgGain({ sg: { wind: 1 } }), false]
+]); delete stgCard.rowsOf; }
 const furyBase = isFury ? furyEval({}, wT) : {};
 const furyGain = (ov) => { if (!isFury) return 0; const n = furyEval(ov, wT); return Object.keys(n).reduce((t, k) => t + furyShare(k) * (furyBase[k].v ? n[k].v / furyBase[k].v - 1 : 0), 0); };
 const sacBase = isSacred ? sacEval({}, wT) : {};
@@ -1227,6 +1245,9 @@ const OG_MAST = (() => { const n = wName; if (n.indexOf('크로스보우') >= 0)
 const ogStatOf = (V) => (MXK === 'matk' ? V['마법 공격력 증가'] || 0 : (MXK === 'alch' ? ((V['불 속성 연금술 대미지 증가'] || 0) + (V['물 속성 연금술 대미지 증가'] || 0) + (V['흙 속성 연금술 대미지 증가'] || 0) + (V['바람 속성 연금술 대미지 증가'] || 0)) / 4 : (OG_MAST ? V[OG_MAST] || 0 : 0)));
 const ogBaseV = ogNow;
 const ogGain = (() => { if (!s.ogSim) return null; const simV = ogValsOf(s.ogSim.og, s.ogSim.ogw); const simW = Object.keys(s.ogSim.ogw || {}).map((k) => s.ogSim.ogw[k]); ogNow = simV; setCombos(simW); const sk = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; ogNow = ogBaseV; setCombos(stgOgw); const dm = ogStatOf(simV) - ogStatOf(ogBaseV); const pct = Math.round((sk + (dm ? dealPctRaw({ max: dm }) : 0)) * 100) / 100; return { pct: pct, dmg: Math.round(sk / 100 * MXEQ + dm) }; })(); // 스탯(무기 마스터리 등)으로 늘어난 최대 대미지는 그대로 환산에 더해요 (반올림한 %를 다시 곱하면 +10이 +9로 보이는 문제)
+// 오검 효과 하나당 딜 기여 — 고른 칸의 효과마다, 그 효과를 뺐을 때와 비교한 총딜 증가율 · 최대 대미지 환산 (우리 계산식 기준)
+const ogEvalOf = (ogM, ogwM) => { const V = ogValsOf(ogM, ogwM); ogNow = V; setCombos(Object.keys(ogwM || {}).map((k) => ogwM[k])); const sk = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; ogNow = ogBaseV; setCombos(stgOgw); const dm = ogStatOf(V) - ogStatOf(ogBaseV); return { pct: sk + (dm ? dealPctRaw({ max: dm }) : 0), dmg: sk / 100 * MXEQ + dm }; };
+{ const full = ogEvalOf(og, ogw); effects.forEach((x, i) => { if (!x.value) return; const o2 = Object.assign({}, og); const arr = (o2[ogSel] || [null, null, null]).slice(); arr[i] = null; o2[ogSel] = arr; const w = ogEvalOf(o2, ogw); const p = Math.round((full.pct - w.pct) * 100) / 100; const d = Math.round(full.dmg - w.dmg); x.gainOn = true; x.gainTxt = p || d ? '이 효과 딜 ' + (p >= 0 ? '+' : '') + pctT(p) + '% · ' + MX + ' 환산 ' + (d >= 0 ? '+' : '') + d : '이 효과는 지금 딜 계산에 영향이 없어요'; }); }
 if (ogGain && ogGain.pct) { chosen.push({ key: 'og.sim', slotKey: 'og.sim', slot: '오검 워드', dim: '오검 워드 변경', from: '현재 오검', to: '바꾼 오검', pct: ogGain.pct, dmg: ogGain.dmg, costM: 0, eff: 0, group: '부가 장비', names: '오검', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); }
 if (ogGain && ogDiff.on) { const sg = (v) => (v > 0 ? '+' : (v < 0 ? '' : '±')); ogDiff.gainOn = true; ogDiff.gainLine = '예상 딜 상승 ' + sg(ogGain.pct) + pctT(ogGain.pct) + '% · ' + MX + ' 환산 ' + sg(ogGain.dmg) + ogGain.dmg; }
 // ── 더스크바운드 개조 옵션 변경 (머리 · 의상 · 장갑 · 신발 4부위가 모두 더스크바운드일 때만, 장비 · 오검에서 고른 옵션이 현재) ──
@@ -1320,7 +1341,7 @@ list.forEach((r) => { r.costRead = readG(r.costVal); });
 return {
 mxLabel: MX,
 sacDH: sacDHv,
-pierceOn: isStg || isFury, pierceNote: '보스 몬스터의 최종 보호 ' + protV + '(9피어싱 기준)에서의 딜 상승 예상치예요. 보호에 따른 피해감소율 변동 시 수치가 소폭 변동될 수 있어요.',
+pierceOn: isStg || isFury, pierceNote: '레넨의 미이르 목인(디버프 후 보호 ' + PROT_V + ' · 방어 ' + DEF_V + ', 9피어싱 기준)에서의 딜 상승 예상치예요. 보호 · 방어가 다르면 수치가 소폭 달라질 수 있어요.',
 priceNote: priceNote,
 accent: accent,
 slots: slots,
