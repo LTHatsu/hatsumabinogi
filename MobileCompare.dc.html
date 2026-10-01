@@ -600,17 +600,18 @@ const SAC_DEF = { '광휘의단죄': 44, '철벽강타': 7.5, '심판의일격':
 const sacUserShare = envSkills.some((k) => sacRaw[String(k.name).replace(/\s/g, '')]);
 const sacShare = (n) => (sacUserShare ? shareOf(n) : (SAC_DEF[n] || 0) / 100);
 const talentFrac = (name) => { if (isSacred) { const q = sacRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (isFury) { const q = furyRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (!isStg) return 0; if (name === '플레임버스트') return crash * PIERCE2 / flHit; if (name === '하이드로피어스') return gyeok ? magnum * PIERCE2 * 1.15 / flow : magnum * PIERCE2 / hydro; return 0; };
-const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff + urgentBuff };
+const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff, talent2: radekaBuff + breathBuff + urgentBuff };
 // 부가 장비(미니어처·토템·주화) — 예시 [이름, 딜 %, 스탯 변화, 비용(만 G)] · max 최대 대미지, crate 크리티컬 확률(%p), cdmg 크리티컬 대미지(%), bonus 보너스 대미지(%)
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
 // 보너스 대미지 — 같은 종류는 (1 + 합) 배. 일반 보너스: 모든 스킬 · 재능 보너스: 재능 스킬(일반 보너스와 합산 → 1 + 일반 + 재능) · 아르카나 보너스: 아르카나 스킬에 일반 보너스와 합산(1 + 일반 + 아르카나) · 무기 보너스: 모든 스킬
 // 아르카나 스킬 안의 재능 스킬 부분(talentFrac)은 (1 + 재능) × (1 + 일반 + 아르카나) — 재능 보너스가 재능 몫에 먼저 곱해져요(마도카 실측), 나머지는 (1 + 일반 + 아르카나). 스킬 비중은 딜 사이클 비중 입력값(합계 100% 환산)
-const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); return (1 + W) * envSkills.reduce((sum, k) => { const sh = shareOf(k.name); if (!k.arc) return sum + sh * (1 + G + T); const tf = talentFrac(k.name); return sum + sh * (1 + G + A) * ((1 - tf) + tf * (1 + T)); }, 0); };
+// 재능 보너스 2묶음 — 정령(약점 분석 · 광폭화 · 실체화)은 재능 스킬에서 일반 보너스와 합산(1 + 일반 + 정령), 비전 · 브레스 오브 라데카 · 어전트샷은 서로 합산해 따로 곱(1 + 라데카 + 어전트) — 매그넘샷 실측(어전트 12% + 비전 10% = ×1.22, 일반 7%와 별도)
+const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, T2 = (st.talent2 !== undefined ? st.talent2 : BASE_STATS.talent2) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); return (1 + W) * envSkills.reduce((sum, k) => { const sh = shareOf(k.name); if (!k.arc) return sum + sh * (1 + G + T) * (1 + T2); const tf = talentFrac(k.name); return sum + sh * (1 + G + A) * ((1 - tf) + tf * (1 + T) * (1 + T2)); }, 0); };
 // 세이크리드 가드는 방어력 · 생명력 몫이 최대 대미지에 비례하지 않아요 — 딜 중 최대 대미지에 비례하는 비율(sacMaxFrac)만큼만 최대 대미지 변화가 반영돼요
-const sacBaseW = isSacred ? sacEval({}, 1 + BASE_STATS.talent / 100) : {};
+const sacBaseW = isSacred ? sacEval({}, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)) : {};
 const sacMaxFrac = (() => { if (!isSacred) return 1; let a = 0, t = 0; Object.keys(sacBaseW).forEach((n) => { const sh = sacShare(n); if (!sh || !sacBaseW[n].v) return; a += sh * sacBaseW[n].mx / sacBaseW[n].v; t += sh; }); return Math.max(0.05, a + Math.max(0, 1 - t)); })();
 // 세이크리드 가드 딜 규모 = 최대 대미지 기준값 × Σ 비중 × (스킬 대미지 ÷ 현재 스킬 대미지) — 최대 대미지 · 방어력(def) · 생명력(hp) 변화를 스킬 계산식으로 반영
-const sacScale = (st) => { if (!isSacred) return st.max; const M0 = BASE_STATS.max || 0; if (!M0) return st.max; const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, 1 + BASE_STATS.talent / 100); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
+const sacScale = (st) => { if (!isSacred) return st.max; const M0 = BASE_STATS.max || 0; if (!M0) return st.max; const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
 // 총딜 증가율 → 최대 대미지 환산 (세이크리드 가드는 최대 대미지 비례 비율로 나눠요)
 const MXEQ = (BASE_STATS.max || 0) / sacMaxFrac;
 const dealOf = (st) => sacScale(st) * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
@@ -947,7 +948,7 @@ const d = tot[k[0]] || 0; const b = BASE_STATS[k[0]];
 // 최대 대미지: 캐릭터 기본값 / 인형 가방 변경분 / 그 외 장비 변경분을 나눠 표시
 const dollD = k[0] === 'max' ? chosen.filter((c) => c.key === 'x.doll').reduce((sm, c) => sm + ((c.stats && c.stats.max) || 0), 0) : 0;
 // 비전 오브 라데카는 합계에만 반영하고 따로 표기하지 않아요 (칸 크기 유지)
-const talSplit = k[0] === 'talent' ? [].concat(d ? ['변경 +' + r1(d) + '%'] : []).join(' · ') : '';
+const talSplit = k[0] === 'talent' ? [].concat(BASE_STATS.talent2 ? ['라데카 · 어전트 +' + r1(BASE_STATS.talent2) + '% 별도 곱'] : []).concat(d ? ['변경 +' + r1(d) + '%'] : []).join(' · ') : '';
 const split = k[0] === 'talent' ? talSplit : k[0] === 'max' ? ['캐릭터 기본 ' + r1(charMax)].concat(dollMax + dollD ? ['인형 가방 ' + (dollMax + dollD > 0 ? '+' : '') + r1(dollMax + dollD)] : []).concat(d - dollD ? ['장비 ' + (d - dollD > 0 ? '+' : '') + r1(d - dollD)] : []).join(' · ') : (k[0] === 'arcana' && haloArc ? ['기본 ' + r1(b - haloArc) + '%', '공상의 왕관 헤일로 +' + haloArc + '%'].concat(d ? ['변경 ' + (d > 0 ? '+' : '') + r1(d) + '%'] : []).join(' · ') : '');
 return { hasToggle: k[0] === 'talent', noMat: !matOn, matNote: matOn ? '정령 실체화 +' + (10 + 3 * matLv) + '%' : '정령 실체화 제외됨', onToggle: (e) => setNoMat(!!e.target.checked), split: split, hasSplit: !!split, label: k[1], value: r1(b + d) + k[2], base: '기존 ' + r1(b) + k[2], delta: d ? (d > 0 ? '▲ +' : '▼ ') + r1(d) + (k[0] === 'crate' ? '%p' : k[2]) : '변동 없음', deltaFg: d ? '#1E3D2E' : '#8C7A62', border: d ? '1.5px solid ' + accent : '1.5px solid transparent', bg: d ? '#F3F8F4' : '#F5EDDC' };
 });
@@ -993,7 +994,7 @@ const relicList = RELIC_FX[ARC_NAMES[arcIdx]] || [];
 // ── 유물 효과 레벨 변경 (세팅 시뮬레이터 유물 1 · 2 · 3) · 미장착 유물 칸은 효과를 골라 새로 장착 가능 — 알케믹 스팅어는 스킬 계산식 · 딜 사이클 비중으로 총딜 증가 계산 ──
 const RELIC_KEY = { '플레임 버스트 대미지 증가': 'fl', '하이드로 피어스 대미지 증가': 'hy', '트라이 어설트 피니시 대미지 증가': 'tr' };
 // 아르카나 스킬 안의 재능 몫(크래시샷 · 매그넘샷 · 연속기 · 윈드밀 등)은 재능 보너스 대미지 가중치 wT = 1 + 재능 (곱연산)
-const wT = 1 + BASE_STATS.talent / 100;
+const wT = (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100);
 const stgWith = (lv) => { const fh = crash * PIERCE2 * wT + 1080 + 45 * lv.fl + sv('ogFl'); const fla = fh * (bun ? 1.09 * 4 : 3); const hyArm = (3280 + 110 * lv.hy + sv('ogHy')) * 1.3; const hyd = magnum * PIERCE2 * wT + hyArm; const hyE = gyeok ? (magnum * PIERCE2 * wT + hyd * 0.15) * 7 : hyd; const trv = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * lv.tr + sv('ogTr'))) * triM * triSyn; return { fla: fla, hyE: hyE, trv: trv }; };
 const relicLvWith = (slotKey, newLv, fxNew) => { const o = { fl: 0, hy: 0, tr: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = RELIC_KEY[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
 // ── 알케믹 스팅어 세공 · 어둠의 에르그 목표 레벨 (장착 장비 목표 단계 · 추천 순위) ──
