@@ -284,7 +284,9 @@ try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json()
 try { fetch('./title-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.p) { this.setState({ tiData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.weapon) { this.setState({ eqPicks: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./enchant-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.pre) { this.setState({ enPicks: d }); } }).catch(() => {}); } catch (e) {}
-try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
+// 무리아스의 유물 전용 인챈트 (에린 데이터에 없어 직접 등록 · 수치 범위 정보 없음) — [이름, 접두 0/접미 1, 대상 아르카나] · dm 다크 메이지, fa 포비든 알케미스트, mx 최대 대미지 아르카나 (선물 · 순수한은 세인트 바드 유물 전용이라 제외)
+const RELIC_ENCH = [['기억의', 0, 'dm'], ['편린', 1, 'dm'], ['잠식된', 0, 'fa'], ['자아', 1, 'fa'], ['쌓여가는', 0, 'mx'], ['신뢰하는', 0, 'mx'], ['후회', 1, 'mx'], ['관리자', 1, 'mx']];
+try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { d.list = d.list.concat(RELIC_ENCH.map((q) => [q[0], q[1], '', '', [], [], [], 0, '', q[2]])); this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this._edMap = null; this._edG = null; this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
 // 다른 페이지(캐릭터 정보 등)에서 바꾼 내용을 바로 반영 — 저장소 변경 · 페이지 포커스 시 다시 읽어요
 this._sync = () => this.syncStore();
@@ -442,14 +444,16 @@ const EN = s.enData;
 if (ED && !this._edG) { this._edG = {}; this._enSlot = {}; Object.keys(ED.slots).forEach((sk) => { const m = {}; ED.slots[sk].forEach((x) => { m[x[0]] = [x[2], x[3] || '']; }); this._edG[sk] = m; }); }
 const enItem = ED && this._edG ? (this._edG[edSlot(selKey)] || {})[sgItem] : null;
 const enType = enItem ? enItem[1] : '';
-const enAllowed = (() => { if (!ED || !EN) return null; if (enItem) return ED.enchGroups[enItem[0]] || []; const sk = edSlot(selKey); if (!ED.slots[sk]) return EN.list.map((x, i) => i); if (!this._enSlot[sk]) { const u = {}; ED.slots[sk].forEach((x) => { (ED.enchGroups[x[2]] || []).forEach((i) => { u[i] = 1; }); }); this._enSlot[sk] = Object.keys(u).map(Number); } return this._enSlot[sk]; })();
+// 유물 칸은 유물 전용 인챈트만 — 아르카나에 맞는 것만 (다크 메이지 · 포비든 알케미스트 · 그 외 최대 대미지 아르카나)
+const relicTag = MX === '마법 공격력' ? 'dm' : (MX === '연금술 대미지' ? 'fa' : 'mx');
+const enAllowed = (() => { if (!ED || !EN) return null; if (String(selKey).indexOf('relic') === 0) { return EN.list.map((x, i) => (x[9] === relicTag ? i : -1)).filter((i) => i >= 0); } if (enItem) return ED.enchGroups[enItem[0]] || []; const sk = edSlot(selKey); if (!ED.slots[sk]) return EN.list.map((x, i) => i); if (!this._enSlot[sk]) { const u = {}; ED.slots[sk].forEach((x) => { (ED.enchGroups[x[2]] || []).forEach((i) => { u[i] = 1; }); }); this._enSlot[sk] = Object.keys(u).map(Number); } return this._enSlot[sk]; })();
 const EN_K = MX === '마법 공격력' ? 5 : (MX === '연금술 대미지' ? 6 : 4);
 const EN_RANK = '123456789ABCDEF';
 // 인챈트는 대표 이름과 다른 이름(예: 마크스맨 = 명사수) 모두로 찾아요
 const enKey = (i) => (EN.list[i][0] + ' ' + (EN.list[i][8] || '')).replace(/\s/g, '').toLowerCase();
 const enHead = (i, q) => EN.list[i][0].replace(/\s/g, '').toLowerCase().indexOf(q) === 0 || String(EN.list[i][8] || '').replace(/\s/g, '').toLowerCase().indexOf(q) === 0;
 const enFind = (nm, af) => (enAllowed && nm ? enAllowed.filter((i) => EN.list[i][1] === af && (EN.list[i][0] === nm || EN.list[i][8] === nm))[0] : undefined);
-const enRangeOf = (i) => { const ef = EN.list[i][EN_K] || []; if (!ef.length) return null; const base = ef.filter((e) => !e[0]); const cond = ef.filter((e) => e[0]); let lo = base.reduce((a, e) => a + e[1], 0); let hi = base.reduce((a, e) => a + e[2], 0); let wide = false; if (cond.length) { const hit = cond.filter((e) => enType.indexOf(e[0]) >= 0); const use = hit.length ? hit : cond; wide = !hit.length; lo += Math.min.apply(null, use.map((e) => e[1])); hi += Math.max.apply(null, use.map((e) => e[2])); } return [lo, hi, wide]; };
+const enRangeOf = (i) => { if (EN.list[i][9]) { return [1, 9999, false, true]; } const ef = EN.list[i][EN_K] || []; if (!ef.length) return null; const base = ef.filter((e) => !e[0]); const cond = ef.filter((e) => e[0]); let lo = base.reduce((a, e) => a + e[1], 0); let hi = base.reduce((a, e) => a + e[2], 0); let wide = false; if (cond.length) { const hit = cond.filter((e) => enType.indexOf(e[0]) >= 0); const use = hit.length ? hit : cond; wide = !hit.length; lo += Math.min.apply(null, use.map((e) => e[1])); hi += Math.max.apply(null, use.map((e) => e[2])); } return [lo, hi, wide]; };
 const enRg = (r) => (r[0] === r[1] ? String(r[0]) : r[0] + '~' + r[1]);
 const enSel = {};
 const setDetMany = (p) => { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); Object.keys(p).forEach((kk) => { if (p[kk] === '' || p[kk] == null) { delete o[kk]; } else { o[kk] = p[kk]; } }); all[selKey] = o; this.upd({ det: all, detErr: false, saved: selKey }); };
@@ -466,9 +470,9 @@ hits.sort((x, y) => ((isPick(x) ? 0 : 1) - (isPick(y) ? 0 : 1)) || (isPick(x) &&
 const old = dCur[k] && idx === undefined;
 return {
 label: q[2], short: q[3], name: nm, value: dCur[k] || '', off: !rg, on: !!rg, offText: old ? '기존 값 ' + dCur[k] + ' · 인챈트를 고르면 범위가 정해져요' : (idx !== undefined ? '이 인챈트엔 ' + MX + ' 옵션이 없어요' : '인챈트를 먼저 골라 주세요'),
-ph: rg ? enRg(rg) : '', namePh: !EN || !ED ? '인챈트 정보 불러오는 중' : '이름을 입력하거나 눌러서 골라요',
+ph: rg ? (rg[3] ? '수치 직접 입력' : enRg(rg)) : '', namePh: !EN || !ED ? '인챈트 정보 불러오는 중' : '이름을 입력하거나 눌러서 골라요',
 sugOn: hits.length > 0, more: hits.length > 30, moreText: '전체 ' + hits.length + '개 중 30개 · 더 입력하면 좁혀져요',
-list: hits.slice(0, 30).map((i) => { const x = EN.list[i]; const r = enRangeOf(i); return { name: x[0] + (x[8] ? ' (' + x[8] + ')' : ''), price: pEnc(x[0]) || (x[8] ? pEnc(x[8]) : ''), sub: (isPick(i) ? '추천 · ' : '') + (x[2] ? x[2] + '랭크 · ' : '') + (x[7] ? '공용 · ' : '이 부위 전용 · ') + (r ? MX + ' ' + enRg(r) : MX + ' 옵션 없음'), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const p = {}; p[nk] = x[0]; const cur = Number(dCur[k]); if (!r) { p[k] = ''; } else if (r[0] === r[1]) { p[k] = String(r[0]); } else if (!dCur[k] || cur < r[0] || cur > r[1]) { p[k] = ''; } setDetMany(p); this.setState({ enOpen: '' }); } }; }),
+list: hits.slice(0, 30).map((i) => { const x = EN.list[i]; const r = enRangeOf(i); return { name: x[0] + (x[8] ? ' (' + x[8] + ')' : ''), price: pEnc(x[0]) || (x[8] ? pEnc(x[8]) : ''), sub: (isPick(i) ? '추천 · ' : '') + (x[2] ? x[2] + '랭크 · ' : '') + (x[9] ? '' : (x[7] ? '공용 · ' : '이 부위 전용 · ')) + (x[9] ? '유물 전용 · 수치 범위 정보 없음' : (r ? MX + ' ' + enRg(r) : MX + ' 옵션 없음')), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const p = {}; p[nk] = x[0]; const cur = Number(dCur[k]); if (!r) { p[k] = ''; } else if (r[0] === r[1]) { p[k] = String(r[0]); } else if (!dCur[k] || cur < r[0] || cur > r[1]) { p[k] = ''; } setDetMany(p); this.setState({ enOpen: '' }); } }; }),
 descOn: idx === undefined && !!nm && !!EN && !!enAllowed, desc: idx !== undefined ? (EN.list[idx][2] ? EN.list[idx][2] + '랭크 · ' : '') + (EN.list[idx][8] ? '다른 이름 ' + EN.list[idx][8] + ' · ' : '') + ((pEnc(nm) || pEnc(EN.list[idx][8] || '')) ? '경매장 최저가 ' + (pEnc(nm) || pEnc(EN.list[idx][8])) + ' · ' : '') + EN.list[idx][3] + (rg && rg[2] ? ' · 장비 종류를 몰라 가능한 범위를 모두 열어 뒀어요' : '') : '이 장비에 붙일 수 있는 ' + q[2] + ' 목록에 없어요 · 목록에서 골라 주세요',
 onName: (e) => { const v = e.target.value; const p = {}; p[nk] = v; if (enFind(v, q[1]) === undefined) { p[k] = ''; } setDetMany(p); this.setState({ enOpen: k }); },
 onFocus: () => this.setState({ enOpen: k }), onBlur: () => { setTimeout(() => { if (this.state.enOpen === k) { this.setState({ enOpen: '' }); } }, 150); },
