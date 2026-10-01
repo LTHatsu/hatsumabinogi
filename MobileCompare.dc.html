@@ -252,6 +252,10 @@ componentDidMount() {
 // 다른 페이지에서 바꾼 캐릭터 정보 · 장비를 바로 반영
 this._sync = () => { let raw = ''; try { raw = window.localStorage.getItem('hatz-mabinogi-v1') || ''; } catch (e) {} if (raw !== this._lastRaw) { this._lastRaw = raw; this.forceUpdate(); } };
 window.addEventListener('storage', this._sync); window.addEventListener('focus', this._sync); document.addEventListener('visibilitychange', this._sync); this._poll = setInterval(this._sync, 1500);
+// 인챈트 데이터 · 장비별 인챈트 가능 그룹 · 추천 인챈트 목록 (세팅 시뮬레이터 인챈트 후보)
+try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./enchant-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.pre) { this.setState({ enPicks: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
 }
 loadStore() {
@@ -357,8 +361,32 @@ return { noSwap: dual, type: type, stage: stage, cur: cur, map: map, dim: ['sp',
 };
 const RFC = { rhand: rfCtx('rhand'), lhand: rfCtx('lhand') };
 DIMS[DIMS.findIndex((dm) => dm[0] === 'sp')] = RFC.rhand.dim;
-const stepOf = (sl, dm, i) => { const o = dm[4][i]; const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
-const dimsFor = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand' || (dm[0] === 'sp' && RFC[sl[0]])) && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')).map((dm) => dm[0] === 'sp' ? RFC[sl[0]].dim : dm); // 특별 개조는 주무기 (엘레멘탈 나이트 한손 2개면 보조무기도)
+// 인챈트 — 추천 인챈트(enchant-picks.json) 중 그 부위 장비에 붙일 수 있고, 장비 · 오검에서 장착한 인챈트보다 주요 옵션(최대 대미지 · 마법 공격력 · 연금술 대미지) 최대치가 높은 것만 후보로 보여줘요
+// 상승분 = 후보 최대치 − 현재 입력 수치(입력이 없으면 현재 인챈트 최대치, 인챈트가 없으면 0) · 가격은 경매장 인챈트 스크롤 최저가 · 로브 · 유물은 인챈트 후보 없음
+const EN = s.enData; const ED2 = s.eqData; const PK = s.enPicks;
+const EN_K = arcIdx === 2 ? 5 : (arcIdx === 7 ? 6 : 4);
+if (ED2 && this._edRef !== ED2) { this._edRef = ED2; this._edG = {}; this._enSlot = {}; Object.keys(ED2.slots).forEach((sk) => { const m = {}; ED2.slots[sk].forEach((x) => { m[x[0]] = [x[2], x[3] || '']; }); this._edG[sk] = m; }); }
+const pAllE = s.prices ? Object.assign({}, s.prices.categoryItems || {}, s.prices.items || {}) : {};
+if (s.prices && this._pRef !== s.prices) { this._pRef = s.prices; this._pEnc = {}; Object.keys(pAllE).forEach((n) => { if (n.indexOf('인챈트 스크롤') < 0 || n.indexOf(' - ') < 0) return; const k = n.slice(n.lastIndexOf(' - ') + 3).replace(/\s/g, ''); const x = pAllE[n]; const v = Number(x && typeof x === 'object' ? x.min : x); if (k && v > 0 && (!this._pEnc[k] || v < this._pEnc[k])) { this._pEnc[k] = v; } }); }
+const pEncG = (nm) => (this._pEnc || {})[String(nm || '').replace(/\s/g, '')] || 0;
+const goldE = (n) => { const e = Math.floor(n / 1e8); const m = Math.floor((n % 1e8) / 1e4); const p = []; if (e) { p.push(e + '억'); } if (m) { p.push(m % 1000 === 0 ? m / 1000 + '천만' : m.toLocaleString() + '만'); } return (p.length ? p.join(' ') : Math.round(n).toLocaleString()) + 'G'; };
+const encRangeOf = (i, type) => { const ef = EN.list[i][EN_K] || []; if (!ef.length) return null; const base = ef.filter((e) => !e[0]); const cond = ef.filter((e) => e[0]); let lo = base.reduce((a, e) => a + e[1], 0); let hi = base.reduce((a, e) => a + e[2], 0); if (cond.length) { const hit = cond.filter((e) => type.indexOf(e[0]) >= 0); const use = hit.length ? hit : cond; lo += Math.min.apply(null, use.map((e) => e[1])); hi += Math.max.apply(null, use.map((e) => e[2])); } return [lo, hi]; };
+const encCands = (sl, af) => {
+if (!EN || !ED2 || !PK || sl[0] === 'robe' || sl[4] === 'relic') return null;
+const sk = sl[0] === 'acc1' || sl[0] === 'acc2' ? 'acc' : sl[0]; const hit = (this._edG[sk] || {})[String(sl[3] || '')];
+let allowed = []; if (hit) { allowed = ED2.enchGroups[hit[0]] || []; } else if (ED2.slots[sk]) { if (!this._enSlot[sk]) { const u = {}; ED2.slots[sk].forEach((x) => { (ED2.enchGroups[x[2]] || []).forEach((i) => { u[i] = 1; }); }); this._enSlot[sk] = Object.keys(u).map(Number); } allowed = this._enSlot[sk]; }
+const type = hit ? hit[1] : ''; const key = af ? 'suf' : 'pre'; const d = ((gear && gear.det) || {})[sl[0]] || {};
+const curName = String(d[key + 'Name'] || ''); const ci = curName ? allowed.filter((i) => EN.list[i][1] === af && (EN.list[i][0] === curName || EN.list[i][8] === curName))[0] : undefined;
+const cr = ci !== undefined ? encRangeOf(ci, type) : null;
+const curV = d[key] !== undefined && d[key] !== '' ? Number(d[key]) || 0 : (cr ? cr[1] : 0);
+const pl = PK[key] || []; const seen = {};
+const list = allowed.filter((i) => EN.list[i][1] === af && pl.indexOf(EN.list[i][0]) >= 0 && i !== ci && (ci === undefined || EN.list[i][0] !== EN.list[ci][0])).map((i) => { const r = encRangeOf(i, type); return r ? { name: EN.list[i][0], alt: EN.list[i][8] || '', lo: r[0], hi: r[1], gain: r[1] - curV, price: pEncG(EN.list[i][0]) || pEncG(EN.list[i][8]) } : null; }).filter((x) => x && x.gain > 0).sort((a, b) => b.hi - a.hi).filter((x) => (seen[x.name] ? false : (seen[x.name] = 1)));
+return { cur: (curName ? curName : '인챈트 없음') + ' · ' + MX + ' ' + curV, list: list };
+};
+const encDim = (sl, base) => { const c = encCands(sl, base[0] === 'suf' ? 1 : 0); if (!c) return null; return [base[0], base[1], c.cur, false, c.list.map((x) => [x.name + (x.alt ? '(' + x.alt + ')' : ''), 0, x.gain, Math.round(x.price / 10000)]), { enc: true, cands: c.list }]; };
+const stepOf = (sl, dm, i) => { const o = dm[4][i]; if (dm[5] && dm[5].enc) { return { name: o[0], pct: 0, dmg: o[2], costM: o[3], idx: i }; } const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
+const dimsFor0 = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand' || (dm[0] === 'sp' && RFC[sl[0]])) && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')).map((dm) => dm[0] === 'sp' ? RFC[sl[0]].dim : dm); // 특별 개조는 주무기 (엘레멘탈 나이트 한손 2개면 보조무기도)
+const dimsFor = (sl) => dimsFor0(sl).map((dm) => (dm[0] === 'pre' || dm[0] === 'suf' ? encDim(sl, dm) : dm)).filter(Boolean);
 const chosen = [];
 SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const st = swapOf(sl, v - 1); chosen.push({ key: sl[0] + '.item', slotKey: sl[0], slot: sl[1], dim: '장비 교체', from: sl[3], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } });
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
@@ -383,13 +411,13 @@ const cur = SLOTS.filter((sl) => sl[0] === s.slot)[0];
 // 장비 · 오검에서 입력한 현재 수치 (주무기 최대 대미지, 접두 · 접미 인챈트 최대 대미지)
 const curDet = ((gear && gear.det) || {})[cur[0]] || {};
 // 목표 단계 변경 시 현재 장비 대비 늘어나는 스탯 (시뮬레이터 스탯 계산과 같은 기준)
-const dimStat = (dm, x) => { const rm = dm[0] === 'sp' && RFC[cur[0]] ? RFC[cur[0]].map[x.name] : null; if (rm) return rfDeltaText(rm); const parts = [MX + ' +' + x.dmg]; if (dm[0] === 'pre') parts.push('크리티컬 확률 +' + +(x.pct * 0.5).toFixed(1) + '%p'); if (dm[0] === 'suf') parts.push('크리티컬 대미지 +' + +(x.pct * 1.5).toFixed(1) + '%'); if (dm[0] === 'ref') parts.push('보너스 대미지 +' + x.pct + '%'); return parts.join(' · '); };
+const dimStat = (dm, x) => { if (dm[5] && dm[5].enc) { const c = dm[5].cands[x.idx]; return MX + ' ' + (c.lo === c.hi ? c.lo : c.lo + '~' + c.hi) + ' (+' + c.gain + ')' + (c.price ? ' · ' + goldE(c.price) : ' · 시세 없음'); } const rm = dm[0] === 'sp' && RFC[cur[0]] ? RFC[cur[0]].map[x.name] : null; if (rm) return rfDeltaText(rm); const parts = [MX + ' +' + x.dmg]; if (dm[0] === 'pre') parts.push('크리티컬 확률 +' + +(x.pct * 0.5).toFixed(1) + '%p'); if (dm[0] === 'suf') parts.push('크리티컬 대미지 +' + +(x.pct * 1.5).toFixed(1) + '%'); if (dm[0] === 'ref') parts.push('보너스 대미지 +' + x.pct + '%'); return parts.join(' · '); };
 const dims = dimsFor(cur).map((dm) => {
 const k = cur[0] + '.' + dm[0]; const v = upv(k, dm); const st = v > 0 ? stepOf(cur, dm, v - 1) : null;
 const opts = [{ v: '0', label: '현재 유지' }].concat(dm[4].map((o, i) => { const x = stepOf(cur, dm, i); return { v: String(i + 1), label: x.name + ' · ' + dimStat(dm, x) }; }));
 return {
-label: dm[1], current: (dm[0] === 'pre' || dm[0] === 'suf') && curDet[dm[0]] ? dm[2] + ' · ' + MX + ' ' + curDet[dm[0]] : dm[2], value: String(v), opts: opts, on: !!st, off: !st,
-pct: st ? st.pct.toFixed(1) : '0', dmg: st ? st.dmg : 0, cost: st ? won(st.costM) : '—', costFg: st ? '#2A2119' : '#8C7A62',
+label: dm[1], current: dm[5] && dm[5].enc ? dm[2] + (dm[4].length ? '' : ' · 이보다 높은 추천 인챈트가 없어요') : ((dm[0] === 'pre' || dm[0] === 'suf') && curDet[dm[0]] ? dm[2] + ' · ' + MX + ' ' + curDet[dm[0]] : dm[2]), value: String(v), opts: opts, on: !!st, off: !st,
+pct: st ? st.pct.toFixed(1) : '0', dmg: st ? st.dmg : 0, cost: st ? (st.costM ? won(st.costM) : '시세 없음') : '—', encSt: dm[5] && dm[5].enc && st ? st : null, costFg: st ? '#2A2119' : '#8C7A62',
 border: st ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: st ? '#F3F8F4' : '#FBF5E8',
 onChange: (e) => setUp(k, Number(e.target.value)),
 head: st ? '▲ ' + dimStat(dm, st) : '', effect: '',
@@ -657,7 +685,9 @@ const EXTRA = [
 ];
 const STAT_KEYS = [['max', MX, ''], ['crate', '크리티컬 확률', '%p'], ['cdmg', '크리티컬 대미지', '%'], ['bonus', '보너스 대미지', '%']];
 const statText = (st) => STAT_KEYS.filter((k) => st[k[0]]).map((k) => k[1] + ' +' + st[k[0]] + k[2]).join(' · ');
-chosen.forEach((c) => { c.group = '장착 장비'; const rd = c.rfd || null; if (rd) { c.stats = { max: rd.max + rd.matk, crate: 0, cdmg: rd.cdmg, bonus: rd.bonus }; return; } c.stats = { max: c.dmg, crate: c.dim === '인챈트 접두' ? +(c.pct * 0.5).toFixed(1) : 0, cdmg: c.dim === '인챈트 접미' ? +(c.pct * 1.5).toFixed(1) : 0, bonus: c.dim === '세공 랭크' ? c.pct : 0 }; });
+chosen.forEach((c) => { c.group = '장착 장비'; if (c.dim === '인챈트 접두' || c.dim === '인챈트 접미') { c.stats = { max: c.dmg, crate: 0, cdmg: 0, bonus: 0 }; c.pct = dealPct(c.stats); c.eff = c.costM ? c.pct / (c.costM / 10000) : 0; return; } const rd = c.rfd || null; if (rd) { c.stats = { max: rd.max + rd.matk, crate: 0, cdmg: rd.cdmg, bonus: rd.bonus }; return; } c.stats = { max: c.dmg, crate: c.dim === '인챈트 접두' ? +(c.pct * 0.5).toFixed(1) : 0, cdmg: c.dim === '인챈트 접미' ? +(c.pct * 1.5).toFixed(1) : 0, bonus: c.dim === '세공 랭크' ? c.pct : 0 }; });
+// 세팅 시뮬레이터 상단 카드의 인챈트 딜 % (dealPct는 여기서부터 쓸 수 있어요)
+dims.forEach((d) => { if (d.encSt) { const p = dealPct({ max: d.encSt.dmg }); d.pct = p.toFixed(1); } });
 EXTRA.forEach((ex) => { const v = s.up['x.' + ex[0]] || 0; if (v > 0 && ex[4][v - 1]) { const o = ex[4][v - 1]; chosen.push({ key: 'x.' + ex[0], slotKey: 'x.' + ex[0], slot: '부가 장비', dim: ex[6] || (ex[1] + (ex[3] === '없음' ? ' 추가' : ' 교체')), from: ex[5] || ex[3], to: o[0], pct: o[1], dmg: o[2].dmgFix !== undefined ? o[2].dmgFix : (o[2].max || 0), costM: o[3], eff: o[3] ? o[1] / (o[3] / 10000) : 0, group: '부가 장비', names: ex[1], stats: Object.assign({ max: 0, crate: 0, cdmg: 0, bonus: 0 }, o[2]) }); } });
 muSlots.filter((m) => m.tgt).forEach((m) => { const st = { max: 0, crate: 0, cdmg: 0, bonus: 0 }; st[m.g[2]] = m.tgt[0] - m.cur; chosen.push({ key: 'm.' + m.k, slotKey: 'm.' + m.k, slot: '부가 장비', dim: m.g[0] + ' ' + m.label + ' 교체', from: m.curName, to: m.tgt[1], pct: dealPct(st), dmg: st.max, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); });
 if (kalBuy) { const st = { max: 0, crate: 1, cdmg: 0, bonus: 0 }; chosen.push({ key: 'm.kaliach', slotKey: 'm.kaliach', slot: '부가 장비', dim: '칼리아흐의 결계 미니어처 구매', from: '없음', to: '칼리아흐의 결계 미니어처', pct: dealPct(st), dmg: 0, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); }
