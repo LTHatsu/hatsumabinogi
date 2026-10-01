@@ -594,11 +594,11 @@ const dustF0 = (cInfo && cInfo.fields) || {}; const dustLegacy = (n) => { const 
 const dustNum = (k, n) => (dustF0[k] !== undefined && dustF0[k] !== '' ? Number(dustF0[k]) || 0 : dustLegacy(n));
 const dustFl = dustNum('dustFlare', '플레어'), dustBl = dustNum('dustBlast', '블래스트'); const dustSup = 120; const dustOwned = !!dustF0.dustSolace;
 const dustRate = 10 / dustSup; const dustGF = +(dustFl * dustRate).toFixed(2), dustGB = +(dustBl * dustRate).toFixed(2); const dustPct = +(dustGF + dustGB).toFixed(2);
-const dustUp = !dustOwned && dustPct > 0 ? [[SOLACE, dustPct, { dmgFix: Math.round((BASE_STATS.max || 0) * dustPct / 100) }, priceOf(SOLACE), '지원효과 ' + dustSup + '% → ' + (dustSup + 10) + '% · 플레어 +' + dustGF + '% · 블래스트 +' + dustGB + '% (총딜)']] : [];
-const dustCur = dustOwned ? SOLACE + ' 장착 중 · 지원효과 대미지 130%' : '지원효과 대미지 ' + dustSup + '%' + (dustFl || dustBl ? ' · 플레어 ' + dustFl + '% · 블래스트 ' + dustBl + '%' : ' · 캐릭터 정보에서 플레어 · 블래스트 비중을 입력하면 계산돼요');
+const dustUp = !dustOwned && dustPct > 0 ? [[SOLACE, dustPct, { dmgFix: Math.round((BASE_STATS.max || 0) * dustPct / 100) }, priceOf(SOLACE), '스타더스트 대미지 10% 증가 · 플레어 +' + dustGF + '% · 블래스트 +' + dustGB + '% (총딜)']] : [];
+const dustCur = dustOwned ? SOLACE + ' 장착 중' : (dustFl || dustBl ? '미장착 · 플레어 ' + dustFl + '% · 블래스트 ' + dustBl + '%' : '미장착 · 캐릭터 정보에서 플레어 · 블래스트 비중을 입력하면 계산돼요');
 const EXTRA = [
 ['doll', '인형 가방', I.doll, curDoll || '없음', dollUp],
-['dust', '스타더스트 형상', 'M12 3l2.2 5.6L20 9.3l-4.6 3.9 1.4 5.8L12 16l-4.8 3 1.4-5.8L4 9.3l5.8-.7z', dustCur, dustUp, dustOwned ? SOLACE : '지원효과 ' + dustSup + '%', '스타더스트 형상 장착']
+['dust', '스타더스트 형상', 'M12 3l2.2 5.6L20 9.3l-4.6 3.9 1.4 5.8L12 16l-4.8 3 1.4-5.8L4 9.3l5.8-.7z', dustCur, dustUp, dustOwned ? SOLACE : '미장착', '스타더스트 형상 장착']
 ];
 const STAT_KEYS = [['max', MX, ''], ['crate', '크리티컬 확률', '%p'], ['cdmg', '크리티컬 대미지', '%'], ['bonus', '보너스 대미지', '%']];
 const statText = (st) => STAT_KEYS.filter((k) => st[k[0]]).map((k) => k[1] + ' +' + st[k[0]] + k[2]).join(' · ');
