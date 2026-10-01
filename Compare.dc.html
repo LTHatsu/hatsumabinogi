@@ -960,7 +960,7 @@ const split = k[0] === 'talent' ? talSplit : k[0] === 'max' ? ['캐릭터 기본
 return { hasToggle: k[0] === 'talent', noMat: !matOn, matNote: matOn ? '정령 실체화 +' + (10 + 3 * matLv) + '%' : '정령 실체화 제외됨', onToggle: (e) => setNoMat(!!e.target.checked), split: split, hasSplit: !!split, label: k[1], value: r1(b + d) + k[2], base: '기존 ' + r1(b) + k[2], delta: d ? (d > 0 ? '▲ +' : '▼ ') + r1(d) + (k[0] === 'crate' ? '%p' : k[2]) : '변동 없음', deltaFg: d ? '#1E3D2E' : '#8C7A62', border: d ? '1.5px solid ' + accent : '1.5px solid transparent', bg: d ? '#F3F8F4' : '#F5EDDC' };
 });
 // 재능 한정 효과 — 특정 계열 재능 스킬에만 적용되는 효과 (재능 보너스 대미지 합계와 별도로 표기)
-const talOnly = [].concat(urgentBuff ? [{ name: '어전트샷', fx: '레인지 계열 재능 +' + urgentBuff + '%' }] : []).concat(mightOn ? [{ name: '마이트 오브 라데카', fx: '근접 재능 대미지 ×1.15' }] : []);
+const talOnly = [].concat(urgentBuff ? [{ name: '어전트샷', fx: '레인지 계열 재능 +' + urgentBuff + '%' }] : []).concat(radekaBuff ? [{ name: '비전 오브 라데카', fx: '재능 보너스 대미지 +' + radekaBuff + '%' }] : []).concat(breathBuff ? [{ name: '브레스 오브 라데카', fx: '재능 보너스 대미지 +' + breathBuff + '%' }] : []).concat(mightOn ? [{ name: '마이트 오브 라데카', fx: '근접 재능 대미지 ×1.15' }] : []);
 const dMag = 10 * setMg * wMg; const dErgStep = 3 * setMg * wMg;
 const hyRate = (d) => (gyeok ? d * PIERCE2 * 1.15 / flow : d * PIERCE2 / hydro);
 const stgRows = [
