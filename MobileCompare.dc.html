@@ -1152,9 +1152,12 @@ const DUSK_ST = { MaxDamagePlus_50: MX === '최대 대미지' ? 50 : 0, MagicAtt
 const duskGain = (id) => { if (id === duskCur) return 0; const keep = Object.assign({}, actSets); if (duskCur && !ckSets[duskCur]) { delete actSets[duskCur]; } actSets[id] = 1; let g = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; Object.keys(actSets).forEach((q) => { delete actSets[q]; }); Object.assign(actSets, keep); const stOf = (q) => (q && !ckSets[q] ? DUSK_ST[q] || 0 : 0); const dm = stOf(id) - stOf(duskCur); if (dm) { g += dealPct({ max: dm }); } return Math.round(g * 10) / 10; };
 const DUSK_OPTS = (s.eqData && s.eqData.duskOpts) || [];
 const duskName = (id) => { const q = DUSK_OPTS.filter((x) => x[0] === id)[0]; return q ? q[1] : '개조 옵션 없음'; };
-if (duskAll4 && DUSK_OPTS.length) {
+// 세팅 시뮬레이터에서 장비 교체로 4부위가 모두 더스크바운드가 되면(교체 목표 기준) 개조 옵션도 고를 수 있어요
+const duskPlanName = (k) => { const sl = SLOTS.filter((x) => x[0] === k)[0]; const v = sl ? Number(s.up[k + '.item']) || 0 : 0; const o = v > 0 ? swapOf(sl, v - 1) : null; return o ? o.name : String(((gear && gear.eq) || {})[k] || ''); };
+const duskPlan4 = duskSl.every((k) => duskPlanName(k).indexOf('더스크바운드') >= 0);
+if (duskPlan4 && DUSK_OPTS.length) {
 const dv = Number(s.up['x.dusk']) || 0; const dsel = dv > 0 ? DUSK_OPTS[dv - 1] : null;
-extras.push({ name: '더스크바운드 개조 옵션', icon: I.body, value: dsel && dsel[0] !== duskCur ? String(dv) : '0', border: dsel && dsel[0] !== duskCur ? '1.5px solid ' + accent : '1px solid #D9C8A6', onChange: (e) => setUp('x.dusk', Number(e.target.value)),
+extras.push({ name: duskAll4 ? '더스크바운드 개조 옵션' : '더스크바운드 개조 옵션 (교체 후 4부위)', icon: I.body, value: dsel && dsel[0] !== duskCur ? String(dv) : '0', border: dsel && dsel[0] !== duskCur ? '1.5px solid ' + accent : '1px solid #D9C8A6', onChange: (e) => setUp('x.dusk', Number(e.target.value)),
 opts: [{ v: '0', label: duskName(duskCur) + ' — 현재' }].concat(DUSK_OPTS.map((q, i) => ({ q: q, i: i })).filter((o) => o.q[0] !== duskCur).map((o) => { const g = duskGain(o.q[0]); return { v: String(o.i + 1), label: o.q[1] + (ckSets[o.q[0]] ? ' · 이미 다른 장비 세트로 적용 중' : (g > 0 ? ' · +' + g + '%' : (g < 0 ? ' · ' + g + '% (현재 옵션보다 낮음)' : ' · 딜 변화 없음'))) }; })) });
 if (dsel && dsel[0] !== duskCur) { const g = duskGain(dsel[0]); chosen.push({ key: 'x.dusk', slotKey: 'x.dusk', slot: '부가 장비', dim: '더스크바운드 개조 옵션', from: duskName(duskCur), to: dsel[1], pct: g, dmg: Math.round(g / 100 * MXEQ), costM: 0, eff: 0, group: '부가 장비', names: '더스크바운드', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); }
 }
