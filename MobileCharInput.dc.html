@@ -232,6 +232,8 @@ const st = this.loadStore();
 const c = st.chars[next.char];
 if (c) {
 const info = {}; Object.keys(this.DEF).forEach((k) => { info[k] = next[k]; });
+// 무기 · 보조무기 종류를 바꾸면(장비 · 오검에서 아이템을 따로 넣지 않은 칸) 그 칸의 세부 입력(인챈트 · 세공 · 세트 효과 · 성수 등)을 초기화해요
+const pf = this.state.fields || {}; const nf = next.fields || {}; if (c.gear && c.gear.det) { [['weapon', 'rhand'], ['sub', 'lhand']].forEach((q) => { if ((pf[q[0]] || '') !== (nf[q[0]] || '') && !String((c.gear.eq || {})[q[1]] || '').trim()) { delete c.gear.det[q[1]]; } }); }
 c.info = info; c.arcana = next.arcana; st.cur = next.char; st.savedAt = this.nowLabel(); this.saveStore(st);
 patch = Object.assign({}, patch, { savedAt: st.savedAt });
 }

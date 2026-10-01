@@ -421,6 +421,12 @@ const itemSets = ED && ED.itemSets ? (ED.itemSets[sgItem] || '') : '';
 const setElse = (() => { const o = {}; Object.keys(detAll).forEach((k) => { if (k === selKey) return; Object.keys((detAll[k] || {}).sets || {}).forEach((q) => { if (SET_NAME[q] && itemSets.indexOf(SET_CODE[q]) >= 0) { o[SET_NAME[q]] = 1; } }); }); return Object.keys(o); })();
 // 장비를 바꾸면 새 장비에 없는 세트 효과 체크는 지워요 (다른 장비에 남은 체크는 그대로)
 const pruneSets = (det0, key, nm) => { if (!ED || !ED.itemSets) return det0; const d = (det0 || {})[key]; if (!d || !d.sets) return det0; const ok = ED.itemSets[nm] || ''; const o = {}; Object.keys(d.sets).forEach((q) => { if (ok.indexOf(SET_CODE[q]) >= 0) { o[q] = 1; } }); const all = Object.assign({}, det0); all[key] = Object.assign({}, d); if (Object.keys(o).length) { all[key].sets = o; } else { delete all[key].sets; } return all; };
+// 장비 종류가 바뀌면(세공 장비 키 · 인챈트 가능 그룹 · 장비 종류 코드가 다른 아이템으로 교체) 그 칸의 세부 입력(인챈트 · 세공 · 세트 효과 · 성수 · 에르그 · 무기 수치 등)을 모두 초기화해요 · 같은 종류끼리 바꾸면 새 장비에 없는 세트 효과 체크만 지워요
+const itemSig = (key, nm) => { if (!ED || !nm) return ''; const r = ((this._edG || {})[edSlot(key)] || {})[nm]; const k = ((this._edMap || {})[edSlot(key)] || {})[nm]; return r && k ? k.join(',') + '|' + r[0] + '|' + r[1] : ''; };
+const curItemOf = (key) => { const v = String((this.state.eq || {})[key] || '').trim(); return v || (key === 'rhand' ? this.state.charWeapon || '' : (key === 'lhand' ? this.state.charSub || '' : '')); };
+// 검색창에 입력하는 동안 칸의 값이 바뀌므로, 마지막으로 확정된(목록에 있는) 장비를 기억해 두고 비교해요
+this._known = this._known || {}; ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'robe', 'acc1', 'acc2'].forEach((k) => { const n = String((s.eq || {})[k] || '').trim() || (k === 'rhand' ? s.charWeapon || '' : (k === 'lhand' ? s.charSub || '' : '')); if (itemSig(k, n)) { this._known[k] = n; } else if (!String((s.eq || {})[k] || '').trim() && !n) { delete this._known[k]; } });
+const detOnItem = (det0, key, nm) => { const a = itemSig(key, this._known[key] || curItemOf(key)); const b = itemSig(key, nm); if (a && b && a !== b) { const all = Object.assign({}, det0 || {}); delete all[key]; return all; } return pruneSets(det0, key, nm); };
 const sgItemKnown = !!(ED && ((this._edMap || {})[edSlot(selKey)] || {})[sgItem]);
 const sgKeys = (() => { if (!ED) return []; const hit = ((this._edMap || {})[edSlot(selKey)] || {})[sgItem]; if (hit) return hit; return (SG_DEF_KEYS[selKey] || []).map((k) => ED.keys.indexOf(k)).filter((i) => i >= 0); })();
 const sgList = !ED ? [] : ED.opts.filter((o) => o[1].some((k) => sgKeys.indexOf(k) >= 0)).map((o) => { const oh = o[4] && sgKeys.some((k) => ED.oneHand.indexOf(k) >= 0); const ac = o[3] && sgKeys.some((k) => ED.acc.indexOf(k) >= 0); const cap = oh ? o[4] : (ac ? o[3] : o[2]); return { name: o[0], cap: cap, mx: o[5] ? (ED.lb[String(cap)] || cap) : cap }; });
@@ -692,7 +698,7 @@ const sugAll = ED && String(s.sel).indexOf('relic') !== 0 ? (ED.slots[edSlot(sel
 const sugQ = String((s.eq || {})[selKey] || '').trim(); const sugN = sugQ.replace(/\s/g, '').toLowerCase();
 const sugHits = s.sugOpen && sugN ? sugAll.filter((x) => x[0] !== sugQ && x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) >= 0) : [];
 sugHits.sort((x, y) => (x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) - (y[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) || x[0].length - y[0].length);
-const sugV = { on: sugHits.length > 0, more: sugHits.length > 30, moreText: '전체 ' + sugHits.length + '개 중 30개 · 더 입력하면 좁혀져요', list: sugHits.slice(0, 30).map((x) => ({ name: x[0], price: pItem(x[0]), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const eq = Object.assign({}, this.state.eq); eq[selKey] = x[0]; this.upd({ eq: eq, saved: selKey, sugOpen: false, det: pruneSets(this.state.det, selKey, x[0]) }); } })) };
+const sugV = { on: sugHits.length > 0, more: sugHits.length > 30, moreText: '전체 ' + sugHits.length + '개 중 30개 · 더 입력하면 좁혀져요', list: sugHits.slice(0, 30).map((x) => ({ name: x[0], price: pItem(x[0]), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const eq = Object.assign({}, this.state.eq); eq[selKey] = x[0]; this.upd({ eq: eq, saved: selKey, sugOpen: false, det: detOnItem(this.state.det, selKey, x[0]) }); } })) };
 return {
 mxLabel: MX,
 accent: accent,
@@ -740,7 +746,7 @@ onDusk: setToggle('dusk'), onCrit: setToggle('crit'), onMagnum: setToggle('magnu
 wsNote: (() => { const n = String((s.eq || {}).rhand || '') || s.charWeapon || ''; if (n.indexOf('소울 리버레이트') >= 0 && (n.indexOf('보우') >= 0 || n.indexOf('크로스보우') >= 0)) { return '소울 리버레이트 무기 세트 효과 · 크래시샷 배율 ×1.2 · 매그넘샷 배율 ×1.15 (자동 적용)'; } if (n.indexOf('나이트브링어') >= 0) { return '나이트브링어 무기 세트 효과 · 크래시샷 배율 ×1.15 (자동 적용)'; } return ''; })(),
 ergHwOn: s.sel === 'rhand' || (s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0), hwOk: s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0, hwType: dCur.hwType || '', onHwType: (e) => setDet('hwType', e.target.value), hwMaxOn: dCur.hwType === 'max', hwCdOn: dCur.hwType === 'cdmg', hwMax: dCur.hwMax || '', onHwMax: encCh('hwMax'), blurHwMax: encBlur('hwMax'), hwCd: dCur.hwCd || '', onHwCd: (e) => setDet('hwCd', e.target.value) },
 onSpirit: (e) => this.upd({ exSpirit: e.target.checked }),
-onItem: (e) => { const v = e.target.value; const eq = Object.assign({}, s.eq); if (v.trim()) { eq[selKey] = v; } else { delete eq[selKey]; } const known = !!(ED && ((this._edMap || {})[edSlot(selKey)] || {})[v.trim()]); this.upd(Object.assign({ eq: eq, saved: selKey, sugOpen: true }, known ? { det: pruneSets(s.det, selKey, v.trim()) } : {})); },
+onItem: (e) => { const v = e.target.value; const eq = Object.assign({}, s.eq); if (v.trim()) { eq[selKey] = v; } else { delete eq[selKey]; } const known = !!(ED && ((this._edMap || {})[edSlot(selKey)] || {})[v.trim()]); this.upd(Object.assign({ eq: eq, saved: selKey, sugOpen: true }, known ? { det: detOnItem(s.det, selKey, v.trim()) } : {})); },
 onItemFocus: () => this.setState({ sugOpen: true }), onItemBlur: () => { setTimeout(() => this.setState({ sugOpen: false }), 150); },
 sug: sugV,
 onField: () => this.upd({ saved: selKey }),

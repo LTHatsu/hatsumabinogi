@@ -291,7 +291,10 @@ this.state = { slot: 'rhand', up: {}, prices: null, coin: {}, totem: {}, totErr:
 componentWillUnmount() { clearInterval(this._poll); window.removeEventListener('storage', this._sync); window.removeEventListener('focus', this._sync); document.removeEventListener('visibilitychange', this._sync); }
 componentDidMount() {
 // 다른 페이지에서 바꾼 캐릭터 정보 · 장비를 바로 반영
-this._sync = () => { let raw = ''; try { raw = window.localStorage.getItem('hatz-mabinogi-v1') || ''; } catch (e) {} if (raw !== this._lastRaw) { this._lastRaw = raw; this.forceUpdate(); } };
+// 장비 · 오검이나 캐릭터 정보에서 칸의 장비가 바뀌면 그 칸의 시뮬레이터 목표도 초기화해요
+this._eqSig = () => { const st = this.loadStore(); const c = st && st.chars[st.cur]; const eq = (c && c.gear && c.gear.eq) || {}; const f = (c && c.info && c.info.fields) || {}; const o = Object.assign({}, eq); if (!String(o.rhand || '').trim()) { o.rhand = f.weapon || ''; } if (!String(o.lhand || '').trim()) { o.lhand = f.sub || ''; } return o; };
+this._lastEq = this._eqSig();
+this._sync = () => { let raw = ''; try { raw = window.localStorage.getItem('hatz-mabinogi-v1') || ''; } catch (e) {} if (raw !== this._lastRaw) { this._lastRaw = raw; const now = this._eqSig(); const prev = this._lastEq || {}; this._lastEq = now; const ch = Object.keys(Object.assign({}, prev, now)).filter((k) => String(prev[k] || '') !== String(now[k] || '')); if (ch.length) { const u = Object.assign({}, this.state.up); Object.keys(u).forEach((q) => { if (ch.some((k) => q.indexOf(k + '.') === 0)) { delete u[q]; } }); this.setState({ up: u }); } this.forceUpdate(); } };
 window.addEventListener('storage', this._sync); window.addEventListener('focus', this._sync); document.addEventListener('visibilitychange', this._sync); this._poll = setInterval(this._sync, 1500);
 // 인챈트 데이터 · 장비별 인챈트 가능 그룹 · 추천 인챈트 목록 (세팅 시뮬레이터 인챈트 후보)
 try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
@@ -434,7 +437,8 @@ SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const
 const upv = (key, dm) => { const v = s.up[key] || 0; return v <= dm[4].length ? v : 0; };
 SLOTS.forEach((sl) => dimsFor(sl).forEach((dm) => { const v = upv(sl[0] + '.' + dm[0], dm); if (v > 0) { const st = stepOf(sl, dm, v - 1); chosen.push({ key: sl[0] + '.' + dm[0], slotKey: sl[0], slot: sl[1], dim: dm[1], from: dm[2], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000), rfd: dm[0] === 'sp' ? RFC[sl[0]].map[st.name] : null }); } }));
 SLOTS.filter((sl) => RFC[sl[0]]).forEach((sl) => { const R = RFC[sl[0]]; if (s.up[sl[0] + '.spx'] && !R.noSwap) { const spv = upv(sl[0] + '.sp', R.dim); const fs = R.stage + spv; const d = R.swapDelta(spv); const pct = 2.0; const costM = 3000; chosen.push({ key: sl[0] + '.spx', slotKey: sl[0], slot: sl[1], dim: '특별 개조 전환', from: rfName(R.type, fs), to: rfName(1 - R.type, fs), pct: pct, dmg: d.max + d.matk, costM: costM, eff: pct / (costM / 10000), rfd: d }); } });
-const setUp = (k, v) => { const u = Object.assign({}, s.up); if (v > 0) { u[k] = v; } else { delete u[k]; } this.setState({ up: u }); };
+// 장비 교체 목표를 바꾸면 그 칸의 다른 목표(인챈트 · 세공 · 특별 개조 · 유물 레벨 등)는 초기화해요
+const setUp = (k, v) => { const u = Object.assign({}, s.up); if (v > 0) { u[k] = v; } else { delete u[k]; } if (/\.item$/.test(k)) { const sk = k.slice(0, -4); Object.keys(u).forEach((q) => { if (q.indexOf(sk) === 0 && q !== k) { delete u[q]; } }); } this.setState({ up: u }); };
 const slots = SLOTS.map((sl) => {
 const on = sl[0] === s.slot;
 const mine = chosen.filter((c) => c.slotKey === sl[0]);
