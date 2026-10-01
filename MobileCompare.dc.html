@@ -110,7 +110,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 
 <section aria-label="부가 장비" style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 10px">
 <h2 style="margin: 0; padding-left: 4px; font-family: 'Gowun Batang', serif; font-size: 22px">부가 장비</h2>
-<p style="margin: 0; padding-left: 4px; font-size: 13px; line-height: 1.6; color: #6B5A45">미니어처 · 토템 · 주화 · 인형 가방을 목록에서 골라 추가하거나 다른 것으로 바꿔 볼 수 있어요.</p>
+<p style="margin: 0; padding-left: 4px; font-size: 13px; line-height: 1.6; color: #6B5A45">미니어처 · 토템 · 주화 · 인형 가방 · 스타더스트 형상을 목록에서 골라 추가하거나 다른 것으로 바꿔 볼 수 있어요.</p>
 <span role="status" style="margin-top: -4px; padding-left: 4px; font-size: 12px; color: #8C7A62">{{priceNote}}</span>
 <div style="background: #FFFBF2; border: {{miniCard.border}}; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
 <div style="display: flex; align-items: center; gap: 12px"><span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: {{accent}}; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FBF5E8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a2.6 2.6 0 1 1 0 5.2a2.6 2.6 0 1 1 0-5.2zM9.2 17l.8-6.2h4l.8 6.2zM6 17h12v3.5H6z"></path></svg></span><div style="display: flex; flex-direction: column; gap: 2px"><h3 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 17px">미니어처</h3><span style="font-size: 11px; color: #6B5A45">현재보다 높은 미니어처만 보여요</span></div></div>
@@ -231,7 +231,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </footer>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2F5A45","options":["#2F5A45","#7A3B2E","#2E4A6B"]},"$preview":{"width":390,"height":6050}}'>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2F5A45","options":["#2F5A45","#7A3B2E","#2E4A6B"]},"$preview":{"width":390,"height":6500}}'>
 class Component extends DCLogic {
 constructor(props) {
 super(props);
@@ -287,7 +287,6 @@ const DIMS = [
 ['pre', '인챈트 접두', '[현재 접두]', false, [['[상위 접두 A]', 1.8, 16, 1500], ['[상위 접두 B]', 3.0, 27, 4200]]],
 ['suf', '인챈트 접미', '[현재 접미]', false, [['[상위 접미 A]', 2.2, 20, 1800], ['[상위 접미 B]', 4.2, 38, 5200]]],
 ['ref', '세공 랭크', '[현재 랭크]', false, [['1랭크 상승', 1.5, 13, 900], ['2랭크 상승', 3.1, 27, 2600], ['3랭크 상승', 4.8, 42, 6000]]],
-['erg', '에르그', 'Lv.[현재]', true, [['+5 레벨', 2.4, 21, 3000], ['+10 레벨', 5.6, 52, 6500], ['+20 레벨', 9.0, 82, 15000]]],
 ['sp', '특별 개조', '[R/S] [현재]단계', true, [['+1 단계', 3.5, 31, 5000], ['+2 단계', 7.8, 71, 14000], ['+3 단계', 12.0, 110, 30000]]]
 ];
 // 상위 장비로 통째 교체 — 예시 후보 [이름, 딜 %, 최대 대미지, 비용(만 G)]
@@ -329,7 +328,7 @@ for (let tg = rfStage + 1; tg <= rfStageMax; tg++) { const d = rfDelta(rfCur, rf
 DIMS[DIMS.findIndex((dm) => dm[0] === 'sp')] = ['sp', '특별 개조', rfName(rfType, rfStage), true, rfOpts];
 const rfSwapDelta = (v) => { const fs = rfStage + (v || 0); return rfDelta(rfAt(rfType, fs, rfDark), rfAt(1 - rfType, fs, 1 - rfType === 1 && !!rfInfo && rfInfo.arcana === 2)); };
 const stepOf = (sl, dm, i) => { const o = dm[4][i]; const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
-const dimsFor = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => !dm[3] || sl[0] === 'rhand'); // 에르그 · 특별 개조는 주무기만
+const dimsFor = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand') && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')); // 에르그 · 특별 개조는 주무기만
 const chosen = [];
 SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const st = swapOf(sl, v - 1); chosen.push({ key: sl[0] + '.item', slotKey: sl[0], slot: sl[1], dim: '장비 교체', from: sl[3], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } });
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
@@ -465,10 +464,12 @@ const charMax = fNum('maxDmg'); const dollMax = dollMain(DOLL_FULL[curDoll]);
 const setAny = (key) => Object.keys((gear && gear.det) || {}).some((k) => ((gear.det[k] || {}).sets || {})[key]);
 const setCd = (setAny('crit') ? 7 : 0) + (setAny('dusk') ? 10 : 0);
 const setBonus = setAny('dusk') ? 5 : 0;
-// 전투 환경 딜 비중 — 캐릭터 정보에서 입력한 스킬별 딜 비중을 합계 100%로 환산 (연속공격 · 스타더스트 포함 여부는 전투 환경 입력을 그대로 따름)
+// 딜 사이클 비중 — 캐릭터 정보에서 입력한 스킬별 딜 비중을 합계 100%로 환산 (연속공격 · 스타더스트는 제외)
 // 스킬별 효율 계산: 총딜 증가율 = 해당 스킬 보정 비중 × 해당 스킬 대미지 증가율 (shareOf 사용)
-// 분모: 연속공격은 항상 제외 · 스타더스트(블래스트 · 플레어)는 전투 환경에 입력했을 때만 포함
-const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && k.name && k.name.replace(/\s/g, '') !== '연속공격' && Number(k.share) > 0);
+// 분모: 연속공격은 항상 제외 · 스타더스트(블래스트 · 플레어)도 항상 제외
+// 스타더스트(플레어 · 블래스트)는 판마다 발동 편차가 커서 일반 딜 계산에서 빼요 — 비중은 캐릭터 정보의 스타더스트 칸에 따로 받아 스타더스트 형상 효과 계산에만 써요
+const isDust = (n) => ['블래스트', '플레어'].indexOf(String(n || '').replace(/\s/g, '')) >= 0;
+const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && k.name && k.name.replace(/\s/g, '') !== '연속공격' && !isDust(k.name) && Number(k.share) > 0);
 const envTot = envSkills.reduce((a, k) => a + Number(k.share), 0);
 const SHARE = {}; envSkills.forEach((k) => { SHARE[k.name] = envTot ? Number(k.share) / envTot : 0; });
 const shareOf = (name) => SHARE[name] || 0;
@@ -497,25 +498,64 @@ const stgCombo = (list) => list.every((x) => stgOgw.indexOf(x) >= 0);
 const gyeok = stgCombo(['살', '다르', '에다드']); const bun = stgCombo(['닌', '케르트', '에만콜']); const yung = stgCombo(['페른', '이다드', '에바드']);
 // 크래시샷 → 플레임버스트 (3타, 분출: ×1.09 · 4타)
 const crash = (370 + 3.5 * sv('crLv') + sv('ogCr')) * wCr;
-const flHit = crash + 1080 + 45 * rFl + sv('ogFl');
+// 이중 피어싱 — 아르카나 스킬 계산식 안의 기반(재능) 스킬 부분에만 피어싱이 두 번 적용돼 보호 차감이 줄어요 (약 ×1.45 근사).
+// 재능 스킬 단독 사용 · 아르카나 고유 추가 대미지에는 적용하지 않아요. 앞으로 추가하는 아르카나 스킬의 기반 스킬 부분에도 같이 적용해요
+const PIERCE2 = 1.45;
+const flHit = crash * PIERCE2 + 1080 + 45 * rFl + sv('ogFl');
 const flame = flHit * (bun ? 1.09 * 4 : 3);
 // 매그넘샷 → 하이드로피어스 (격류: (매그넘 + 하이드로×0.15) × 7)
 const magnum = (590 + (sv('mgLv') + sv('magi')) * 10 + dErgLv * 3 + sv('ogMg')) * setMg * wMg;
-const hydro = magnum + (3280 + 110 * rHy + sv('ogHy')) * 1.3;
-const flow = magnum + hydro * 0.15;
+const hydro = magnum * PIERCE2 + (3280 + 110 * rHy + sv('ogHy')) * 1.3;
+const flow = magnum * PIERCE2 + hydro * 0.15;
 // 트라이어설트 (1·2타 + 3타, 연금술 마스터리 계수 · 끝의 0.1은 흙 연금술 마스터리 기본 계수)
 const triM = 1 + (0.1 + sv('fire') * 0.005) + (0.1 + sv('water') * 0.005) + (0.1 + sv('wind') * 0.005) + 0.1;
-const tri = ((1500 + sv('ogTr')) * 2 + (4400 + 150 * rTr + sv('ogTr'))) * triM;
 // 증발 (플레임버스트 · 하이드로피어스 · 트라이어설트) 계수 — 불 · 물 연금술 마스터리로만 오름
 const evap = 1.1 + 0.005 * (sv('fire') + sv('water'));
+// 융합 (페른 · 이다드 · 에바드) — 1 · 2타는 그대로, 피니시 배율 +4500%p · 알케믹 시너지 중 증발 계수를 곱해요 (과열 · 전류 · 분진 · 냉각 · 부식 계수는 받는 대로 추가)
+const triFin = 4400 + (yung ? 4500 : 0); const triSyn = yung ? evap : 1;
+const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
 const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'), shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트');
 // 아르카나 스킬 계산식 안의 재능 스킬 비율 (재능 보너스 대미지가 이 부분에만 적용) — 알케믹 스팅어: 플레임버스트(크래시샷) · 하이드로피어스(매그넘샷)
-const talentFrac = (name) => { if (!isStg) return 0; if (name === '플레임버스트') return crash / flHit; if (name === '하이드로피어스') return gyeok ? magnum * 1.15 / flow : magnum / hydro; return 0; };
+// ── 퓨리 파이터 스킬 계산식 (격투가 스킬배율 계산 시트 · 게일 / 얼티밋 오검 전용 블록) ──
+// 연속기(재능) 배율 J = ((세공 × a + 마기그래프 × b) × 차징 1.75 + 기본 배율) × 소울 보정 × 연속마 배율 × (1 + 어둠의 에르그 × 0.15%)
+// 아르카나 스킬 = 기반 연속기 J × 이중 피어싱 1.45 (재능 부분) + 아르카나 고유 추가 대미지 (유물 · 기본)
+// 마기그래프: 스크류 어퍼 · 차징피스트 · 파운딩 10 고정 · 소울리버레이트 너클이면 드롭킥 ×1.15 · 파운딩 ×1.8 · 오검 워드 효과는 아직 0
+// 오검 조합: 게일 피어스(닌 · 알름 · 에만콜) → 게일 ×1.2, 드롭킥 · 포스슬램 ×1.12 / 얼티밋 스트라이크(페른 · 케르트 · 일란드) → 얼티밋 1 · 2타 160% + 3타 230%
+const isFury = arcIdx === 9;
+// 연속마 배율 = 기본 1.0 + 연속마 스킬 · 아르카나 상한 0.7 + 너클 에르그 S50 1.0 + 무기(소울리버레이트 너클 0.8 · 나이트브링어 0.7 · 페러시우스 0.65) + 장갑 연속기 마스터리 세공 1레벨당 0.01
+const furyWeaponCombo = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0 ? 0.8 : (wName.indexOf('나이트브링어') >= 0 ? 0.7 : (wName.indexOf('페러시우스') >= 0 ? 0.65 : 0));
+const FURY_COMBO_BASE = 1.0 + 0.7 + 1.0 + furyWeaponCombo;
+const FURY_SK = { dp: ['대쉬펀치', 460, 3, 2, 0, 1], up: ['스크류 어퍼', 690, 6, 3, 10, 1], dk: ['드롭킥', 800, 9, 4, 0, 1], cf: ['차징피스트', 700, 3, 2, 10, 1.75], ss: ['섬머솔트', 700, 6, 3, 0, 1], pd: ['파운딩', 1000, 9, 4, 10, 1] };
+Object.keys(FURY_SK).forEach((k) => { SG_KEY['f_' + k] = FURY_SK[k][0]; });
+SG_KEY.f_cm = '연속기 마스터리';
+// TODO(오검 연동 후): 오검 워드 '연속기 마스터리' 효과 1개당 최대 2%(0.02)를 장착 수만큼 연속마 배율에 더하기 — 시트의 3.7 = 소울 너클 3.5 + 장갑 세공 10레벨 0.1 + 오검 2% × 5개 0.1
+const furySoul = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0;
+const furyGale = ['닌', '알름', '에만콜'].every((x) => stgOgw.indexOf(x) >= 0);
+const furyUlt = !furyGale && ['페른', '케르트', '일란드'].every((x) => stgOgw.indexOf(x) >= 0);
+const FURY_RELIC = { '익시드 : 체인 블로우 피니시 대미지 증가': 'e1', '익시드 : 임팩트 다이브 대미지 증가': 'e2', '익시드 : 포스 슬램 대미지 증가': 'e3' };
+const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = FURY_RELIC[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
+// 스킬별 대미지 (딜 사이클 비중 키 = 띄어쓰기 없는 이름) — w: 재능 부분 가중치 (재능 보너스 대미지)
+const furyEval = (ov, w) => {
+const g = (k) => sv('f_' + k) + ((ov.sg || {})['f_' + k] || 0);
+const dE = ov.dErg !== undefined ? ov.dErg : dErgLv; const lv = ov.relic || furyRelicWith('', 0);
+const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1]) * soul * (FURY_COMBO_BASE + 0.01 * Math.min(13, g('cm'))) * (1 + dE * 0.0015); };
+const arc = (D, I) => ({ v: D * PIERCE2 * w + I, tal: D * PIERCE2 });
+const ultD = furyUlt ? J('up') * (3 * 1.6 + 1.5 * 2.3) : J('up') * 4.5; const ultI = furyUlt ? 2000 * 1.6 + 1500 * 2.3 : 3500;
+const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 60 + 900), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500), '게일피어스': arc(J('cf'), 1300), '포스플레어': arc(J('dk') * 0.7, 650), '얼티밋스트라이크': arc(ultD, ultI) };
+const out = { '대쉬펀치': { v: J('dp'), tal: 0 }, '스크류어퍼': { v: J('up'), tal: 0 }, '드롭킥': { v: J('dk'), tal: 0 }, '차징피스트': { v: J('cf'), tal: 0 }, '섬머솔트': { v: J('ss'), tal: 0 }, '파운딩': { v: J('pd'), tal: 0 } };
+Object.keys(A).forEach((n) => { out[n] = A[n]; }); return out;
+};
+const furyRaw = isFury ? furyEval({}, 1) : {};
+// 딜 사이클 비중을 입력하지 않았으면 시트 사이클(얼티밋 2 · 대어드 9 · 대펀 9 · 익시드 9 · 게일 20 또는 18회)로 환산한 기본 비중을 써요
+const FURY_DEF = furyUlt ? { '대쉬펀치': 6.8, '스크류어퍼': 6.8, '드롭킥': 10.4, '익시드:체인블로우': 7.7, '익시드:임팩트다이브': 9.2, '익시드:포스슬램': 23.2, '게일피어스': 20.3, '얼티밋스트라이크': 15.7 } : { '대쉬펀치': 6.6, '스크류어퍼': 6.5, '드롭킥': 11.3, '익시드:체인블로우': 7.4, '익시드:임팩트다이브': 8.9, '익시드:포스슬램': 25.1, '게일피어스': 26.2, '얼티밋스트라이크': 8.1 };
+const furyUserShare = envSkills.some((k) => furyRaw[String(k.name).replace(/\s/g, '')]);
+const furyShare = (n) => (furyUserShare ? shareOf(n) : (FURY_DEF[n] || 0) / 100);
+const talentFrac = (name) => { if (isFury) { const q = furyRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (!isStg) return 0; if (name === '플레임버스트') return crash * PIERCE2 / flHit; if (name === '하이드로피어스') return gyeok ? magnum * PIERCE2 * 1.15 / flow : magnum * PIERCE2 / hydro; return 0; };
 const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff + urgentBuff };
 // 부가 장비(미니어처·토템·주화) — 예시 [이름, 딜 %, 스탯 변화, 비용(만 G)] · max 최대 대미지, crate 크리티컬 확률(%p), cdmg 크리티컬 대미지(%), bonus 보너스 대미지(%)
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
 // 보너스 대미지 — 같은 종류는 (1 + 합) 배. 일반 보너스: 모든 스킬 · 재능 보너스: 재능 스킬(일반 보너스와 합산 → 1 + 일반 + 재능) · 아르카나 보너스: 아르카나 스킬에 일반 보너스와 합산(1 + 일반 + 아르카나) · 무기 보너스: 모든 스킬
-// 아르카나 스킬 안의 재능 스킬 부분(talentFrac)은 (1 + 일반 + 재능 + 아르카나), 나머지는 (1 + 일반 + 아르카나). 스킬 비중은 전투 환경 입력값(합계 100% 환산)
+// 아르카나 스킬 안의 재능 스킬 부분(talentFrac)은 (1 + 일반 + 재능 + 아르카나), 나머지는 (1 + 일반 + 아르카나). 스킬 비중은 딜 사이클 비중 입력값(합계 100% 환산)
 const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); return (1 + W) * envSkills.reduce((sum, k) => { const sh = shareOf(k.name); if (!k.arc) return sum + sh * (1 + G + T); const tf = talentFrac(k.name); return sum + sh * ((1 - tf) * (1 + G + A) + tf * (1 + G + T + A)); }, 0); };
 const dealOf = (st) => st.max * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
 const dealPct = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0) }); return Math.round((n / b - 1) * 1000) / 10; };
@@ -539,13 +579,24 @@ const muSlots = [];
 MU_GROUPS.forEach((g) => [[g[1], '미니어처'], [g[1] + 'Ex', '엑스트라 미니어처']].forEach((sk) => { const k = sk[0]; const cur = miniVal(k); const all = muGroupsOf(k); const ups = all.filter((x) => x[0] > cur); const sel = Number(s.up['m.' + k]) || 0; const curHit = all.filter((x) => x[0] === cur)[0]; muSlots.push({ g: g, k: k, label: sk[1], cur: cur, curName: cur ? (curHit ? curHit[1] : '') : '없음', ups: ups, tgt: ups.filter((x) => x[0] === sel)[0] || null }); }));
 const kalOwned = !!(cInfo && cInfo.kaliach);
 const kalBuy = !kalOwned && !!s.up['m.kaliach'];
+// 스타더스트 형상 — 지원효과 대미지는 120% 고정, 안락의 파편 스타더스트의 형상 장착 시에만 130% (+10%p)
+// 플레어(발동 스킬의 40%) · 블래스트(50%) 대미지는 모두 지원효과 대미지에 비례 → 각 스킬 딜 증가율 = 10 ÷ 현재 지원효과 %. 입력한 비중이 이미 40 · 50% 차이를 담고 있어 총딜 증가 = 플레어 비중 × 증가율 + 블래스트 비중 × 증가율
+// 비중은 스타더스트를 포함한 전체 딜 기준 (캐릭터 정보 입력, 예전 스킬 목록에 넣은 값은 그대로 이어 써요)
+const SOLACE = '안락의 파편 스타더스트의 형상';
+const dustF0 = (cInfo && cInfo.fields) || {}; const dustLegacy = (n) => { const q = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && String(k.name || '').replace(/\s/g, '') === n)[0]; return q ? Number(q.share) || 0 : 0; };
+const dustNum = (k, n) => (dustF0[k] !== undefined && dustF0[k] !== '' ? Number(dustF0[k]) || 0 : dustLegacy(n));
+const dustFl = dustNum('dustFlare', '플레어'), dustBl = dustNum('dustBlast', '블래스트'); const dustSup = 120; const dustOwned = !!dustF0.dustSolace;
+const dustRate = 10 / dustSup; const dustGF = +(dustFl * dustRate).toFixed(2), dustGB = +(dustBl * dustRate).toFixed(2); const dustPct = +(dustGF + dustGB).toFixed(2);
+const dustUp = !dustOwned && dustPct > 0 ? [[SOLACE, dustPct, { dmgFix: Math.round((BASE_STATS.max || 0) * dustPct / 100) }, priceOf(SOLACE), '스타더스트 대미지 10% 증가 · 플레어 +' + dustGF + '% · 블래스트 +' + dustGB + '% (총딜)']] : [];
+const dustCur = dustOwned ? SOLACE + ' 장착 중' : (dustFl || dustBl ? '미장착 · 플레어 ' + dustFl + '% · 블래스트 ' + dustBl + '%' : '미장착 · 캐릭터 정보에서 플레어 · 블래스트 비중을 입력하면 계산돼요');
 const EXTRA = [
-['doll', '인형 가방', I.doll, curDoll || '없음', dollUp]
+['doll', '인형 가방', I.doll, curDoll || '없음', dollUp],
+['dust', '스타더스트 형상', 'M12 3l2.2 5.6L20 9.3l-4.6 3.9 1.4 5.8L12 16l-4.8 3 1.4-5.8L4 9.3l5.8-.7z', dustCur, dustUp, dustOwned ? SOLACE : '미장착', '스타더스트 형상 장착']
 ];
 const STAT_KEYS = [['max', MX, ''], ['crate', '크리티컬 확률', '%p'], ['cdmg', '크리티컬 대미지', '%'], ['bonus', '보너스 대미지', '%']];
 const statText = (st) => STAT_KEYS.filter((k) => st[k[0]]).map((k) => k[1] + ' +' + st[k[0]] + k[2]).join(' · ');
 chosen.forEach((c) => { c.group = '장착 장비'; const rd = c.rfd || (c.dim === '특별 개조' ? RF_MAP[c.to] : null); if (rd) { c.stats = { max: rd.max + rd.matk, crate: 0, cdmg: rd.cdmg, bonus: rd.bonus }; return; } c.stats = { max: c.dmg, crate: c.dim === '인챈트 접두' ? +(c.pct * 0.5).toFixed(1) : 0, cdmg: c.dim === '인챈트 접미' ? +(c.pct * 1.5).toFixed(1) : 0, bonus: c.dim === '세공 랭크' ? c.pct : 0 }; });
-EXTRA.forEach((ex) => { const v = s.up['x.' + ex[0]] || 0; if (v > 0 && ex[4][v - 1]) { const o = ex[4][v - 1]; chosen.push({ key: 'x.' + ex[0], slotKey: 'x.' + ex[0], slot: '부가 장비', dim: ex[1] + (ex[3] === '없음' ? ' 추가' : ' 교체'), from: ex[5] || ex[3], to: o[0], pct: o[1], dmg: o[2].max || 0, costM: o[3], eff: o[3] ? o[1] / (o[3] / 10000) : 0, group: '부가 장비', names: ex[1], stats: Object.assign({ max: 0, crate: 0, cdmg: 0, bonus: 0 }, o[2]) }); } });
+EXTRA.forEach((ex) => { const v = s.up['x.' + ex[0]] || 0; if (v > 0 && ex[4][v - 1]) { const o = ex[4][v - 1]; chosen.push({ key: 'x.' + ex[0], slotKey: 'x.' + ex[0], slot: '부가 장비', dim: ex[6] || (ex[1] + (ex[3] === '없음' ? ' 추가' : ' 교체')), from: ex[5] || ex[3], to: o[0], pct: o[1], dmg: o[2].dmgFix !== undefined ? o[2].dmgFix : (o[2].max || 0), costM: o[3], eff: o[3] ? o[1] / (o[3] / 10000) : 0, group: '부가 장비', names: ex[1], stats: Object.assign({ max: 0, crate: 0, cdmg: 0, bonus: 0 }, o[2]) }); } });
 muSlots.filter((m) => m.tgt).forEach((m) => { const st = { max: 0, crate: 0, cdmg: 0, bonus: 0 }; st[m.g[2]] = m.tgt[0] - m.cur; chosen.push({ key: 'm.' + m.k, slotKey: 'm.' + m.k, slot: '부가 장비', dim: m.g[0] + ' ' + m.label + ' 교체', from: m.curName, to: m.tgt[1], pct: dealPct(st), dmg: st.max, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); });
 if (kalBuy) { const st = { max: 0, crate: 1, cdmg: 0, bonus: 0 }; chosen.push({ key: 'm.kaliach', slotKey: 'm.kaliach', slot: '부가 장비', dim: '칼리아흐의 결계 미니어처 구매', from: '없음', to: '칼리아흐의 결계 미니어처', pct: dealPct(st), dmg: 0, costM: 0, eff: 0, group: '부가 장비', names: '미니어처', stats: st }); }
 const muChosen = chosen.filter((c) => c.names === '미니어처' && c.key.indexOf('m.') === 0);
@@ -564,7 +615,7 @@ const k = 'x.' + ex[0]; const v = s.up[k] || 0; const o = v > 0 ? ex[4][v - 1] |
 return {
 name: ex[1], icon: ex[2], current: ex[3], value: o ? String(v) : '0',
 opts: [{ v: '0', label: ex[3] === '없음' ? '장착 안 함' : '현재 유지' }].concat(ex[4].map((q, i) => ({ v: String(i + 1), label: q[0] + ' · +' + q[1] + '%' }))),
-on: !!o, off: !o, pct: o ? o[1].toFixed(1) : '0', statLine: o ? statText(o[2]) : '', cost: o ? (o[3] ? won(o[3]) : '가격 미정') : '—',
+on: !!o, off: !o, pct: o ? o[1].toFixed(1) : '0', statLine: o ? (o[4] || statText(o[2])) : '', cost: o ? (o[3] ? won(o[3]) : '가격 미정') : '—',
 border: o ? '1.5px solid ' + accent : '1px solid #D9C8A6', bg: o ? '#F3F8F4' : '#F5EDDC',
 onChange: (e) => setUp(k, Number(e.target.value))
 };
@@ -846,14 +897,14 @@ return { hasToggle: k[0] === 'talent', noMat: !matOn, matNote: matOn ? '정령 �
 // 재능 한정 효과 — 특정 계열 재능 스킬에만 적용되는 효과 (재능 보너스 대미지 합계와 별도로 표기)
 const talOnly = [].concat(urgentBuff ? [{ name: '어전트샷', fx: '레인지 계열 재능 +' + urgentBuff + '%' }] : []).concat(mightOn ? [{ name: '마이트 오브 라데카', fx: '근접 재능 대미지 ×1.15' }] : []);
 const dMag = 10 * setMg * wMg; const dErgStep = 3 * setMg * wMg;
-const hyRate = (d) => (gyeok ? d * 1.15 / flow : d / hydro);
+const hyRate = (d) => (gyeok ? d * PIERCE2 * 1.15 / flow : d * PIERCE2 / hydro);
 const stgRows = [
-['크래시샷 세공 +1', '플레임버스트', shF * (3.5 * wCr / flHit), false],
+['크래시샷 세공 +1', '플레임버스트', shF * (3.5 * wCr * PIERCE2 / flHit), false],
 ['매그넘샷 세공 · 마기그래프 +1', '매그넘샷 · 하이드로피어스' + (gyeok ? '(격류)' : ''), shM * (dMag / magnum) + shH * hyRate(dMag), false],
 ['어둠의 에르그 +1', '매그넘샷 · 하이드로피어스' + (gyeok ? '(격류)' : ''), shM * (dErgStep / magnum) + shH * hyRate(dErgStep), dErgLv >= 50],
 ['무리아스의 유물 · 플레임 버스트 +1', '플레임버스트' + (bun ? '(분출)' : ''), shF * (45 / flHit), rFl >= 10],
 ['무리아스의 유물 · 하이드로 피어스 +1', '하이드로피어스' + (gyeok ? '(격류)' : ''), shH * (gyeok ? 143 * 0.15 / flow : 143 / hydro), rHy >= 10],
-['무리아스의 유물 · 트라이 어설트 +1', '트라이어설트', shT * (150 / (7400 + 150 * rTr + 3 * sv('ogTr'))), rTr >= 10],
+['무리아스의 유물 · 트라이 어설트 +1', '트라이어설트', shT * (150 / (3000 + triFin + 150 * rTr + 3 * sv('ogTr'))), rTr >= 10],
 ['불 · 물 연금술 마스터리 +1', '증발(플레임 · 하이드로 · 트라이) + 트라이어설트 마스터리 계수', (shF + shH) * (0.005 / evap) + shT * ((1 + 0.005 / evap) * (1 + 0.005 / triM) - 1), false],
 ['바람 연금술 마스터리 +1', '트라이어설트', shT * (0.005 / triM), false]
 ];
@@ -862,7 +913,7 @@ const stgCard = {
 on: isStg,
 mults: [['크래시샷', crash], ['플레임버스트' + (bun ? ' (분출)' : ''), flame], ['매그넘샷', magnum], ['하이드로피어스' + (gyeok ? ' (격류)' : ''), gyeok ? flow * 7 : hydro], ['트라이어설트' + (yung ? ' (융합)' : ''), tri]].map((q) => ({ name: q[0], v: r2(q[1]) + '%' })),
 rows: stgRows.map((q) => ({ name: q[0], via: q[1], pct: q[3] ? '최대' : '+' + r2(q[2] * 100) + '%', mx: q[3] ? '—' : '+' + r2(q[2] * (BASE_STATS.max || 0)), fg: q[3] ? '#8C7A62' : (q[2] > 0 ? '#1E3D2E' : '#8C7A62') })),
-combo: [gyeok ? '격류(하이드로 피어스 조합)' : '', bun ? '분출(플레임 버스트 조합)' : '', yung ? '융합(트라이 어설트 조합 · 계산식 준비 중)' : ''].filter(Boolean).join(' · ') || '활성화된 오검 조합 없음',
+combo: [gyeok ? '격류(하이드로 피어스 조합)' : '', bun ? '분출(플레임 버스트 조합)' : '', yung ? '융합(트라이 어설트 조합)' : ''].filter(Boolean).join(' · ') || '활성화된 오검 조합 없음',
 info: '무기 ' + (wName || '미선택') + ' · 세공 크래시샷 ' + sv('crLv') + ' · 매그넘샷 ' + sv('mgLv') + ' (마기그래프 ' + sv('magi') + ') · 연금술 마스터리 불 ' + sv('fire') + ' / 물 ' + sv('water') + ' / 바람 ' + sv('wind') + ' · 어둠의 에르그 ' + dErgLv + ' · 유물 플레임 ' + rFl + ' / 하이드로 ' + rHy + ' / 트라이 ' + rTr + (setMg > 1 ? ' · 매그넘샷 강화 세트' : ''),
 noShare: !(shF || shH || shM || shT)
 };
@@ -882,25 +933,66 @@ const RELIC_FX = {
 };
 const ARC_NAMES = ['엘레멘탈 나이트', '세인트 바드', '다크 메이지', '알케믹 스팅어', '세이크리드 가드', '블래스트 랜서', '배리어블 거너', '포비든 알케미스트', '멜로딕 퍼피티어', '퓨리 파이터'];
 const relicList = RELIC_FX[ARC_NAMES[arcIdx]] || [];
-// ── 유물 효과 레벨 변경 (세팅 시뮬레이터 유물 1 · 2 · 3) · 미장착 유물 칸은 효과를 골라 새로 장착 가능 — 알케믹 스팅어는 스킬 계산식 · 전투 환경 딜 비중으로 총딜 증가 계산 ──
+// ── 유물 효과 레벨 변경 (세팅 시뮬레이터 유물 1 · 2 · 3) · 미장착 유물 칸은 효과를 골라 새로 장착 가능 — 알케믹 스팅어는 스킬 계산식 · 딜 사이클 비중으로 총딜 증가 계산 ──
 const RELIC_KEY = { '플레임 버스트 대미지 증가': 'fl', '하이드로 피어스 대미지 증가': 'hy', '트라이 어설트 피니시 대미지 증가': 'tr' };
 // 재능 스킬 부분(크래시샷 · 매그넘샷)은 재능 보너스 대미지 가중치 wT = (1 + 일반 + 재능) ÷ (1 + 일반)
 const wT = (1 + BASE_STATS.bonus / 100 + BASE_STATS.talent / 100 + BASE_STATS.arcana / 100) / (1 + BASE_STATS.bonus / 100 + BASE_STATS.arcana / 100);
-const stgWith = (lv) => { const fh = crash * wT + 1080 + 45 * lv.fl + sv('ogFl'); const fla = fh * (bun ? 1.09 * 4 : 3); const hyArm = (3280 + 110 * lv.hy + sv('ogHy')) * 1.3; const hyd = magnum * wT + hyArm; const hyE = gyeok ? (magnum * wT + hyd * 0.15) * 7 : hyd; const trv = ((1500 + sv('ogTr')) * 2 + (4400 + 150 * lv.tr + sv('ogTr'))) * triM; return { fla: fla, hyE: hyE, trv: trv }; };
+const stgWith = (lv) => { const fh = crash * PIERCE2 * wT + 1080 + 45 * lv.fl + sv('ogFl'); const fla = fh * (bun ? 1.09 * 4 : 3); const hyArm = (3280 + 110 * lv.hy + sv('ogHy')) * 1.3; const hyd = magnum * PIERCE2 * wT + hyArm; const hyE = gyeok ? (magnum * PIERCE2 * wT + hyd * 0.15) * 7 : hyd; const trv = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * lv.tr + sv('ogTr'))) * triM * triSyn; return { fla: fla, hyE: hyE, trv: trv }; };
 const relicLvWith = (slotKey, newLv, fxNew) => { const o = { fl: 0, hy: 0, tr: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = RELIC_KEY[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
+// ── 알케믹 스팅어 세공 · 어둠의 에르그 목표 레벨 (장착 장비 목표 단계 · 추천 순위) ──
+// 세공 레벨 · 연금술 마스터리 · 어둠의 에르그를 바꿨을 때 스킬 계산식으로 다시 계산해, 딜 사이클 비중대로 총딜 증가율을 구해요
+// 증발 계수는 플레임버스트 · 하이드로피어스 · 트라이어설트에 적용 (불 · 물 마스터리 변화 반영) · 재능 부분(크래시샷 · 매그넘샷)은 wT 가중치
+const stgEval = (ov) => {
+const g = (k) => sv(k) + ((ov.sg || {})[k] || 0);
+const lv = ov.relic || relicLvWith('', 0);
+const crashV = (370 + 3.5 * g('crLv') + sv('ogCr')) * wCr;
+const fla = (crashV * PIERCE2 * wT + 1080 + 45 * lv.fl + sv('ogFl')) * (bun ? 1.09 * 4 : 3);
+const dE = ov.dErg !== undefined ? ov.dErg : dErgLv;
+const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * setMg * wMg;
+const hyd = magV * PIERCE2 * wT + (3280 + 110 * lv.hy + sv('ogHy')) * 1.3;
+const hyE = gyeok ? (magV * PIERCE2 * wT + hyd * 0.15) * 7 : hyd;
+const tM = 1 + (0.1 + g('fire') * 0.005) + (0.1 + g('water') * 0.005) + (0.1 + g('wind') * 0.005) + 0.1;
+const ev = 1.1 + 0.005 * (g('fire') + g('water'));
+const trv = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * lv.tr + sv('ogTr'))) * tM;
+return { fla: fla * ev, hyE: hyE * ev, trv: trv * ev, mag: magV };
+};
+const stgBase = stgEval({});
+const stgGain = (ov) => { if (!isStg) return 0; const n = stgEval(ov); return shF * (n.fla / stgBase.fla - 1) + shH * (n.hyE / stgBase.hyE - 1) + shT * (n.trv / stgBase.trv - 1) + shM * (n.mag / stgBase.mag - 1); };
 const stgBaseM = stgWith(relicLvWith('', 0));
-const relicGain = (slotKey, newLv, fxNew) => { if (!isStg) return 0; const n = stgWith(relicLvWith(slotKey, newLv, fxNew)); return shF * (n.fla / stgBaseM.fla - 1) + shH * (n.hyE / stgBaseM.hyE - 1) + shT * (n.trv / stgBaseM.trv - 1); };
+const furyBase = isFury ? furyEval({}, wT) : {};
+const furyGain = (ov) => { if (!isFury) return 0; const n = furyEval(ov, wT); return Object.keys(n).reduce((t, k) => t + furyShare(k) * (furyBase[k].v ? n[k].v / furyBase[k].v - 1 : 0), 0); };
+const skGain = (ov) => (isFury ? furyGain(ov) : stgGain(ov));
+const relicGain = (slotKey, newLv, fxNew) => (isFury ? furyGain({ relic: furyRelicWith(slotKey, newLv, fxNew) }) : stgGain({ relic: relicLvWith(slotKey, newLv, fxNew) }));
 const RELIC_SLOTS = [['relic1', '유물 1'], ['relic2', '유물 2'], ['relic3', '유물 3']];
 const rfxNew = (k) => { const d = (((gear && gear.det) || {})[k]) || {}; return d.rFx ? '' : ((s.rfx || {})[k] || ''); };
 RELIC_SLOTS.forEach((rs) => { const d0 = (((gear && gear.det) || {})[rs[0]]) || {}; const nf = rfxNew(rs[0]); const d = nf ? { rFx: nf, rLv: 0 } : d0; const tg = Number(s.up[rs[0] + '.rlv']) || 0; const lv = Number(d.rLv) || 0; if (d.rFx && tg > lv && tg <= 10) { const g = relicGain(rs[0], tg, nf); chosen.push({ key: rs[0] + '.rlv', slotKey: rs[0], slot: rs[1], dim: nf ? '유물 새로 장착' : '유물 효과 레벨', from: nf ? '미장착' : d.rFx + ' Lv.' + lv, to: nf ? nf + ' Lv.' + tg : 'Lv.' + tg, pct: Math.round(g * 1000) / 10, dmg: Math.round(g * (BASE_STATS.max || 0)), costM: 0, eff: 0, group: '장착 장비', names: '유물', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); } });
-const relicDims = (() => { if (String(cur[0]).indexOf('relic') !== 0) return []; const nf = rfxNew(cur[0]); const empty = !curDet.rFx; const d = nf ? { rFx: nf, rLv: 0 } : curDet; const lv = Number(d.rLv) || 0; const k = cur[0] + '.rlv'; const tg = Number(s.up[k]) || 0; const calc = isStg && !!RELIC_KEY[d.rFx]; const fmt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0)); const st = d.rFx && tg > lv ? relicGain(cur[0], tg, nf) : 0; const on = !!d.rFx && tg > lv;
+const relicDims = (() => { if (String(cur[0]).indexOf('relic') !== 0) return []; const nf = rfxNew(cur[0]); const empty = !curDet.rFx; const d = nf ? { rFx: nf, rLv: 0 } : curDet; const lv = Number(d.rLv) || 0; const k = cur[0] + '.rlv'; const tg = Number(s.up[k]) || 0; const calc = (isStg && !!RELIC_KEY[d.rFx]) || (isFury && !!FURY_RELIC[d.rFx]); const fmt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0)); const st = d.rFx && tg > lv ? relicGain(cur[0], tg, nf) : 0; const on = !!d.rFx && tg > lv;
 const pickDim = empty ? [{ label: '유물 새로 장착', current: '미장착', value: nf, opts: [{ v: '', label: relicList.length ? '장착 안 함' : '아르카나를 먼저 선택해 주세요' }].concat(relicList.map((q) => ({ v: q[0], label: q[0] + ' (최대 ' + q[1] + ')' }))), on: false, off: !nf, pct: '0', dmg: 0, cost: '—', costFg: '#8C7A62', border: nf ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: nf ? '#F3F8F4' : '#FBF5E8', onChange: (e) => { const r = Object.assign({}, this.state.rfx); if (e.target.value) { r[cur[0]] = e.target.value; } else { delete r[cur[0]]; } const u = Object.assign({}, this.state.up); if (e.target.value && !u[k]) { u[k] = 10; } if (!e.target.value) { delete u[k]; } this.setState({ rfx: r, up: u }); }, head: '', effect: '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }] : [];
 if (empty && !nf) return pickDim;
 return pickDim.concat([{ label: '유물 효과 레벨', current: nf ? '미장착' : d.rFx + ' Lv.' + lv, value: String(on ? tg : 0),
 opts: [{ v: '0', label: nf ? '레벨 선택' : (lv >= 10 ? '최대 레벨' : '현재 유지') }].concat(Array.from({ length: 10 - lv }, (_, i) => { const n = lv + i + 1; return { v: String(n), label: 'Lv.' + n + (calc ? ' · ' + fmt(relicGain(cur[0], n, nf)) : ' · 계산식 준비 중') }; })),
 on: on, off: !on, pct: on ? (Math.round(st * 1000) / 10).toFixed(1) : '0', dmg: on ? Math.round(st * (BASE_STATS.max || 0)) : 0, cost: on ? '가격 미정' : '—', costFg: on ? '#2A2119' : '#8C7A62',
 border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(k, Number(e.target.value)),
-head: on ? (calc ? '▲ ' + fmt(st) : '▲ Lv.' + lv + ' → Lv.' + tg) : '', effect: on ? (calc ? '전투 환경 딜 비중 기준 예상치' : '이 효과는 스킬 계산식 준비 중이에요') : '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }]); })();
+head: on ? (calc ? '▲ ' + fmt(st) : '▲ Lv.' + lv + ' → Lv.' + tg) : '', effect: on ? (calc ? '딜 사이클 비중 기준 예상치' : '이 효과는 스킬 계산식 준비 중이에요') : '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }]); })();
+const stgHasShare = isFury || !!(shF || shH || shM || shT);
+const SG_OPT_KEY = { '크래시샷': 'crLv', '매그넘샷': 'mgLv', '불 연금술 마스터리': 'fire', '물 연금술 마스터리': 'water', '바람 연금술 마스터리': 'wind' };
+Object.keys(FURY_SK).forEach((k) => { SG_OPT_KEY[FURY_SK[k][0]] = 'f_' + k; });
+SG_OPT_KEY['연속기 마스터리'] = 'f_cm';
+const SG_SLOTS = ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'robe'];
+const slotName = (k) => (SLOTS.filter((sl) => sl[0] === k)[0] || [k, k])[1];
+const pctTxt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0));
+// 목표 레벨 후보 (현재 +1 ~ 최대) — [키, 이름, 현재, 최대, 이득 함수]
+const stgTargets = (k) => { if (!isStg && !isFury) return []; const d = (((gear && gear.det) || {})[k]) || {}; const out = []; (Array.isArray(d.sg) ? d.sg : []).forEach((q, i) => { const key = q && SG_OPT_KEY[q.o]; if (!key) return; out.push([k + '.sg' + i, '세공 · ' + q.o, Number(q.lv) || 0, key === 'f_cm' ? 13 : 50, (n) => skGain({ sg: { [key]: n - (Number(q.lv) || 0) } })]); }); if (k === 'rhand') out.push([k + '.derg', '어둠의 에르그', dErgLv, 50, (n) => skGain({ dErg: n })]); return out; };
+SG_SLOTS.forEach((k) => stgTargets(k).forEach((t) => { const tg = Number(s.up[t[0]]) || 0; if (tg > t[2] && tg <= t[3]) { const gn = t[4](tg); chosen.push({ key: t[0], slotKey: k, slot: slotName(k), dim: t[1], from: 'Lv.' + t[2], to: 'Lv.' + tg, pct: Math.round(gn * 1000) / 10, dmg: Math.round(gn * (BASE_STATS.max || 0)), costM: 0, eff: 0, group: '장착 장비', names: t[1], stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); } }));
+const stgDims = (() => { if ((!isStg && !isFury) || SG_SLOTS.indexOf(cur[0]) < 0) return []; const ts = stgTargets(cur[0]); const blank = { pct: '0', dmg: 0, tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
+const rows = ts.map((t) => { const tg = Number(s.up[t[0]]) || 0; const on = tg > t[2] && tg <= t[3]; const gn = on ? t[4](tg) : 0; const one = t[2] < t[3] ? t[4](t[2] + 1) : 0;
+return Object.assign({}, blank, { label: t[1], current: 'Lv.' + t[2] + (stgHasShare && t[2] < t[3] ? ' · +1당 총딜 +' + (Math.round(one * 10000) / 100) + '%' : ''), value: String(on ? tg : 0),
+opts: [{ v: '0', label: t[2] >= t[3] ? '최대 레벨' : '현재 유지' }].concat(Array.from({ length: Math.max(0, t[3] - t[2]) }, (_, i) => { const n = t[2] + i + 1; return { v: String(n), label: 'Lv.' + n + (stgHasShare ? ' · ' + pctTxt(t[4](n)) : '') }; })),
+on: on, off: !on, pct: on ? (Math.round(gn * 1000) / 10).toFixed(1) : '0', dmg: on ? Math.round(gn * (BASE_STATS.max || 0)) : 0, cost: on ? '가격 미정' : '—', costFg: on ? '#2A2119' : '#8C7A62',
+border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(t[0], Number(e.target.value)),
+head: on ? '▲ ' + pctTxt(gn) : '', effect: on ? (stgHasShare ? '딜 사이클 비중 기준 예상치' : '캐릭터 정보에서 딜 사이클 비중을 입력하면 계산돼요') : '' }); });
+const hasSg = ts.some((t) => t[0].indexOf('.sg') > 0);
+return (hasSg ? [] : [Object.assign({}, blank, { label: '세공', current: '미입력', value: '0', opts: [{ v: '0', label: '장비 · 오검에서 세공 옵션을 입력해 주세요' }], on: false, off: true, cost: '—', costFg: '#8C7A62', border: '1px solid #E6D9BD', bg: '#FBF5E8', onChange: () => {}, head: '', effect: '' })]).concat(rows); })();
 // ── 크리티컬 효율 (모든 아르카나) — 평균 대미지 배율 A = 1 − 크리확률 + 크리배율 × 크리확률 (크리배율 = 100% + 크리티컬 대미지)
 // 크리티컬 대미지 +Δ → 평균 증가율 = 크리확률 ÷ A × Δ · 크리티컬 확률 +Δ → 크리티컬 대미지 ÷ A × Δ (둘 다 바뀌면 A'/A − 1)
 // 최대 대미지 환산 = 현재 최대 대미지 × 평균 증가율
@@ -909,7 +1001,7 @@ const critGain = (st) => (avgMul(BASE_STATS.crate + (st.crate || 0), BASE_STATS.
 const critMx = (st) => (BASE_STATS.max || 0) * critGain(st);
 // 보너스 대미지 변화도 같은 방식으로 최대 대미지 환산
 chosen.forEach((c) => { if (c.stats && (c.stats.crate || c.stats.cdmg || c.stats.bonus || c.stats.talent || c.stats.arcana || c.stats.wbonus)) { c.dmg = (c.stats.max || 0) + Math.round(critMx(c.stats)); } });
-const rows = chosen.slice().sort((a, b) => b.eff - a.eff);
+const rows = chosen.slice().sort((a, b) => (b.eff - a.eff) || (b.pct - a.pct));
 const maxEff = rows.length ? rows[0].eff : 1;
 const list = rows.map((a, i) => ({
 rank: i + 1, slot: a.slot, dim: a.dim, from: a.from, to: a.to, pct: a.pct.toFixed(1), dmg: a.dmg, cost: a.costM ? won(a.costM) : '가격 미정', eff: a.eff.toFixed(1),
@@ -925,7 +1017,7 @@ accent: accent,
 menuOpen: !!s.menuOpen, menuExp: s.menuOpen ? 'true' : 'false', toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
 slots: slots,
 slot: { name: cur[1], icon: cur[2], item: swapName ? cur[3] + ' → ' + swapName : cur[3], pct: slotPct.toFixed(1), baseDmg: BASE_STATS.max.toLocaleString(), newDmg: (BASE_STATS.max + slotDmg).toLocaleString() },
-dims: relicDims.concat(dims),
+dims: relicDims.concat(dims).concat(stgDims),
 extras: extras, miniCard: miniCard, coinCard: coinCard, totemCard: totemCard, talOnly: talOnly, talOnlyNone: talOnly.length === 0, stgCard: stgCard, envShares: envShares, envHas: envShares.length > 0, envNone: envShares.length === 0, envNote: '입력 합계 ' + (Math.round(envTot * 10) / 10) + '% → 100% 환산',
 ogSlots: ogSlots, og: ogPanel, ogPoints: ogPos.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '), ogCount: Array.from(new Set(Object.keys(og).concat(Object.keys(ogw)))).length, combo: combo, ogDiff: ogDiff,
 live: live,

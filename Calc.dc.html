@@ -144,23 +144,17 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </div>
 <sc-if value="{{det.isSg}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; flex-direction: column; gap: 10px">
-<sc-for list="{{det.sgRows}}" as="g" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 14px"><label class="fl">{{g.label}}<select class="f" value="{{g.value}}" onChange="{{g.onOpt}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl"><span>세공 레벨</span><input class="f" type="text" inputmode="numeric" placeholder="1~50" value="{{g.lv}}" onChange="{{g.onLv}}"></label></div></sc-for>
+<sc-for list="{{det.sgRows}}" as="g" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 14px"><label class="fl">{{g.label}}<select class="f" value="{{g.value}}" onChange="{{g.onOpt}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl"><span>세공 레벨</span><input class="f" type="text" inputmode="numeric" placeholder="{{g.ph}}" value="{{g.lv}}" onChange="{{g.onLv}}"></label></div></sc-for>
 </div>
 </sc-if>
 <sc-if value="{{det.setOk}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; color: #4A3D30">세트 효과</span><div style="display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 2px"><sc-if value="{{det.duskOk}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setDusk}}" onChange="{{det.onDusk}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">더스크바운드 시리즈 (보너스 대미지 +5% · 크리티컬 대미지 +10%)</label></sc-if><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setCrit}}" onChange="{{det.onCrit}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">크리티컬 대미지 증가 (+7%)</label><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setMagnum}}" onChange="{{det.onMagnum}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">매그넘샷 강화 (매그넘샷 배율 ×1.15)</label></div></div></sc-if>
-<sc-if value="{{det.isMain}}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{det.ergHwOn}}" hint-placeholder-val="{{ true }}">
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
-<label class="fl">에르그 등급<select class="f" value="{{det.ergGrade}}" onChange="{{det.onErgGrade}}"><option value="">등급 선택</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select></label>
-<label class="fl"><span>에르그 레벨</span><input class="f" type="number" min="1" max="50" placeholder="1~50" value="{{det.ergLv}}" onChange="{{det.onErgLv}}" onBlur="{{det.blurErgLv}}"></label>
-<sc-if value="{{det.isMain}}" hint-placeholder-val="{{ true }}"><label class="fl"><span>어둠의 에르그 레벨</span><input class="f" type="number" min="1" max="50" placeholder="1~50" value="{{det.dErg}}" onChange="{{det.onDErg}}" onBlur="{{det.blurDErg}}"></label></sc-if>
-<label class="fl">특별 개조<select class="f" onChange="{{onField}}"><option>[R/S · 단계]</option></select></label>
-</div>
-</sc-if>
-<sc-if value="{{det.hwOk}}" hint-placeholder-val="{{ true }}">
-<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
-<label class="fl">무리아스의 성수<select class="f" value="{{det.hwType}}" onChange="{{det.onHwType}}"><option value="">효과 없음</option><option value="max">{{mxLabel}}</option><option value="cdmg">크리티컬 대미지</option></select></label>
+<sc-if value="{{det.isMain}}" hint-placeholder-val="{{ true }}"><label class="fl">에르그<input class="f" type="text" value="S등급 · 50레벨" readonly aria-readonly="true" style="background: #EFE5CF; color: #4A3D30; cursor: not-allowed"></label>
+<sc-if value="{{det.isMain}}" hint-placeholder-val="{{ true }}"><label class="fl"><span>어둠의 에르그 레벨</span><input class="f" type="number" min="1" max="50" placeholder="1~50" value="{{det.dErg}}" onChange="{{det.onDErg}}" onBlur="{{det.blurDErg}}"></label></sc-if></sc-if>
+<sc-if value="{{det.hwOk}}" hint-placeholder-val="{{ true }}"><label class="fl">무리아스의 성수<select class="f" value="{{det.hwType}}" onChange="{{det.onHwType}}"><option value="">효과 없음</option><option value="max">{{mxLabel}}</option><option value="cdmg">크리티컬 대미지</option></select></label>
 <sc-if value="{{det.hwMaxOn}}" hint-placeholder-val="{{ false }}"><label class="fl"><span>성수 {{mxLabel}}</span><input class="f" type="number" min="1" max="30" placeholder="1~30" value="{{det.hwMax}}" onChange="{{det.onHwMax}}" onBlur="{{det.blurHwMax}}"></label></sc-if>
-<sc-if value="{{det.hwCdOn}}" hint-placeholder-val="{{ false }}"><label class="fl">성수 크리티컬 대미지<select class="f" value="{{det.hwCd}}" onChange="{{det.onHwCd}}"><option value="">선택</option><option value="1">+1%</option><option value="2">+2%</option><option value="3">+3%</option><option value="4">+4%</option></select></label></sc-if>
+<sc-if value="{{det.hwCdOn}}" hint-placeholder-val="{{ false }}"><label class="fl">성수 크리티컬 대미지<select class="f" value="{{det.hwCd}}" onChange="{{det.onHwCd}}"><option value="">선택</option><option value="1">+1%</option><option value="2">+2%</option><option value="3">+3%</option><option value="4">+4%</option></select></label></sc-if></sc-if>
 </div>
 </sc-if>
 <sc-if value="{{det.err}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 13px; color: #9A3B2E">{{det.errMsg}}</span></sc-if>
@@ -394,17 +388,22 @@ err: !!s.totErr, errMsg: s.totErr || ''
 const detAll = s.det || {}; const dCur = detAll[selKey] || {};
 const setDet = (k, v) => { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); if (v === '') { delete o[k]; } else { o[k] = v; } all[selKey] = o; this.upd({ det: all, detErr: false, saved: selKey }); };
 // 세공 — 무기 · 방어구 슬롯에 3줄 (옵션 + 레벨). 스킬별 세공 레벨은 모든 장비의 합으로 세팅 시뮬레이터 스킬 효율에 쓰여요
-const SG_OPTS = { '알케믹 스팅어': ['크래시샷', '매그넘샷', '불 연금술 마스터리', '물 연금술 마스터리', '바람 연금술 마스터리'] };
+const SG_OPTS = { '알케믹 스팅어': ['크래시샷', '매그넘샷', '불 연금술 마스터리', '물 연금술 마스터리', '바람 연금술 마스터리'], '퓨리 파이터': ['대쉬펀치', '스크류 어퍼', '드롭킥', '차징피스트', '섬머솔트', '파운딩', '연속기 마스터리'] };
+// 장갑에만 붙는 세공 옵션
+const SG_HANDS_ONLY = ['연속기 마스터리'];
+// 세공 레벨 상한 — 기본 50, 연속기 마스터리는 장갑 세공 10레벨 · 한계돌파 13레벨이 끝
+const SG_LV_MAX = { '연속기 마스터리': 13 };
+const sgMax = (o) => SG_LV_MAX[o] || 50;
 const setToggle = (k) => (e) => { const o = Object.assign({}, dCur.sets || {}); if (e.target.checked) { o[k] = 1; } else { delete o[k]; } setDet('sets', Object.keys(o).length ? o : ''); };
 const isWeaponSlot = selKey === 'rhand' || selKey === 'lhand';
 const isArmorSlot = ['head', 'body', 'hands', 'feet', 'robe'].indexOf(selKey) >= 0;
 const sgArr = Array.isArray(dCur.sg) ? dCur.sg : [];
-const sgList = SG_OPTS[s.charArcana] || [];
+const sgList = (SG_OPTS[s.charArcana] || []).filter((o) => selKey === 'hands' || SG_HANDS_ONLY.indexOf(o) < 0);
 const setSg = (i, p) => { const arr = [0, 1, 2].map((k) => Object.assign({}, sgArr[k] || {})); Object.assign(arr[i], p); if (!arr[i].o) { arr[i] = {}; } setDet('sg', arr.some((q) => q.o) ? arr : ''); };
-const sgRows = [0, 1, 2].map((i) => { const q = sgArr[i] || {}; return { label: '세공 옵션 ' + (i + 1), value: q.o || '', lv: q.lv || '', opts: [{ v: '', label: sgList.length ? '옵션 선택' : '이 아르카나의 세공 옵션 준비 중' }].concat(sgList.filter((o) => o === q.o || !sgArr.some((z, k) => k !== i && z && z.o === o)).map((o) => ({ v: o, label: o }))), onOpt: (e) => setSg(i, { o: e.target.value, lv: e.target.value ? (q.lv || '1') : '' }), onLv: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setSg(i, { lv: raw === '' ? '' : String(Math.min(50, Math.max(1, Number(raw)))) }); } else { e.target.value = q.lv || ''; } }, lvOff: !q.o }; });
+const sgRows = [0, 1, 2].map((i) => { const q = sgArr[i] || {}; return { label: '세공 옵션 ' + (i + 1), value: q.o || '', lv: q.lv || '', opts: [{ v: '', label: sgList.length ? '옵션 선택' : '이 아르카나의 세공 옵션 준비 중' }].concat(sgList.filter((o) => o === q.o || !sgArr.some((z, k) => k !== i && z && z.o === o)).map((o) => ({ v: o, label: o }))), onOpt: (e) => setSg(i, { o: e.target.value, lv: e.target.value ? String(Math.min(sgMax(e.target.value), Number(q.lv) || 1)) : '' }), onLv: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setSg(i, { lv: raw === '' ? '' : String(Math.min(sgMax(q.o), Math.max(1, Number(raw)))) }); } else { e.target.value = q.lv || ''; } }, lvOff: !q.o, ph: '1~' + sgMax(q.o) }; });
 // 인챈트 유동 옵션 범위 — 인챈트별 범위가 정해지면 ENC_RANGE에 추가 (지금은 모두 8~12)
 const ENC_RANGE = {};
-// 에르그 레벨 1~50, 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30
+// 에르그는 S등급 50레벨 고정 (입력 없음) · 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30
 const FIELD_RANGE = { ergLv: [1, 50], dErg: [1, 50], hwMax: [1, 30] };
 const FIELD_NAME = { pre: '인챈트 수치는', suf: '인챈트 수치는', ergLv: '에르그 레벨은', dErg: '어둠의 에르그 레벨은', hwMax: '성수 수치는' };
 const encRange = (k) => FIELD_RANGE[k] || ENC_RANGE[selKey + '.' + k] || [8, 12];
@@ -646,7 +645,7 @@ setDusk: !!(dCur.sets || {}).dusk, setCrit: !!(dCur.sets || {}).crit, setMagnum:
 onDusk: setToggle('dusk'), onCrit: setToggle('crit'), onMagnum: setToggle('magnum'),
 // 무기 세트 효과 (자동) — 주무기 아이템 이름, 없으면 캐릭터 정보의 무기 종류
 wsNote: (() => { const n = String((s.eq || {}).rhand || '') || s.charWeapon || ''; if (n.indexOf('소울리버레이트') >= 0 && (n.indexOf('보우') >= 0 || n.indexOf('크로스보우') >= 0)) { return '소울리버레이트 무기 세트 효과 · 크래시샷 배율 ×1.2 · 매그넘샷 배율 ×1.15 (자동 적용)'; } if (n.indexOf('나이트브링어') >= 0) { return '나이트브링어 무기 세트 효과 · 크래시샷 배율 ×1.15 (자동 적용)'; } return ''; })(),
-hwOk: s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0, hwType: dCur.hwType || '', onHwType: (e) => setDet('hwType', e.target.value), hwMaxOn: dCur.hwType === 'max', hwCdOn: dCur.hwType === 'cdmg', hwMax: dCur.hwMax || '', onHwMax: encCh('hwMax'), blurHwMax: encBlur('hwMax'), hwCd: dCur.hwCd || '', onHwCd: (e) => setDet('hwCd', e.target.value) },
+ergHwOn: s.sel === 'rhand' || (s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0), hwOk: s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0, hwType: dCur.hwType || '', onHwType: (e) => setDet('hwType', e.target.value), hwMaxOn: dCur.hwType === 'max', hwCdOn: dCur.hwType === 'cdmg', hwMax: dCur.hwMax || '', onHwMax: encCh('hwMax'), blurHwMax: encBlur('hwMax'), hwCd: dCur.hwCd || '', onHwCd: (e) => setDet('hwCd', e.target.value) },
 onSpirit: (e) => this.upd({ exSpirit: e.target.checked }),
 onItem: (e) => { const v = e.target.value; const eq = Object.assign({}, s.eq); if (v.trim()) { eq[selKey] = v; } else { delete eq[selKey]; } this.upd({ eq: eq, saved: selKey }); },
 onField: () => this.upd({ saved: selKey }),
