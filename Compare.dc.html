@@ -753,12 +753,13 @@ const FURY_DEF = furyUlt ? { '대쉬펀치': 6.8, '스크류어퍼': 6.8, '드�
 const furyUserShare = envSkills.some((k) => furyRaw[String(k.name).replace(/\s/g, '')]);
 const furyShare = (n) => (furyUserShare ? shareOf(n) : (FURY_DEF[n] || 0) / 100);
 // ── 세이크리드 가드 스킬 계산식 (마도카 실측 글 기준 · 실측 오차 0.05~2.5%) ──
-// 아르카나 스킬 = 기반 재능 몫(최대 대미지 × 윈드밀 7.48 · 돌진 5.38 × 배쉬 스택 1.15 × 계수 × 이중 피어싱) + 고유 몫(최대 대미지 · 방어력 · 생명력 × 계수)
+// 아르카나 스킬 = 기반 재능 몫(최대 대미지 × 윈드밀 7.48 · 돌진 5.38 × 배쉬 스택 1.10 × 계수 × 이중 피어싱) + 고유 몫(최대 대미지 · 방어력 · 생명력 × 계수)
 // 링크 · 성찰의 흔적 · 방패 피해 감소율처럼 스킬 전체에 곱해지는 배율은 효율(비율) 계산에서 약분돼 생략 · 오검 효과는 레벨별 수치로 반영
 // 심판의 일격 유물은 1레벨당 최대 대미지 계수 +1 (실측 '35 + 유물 9레벨') · 방어력 · 생명력은 캐릭터 정보의 세이크리드 가드 칸 입력값
 const isSacred = arcIdx === 4;
 const sacDef = Number(fInfo.sgDef) || 0; const sacHp = Number(fInfo.sgHp) || 0;
-const SAC_WM = 7.48, SAC_DASH = 5.38, SAC_BASH = 1.15;
+// 배쉬 스택: 5타 이후 근접 전투 스킬 대미지 +10% (에린 데이터 배쉬 최고 랭크) — 단독 윈드밀과 아르카나 스킬 안의 윈드밀 · 돌진 부분 모두에 곱해요
+const SAC_WM = 7.48, SAC_DASH = 5.38, SAC_BASH = 1.10;
 const sacJudgeLvWith = (slotKey, newLv, fxNew) => ['relic1', 'relic2', 'relic3'].reduce((m, k) => { const d = (((gear && gear.det) || {})[k]) || {}; const fx = k === slotKey && fxNew ? fxNew : d.rFx; if (fx !== '심판의 일격 대미지 증가') return m; return Math.max(m, k === slotKey ? newLv : (Number(d.rLv) || 0)); }, 0);
 const sacEval = (ov, w) => {
 const M = (ov.M !== undefined ? ov.M : (charMax + dollMax)) || 1; const jl = ov.judge !== undefined ? ov.judge : sacJudgeLvWith('', 0); const Dv = ov.D !== undefined ? ov.D : sacDef; const Hv = ov.H !== undefined ? ov.H : sacHp;
