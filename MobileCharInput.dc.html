@@ -131,6 +131,14 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </div>
 </div>
 
+<sc-if value="{{isSacred}}" hint-placeholder-val="{{ false }}"><div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">세이크리드 가드 스탯</h2>
+<p style="margin: 0; font-size: 12px; line-height: 1.6; color: #6B5A45">세이크리드 가드의 아르카나 스킬은 방어력 · 생명력에도 비례해요. 캐릭터 정보창 수치를 입력해 주세요. (방어력은 링크 보너스 포함)</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<label class="fl"><span>방어력</span><input class="f" type="number" placeholder="예: 3081.59" value="{{fv.sgDef}}" onChange="{{fc.sgDef}}"></label>
+<label class="fl"><span>생명력</span><input class="f" type="number" placeholder="예: 13565" value="{{fv.sgHp}}" onChange="{{fc.sgHp}}"></label>
+</div>
+</div></sc-if>
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
 <h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">정령</h2>
 <sc-for list="{{spirits}}" as="s" hint-placeholder-count="5">
@@ -451,7 +459,7 @@ const rfType2 = 0; const rfStage2 = Math.min((typeof s.stage2 === 'number' ? s.s
 const rfSub = rfAt(rfType2, rfStage2, false, true);
 const rfSumD = rfDelta({ cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false }, { cdmg: rfMain.cdmg + rfSub.cdmg, max: rfMain.max + rfSub.max, min: rfMain.min + rfSub.min, bonus: rfMain.bonus + rfSub.bonus, matk: 0, unknown: rfMain.unknown || rfSub.unknown });
 const roster = this.loadStore().chars;
-const FK = ["arcLevel", "arcAwake", "totalLevel", "maxDmg", "gearBonus", "miniNormal", "miniMax", "miniMaxEx", "miniMatk", "miniMatkEx", "miniCdmg", "miniCdmgEx", "miniBonus", "miniBonusEx", "miniExtra", "dollBag", "arcRatio", "critRank"];
+const FK = ["sgDef", "sgHp", "arcLevel", "arcAwake", "totalLevel", "maxDmg", "gearBonus", "miniNormal", "miniMax", "miniMaxEx", "miniMatk", "miniMatkEx", "miniCdmg", "miniCdmgEx", "miniBonus", "miniBonusEx", "miniExtra", "dollBag", "arcRatio", "critRank"];
 // 딜 사이클 비중 — 스킬별 딜 비중 (스킬 명 · 아르카나 스킬 여부 · 딜 비중 %) → 아르카나 스킬 비중을 자동 계산해 fields.arcRatio 에도 저장
 // 아르카나별 대표 스킬 [스킬 명(띄어쓰기 없음), 아르카나 스킬 여부]
 // 각 아르카나 마지막 스킬은 각성기 (아르카나 스킬 취급, 세공 · 기반 스킬 · 다른 배율 영향 없이 고정 배율)
@@ -460,7 +468,7 @@ const SKILL_LIST = {
 1: [['구원의메아리', 1], ['정화의고동', 1], ['붕괴의파동', 1], ['음파의세례', 1], ['성광의협주곡', 1]],
 2: [['익스플로전런지', 1], ['라이트닝체인', 1], ['스노우스톰', 1], ['레이턴트이그니션', 1], ['도르카임펄스', 1]],
 3: [['매그넘샷', 0], ['어전트샷', 0], ['플레임버스트', 1], ['하이드로피어스', 1], ['트라이어설트', 1], ['더스트샷', 1], ['라인포스', 1], ['알케믹컨버전스', 1]],
-4: [['희생의응징', 1], ['심판의일격', 1], ['고결한희생', 1], ['광휘의단죄', 1], ['철벽강타', 1], ['성역전개', 1], ['참회', 1]],
+4: [['윈드밀', 0], ['희생의응징', 1], ['심판의일격', 1], ['고결한희생', 1], ['광휘의단죄', 1], ['철벽강타', 1], ['성역전개', 1], ['격돌', 1], ['참회', 1]],
 5: [['임팩트크러시', 1], ['오버드라이브', 1], ['어나이얼레이션', 1], ['차지어설트', 1], ['스파이럴볼텍스', 1], ['캐스케이드버스트', 1]],
 6: [['헤비아틸러리', 1], ['데바스테이션캐논', 1], ['페이탈스코프', 1], ['트랜스뮤트존', 1], ['래피드파이어', 1], ['아머먼트살보', 1]],
 7: [['케미컬카니발', 1], ['스파이럴이럽션', 1], ['서먼나이트메어', 1], ['마그눔오푸스', 1]],
@@ -535,7 +543,7 @@ rankOpts: rankOpts, rankValue: CRIT_RANK.some((r) => r[0] === (s.fields || {}).c
 rfLabel: (rfType ? 'S' : 'R') + rfStage + '강', rfEffect: rfText(rfMain, rfType, rfDark), rfDark: rfDark,
 sub2On: sub2On, notDual: !sub2On, rfPair: 'R' + rfStage + '강 + R' + rfStage2 + '강', sub2Name: sEff, reforges2: this.seg(['R 개조'], 0, 'reforge2'), stages2: this.seg(['1', '2', '3', '4', '5', '6', '7', '8'], rfStage2 - 1, 'stage2'), rf2Label: (rfType2 ? 'S' : 'R') + rfStage2 + '강', rf2Effect: rfText(rfSub, rfType2, false), rfSum: rfDeltaText(rfSumD),
 critGm: critGm + '%', critTotal: (30 + critGm + sealCr) + '%', critSeal: sealCr ? ' + 정령 봉인 해제 5%' : '',
-skillBox: skillBox, dust: dust, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, petSum: '크리티컬 대미지 +' + petCd + '%',
+skillBox: skillBox, dust: dust, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, isSacred: s.arcana === 4, petSum: '크리티컬 대미지 +' + petCd + '%',
 menuOpen: !!s.menuOpen, menuExp: s.menuOpen ? 'true' : 'false', toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
 canAdd: roster.length < 3, isFull: roster.length >= 3, addChar: () => this.addChar(),
 nameValue: s.nameDraft == null ? ((roster[s.char] || {}).name || '') : s.nameDraft, onNameDraft: (e) => this.setState({ nameDraft: e.target.value, nameMsg: '' }), onNameKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.saveName(); } }, saveName: () => this.saveName(), nameMsg: s.nameMsg || '', canDel: roster.length > 1, delChar: () => this.delChar(), delLabel: s.confirmDel ? '한 번 더 누르면 삭제돼요' : '이 캐릭터 삭제', delFg: s.confirmDel ? '#F2B8A8' : '#E8D9B8',
