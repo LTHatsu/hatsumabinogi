@@ -429,7 +429,7 @@ const SET_HIDE = (ED && ED.setHide) || [];
 const SET_V = { crit: ['cdmg', 7], CriticalDamageUp_3: ['cdmg', 3], dusk: ['cdmg', 10], MaxDamagePlus_8: ['max', 8], MaxDamagePlus_15: ['max', 15], MaxDamagePlus_25: ['max', 25], MaxDamagePlus_50: ['max', 50], max_damage_sp: ['max', 10], MagicAttackPlus_15: ['matk', 15], magicattackplus_sp: ['matk', 15], MagicAttackPlus_100: ['matk', 100], all_alchemy_damage: ['alch', 50], all_alchemy_damage_15: ['alch', 15], all_alchemy_damage_50: ['alch', 50], MagicAttackPlus_30: ['matk', 30], MagicAttackPlus_50: ['matk', 50] };
 const setGrp = (q) => (SET_V[q] ? SET_V[q] : (ED && ED.skillSets && ED.skillSets[q] ? ['sk:' + ED.skillSets[q][1], ED.skillSets[q][2]] : null));
 const armOn = {}; Object.keys(detAll).forEach((k) => { if (k === 'rhand') return; Object.keys((detAll[k] || {}).sets || {}).forEach((q) => { armOn[q] = 1; }); }); if (duskOpt) { armOn[duskOpt] = 1; }
-const setLbl = (q) => ((ED && ED.setLabel) || {})[q] || (((ED && ED.setDefs) || {})[q] || [q])[0];
+const setLbl = (q) => (q === 'continuityattack_probability' ? '연속 공격 발동 확률 증가 (총딜 +1.82%)' : ((ED && ED.setLabel) || {})[q] || (((ED && ED.setDefs) || {})[q] || [q])[0]);
 const beatBy = (q) => { const g = setGrp(q); if (!g) return ''; let best = null; Object.keys(armOn).forEach((o) => { const h = setGrp(o); if (o !== q && h && h[0] === g[0] && h[1] > g[1] && (!best || h[1] > best[1])) { best = [o, h[1]]; } }); return best ? setLbl(best[0]) : ''; };
 const itemSetRows = selKey === 'rhand' ? [] : itemSetsOf(sgItem).filter((x) => SET_HIDE.indexOf(x[0]) < 0);
 const duskOn = duskAll && DUSK_SL.indexOf(selKey) >= 0;
