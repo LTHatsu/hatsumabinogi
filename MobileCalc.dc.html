@@ -362,7 +362,7 @@ err: !!s.totErr, errMsg: s.totErr || ''
 const detAll = s.det || {}; const dCur = detAll[selKey] || {};
 const setDet = (k, v) => { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); if (v === '') { delete o[k]; } else { o[k] = v; } all[selKey] = o; this.upd({ det: all, detErr: false, saved: selKey }); };
 // 세공 — 무기 · 방어구 슬롯에 3줄 (옵션 + 레벨). 스킬별 세공 레벨은 모든 장비의 합으로 세팅 시뮬레이터 스킬 효율에 쓰여요
-const SG_OPTS = { '알케믹 스팅어': ['크래시샷', '매그넘샷', '불 연금술 마스터리', '물 연금술 마스터리', '바람 연금술 마스터리'] };
+const SG_OPTS = { '알케믹 스팅어': ['크래시샷', '매그넘샷', '불 연금술 마스터리', '물 연금술 마스터리', '바람 연금술 마스터리'], '퓨리 파이터': ['대쉬펀치', '스크류 어퍼', '드롭킥', '차징피스트', '섬머솔트', '파운딩'] };
 const setToggle = (k) => (e) => { const o = Object.assign({}, dCur.sets || {}); if (e.target.checked) { o[k] = 1; } else { delete o[k]; } setDet('sets', Object.keys(o).length ? o : ''); };
 const isWeaponSlot = selKey === 'rhand' || selKey === 'lhand';
 const isArmorSlot = ['head', 'body', 'hands', 'feet', 'robe'].indexOf(selKey) >= 0;

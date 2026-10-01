@@ -328,7 +328,7 @@ for (let tg = rfStage + 1; tg <= rfStageMax; tg++) { const d = rfDelta(rfCur, rf
 DIMS[DIMS.findIndex((dm) => dm[0] === 'sp')] = ['sp', '특별 개조', rfName(rfType, rfStage), true, rfOpts];
 const rfSwapDelta = (v) => { const fs = rfStage + (v || 0); return rfDelta(rfAt(rfType, fs, rfDark), rfAt(1 - rfType, fs, 1 - rfType === 1 && !!rfInfo && rfInfo.arcana === 2)); };
 const stepOf = (sl, dm, i) => { const o = dm[4][i]; const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
-const dimsFor = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand') && !(arcIdx === 3 && dm[0] === 'ref')); // 에르그 · 특별 개조는 주무기만
+const dimsFor = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand') && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')); // 에르그 · 특별 개조는 주무기만
 const chosen = [];
 SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const st = swapOf(sl, v - 1); chosen.push({ key: sl[0] + '.item', slotKey: sl[0], slot: sl[1], dim: '장비 교체', from: sl[3], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } });
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
@@ -516,7 +516,37 @@ const triFin = 4400 + (yung ? 4500 : 0); const triSyn = yung ? evap : 1;
 const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
 const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'), shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트');
 // 아르카나 스킬 계산식 안의 재능 스킬 비율 (재능 보너스 대미지가 이 부분에만 적용) — 알케믹 스팅어: 플레임버스트(크래시샷) · 하이드로피어스(매그넘샷)
-const talentFrac = (name) => { if (!isStg) return 0; if (name === '플레임버스트') return crash * PIERCE2 / flHit; if (name === '하이드로피어스') return gyeok ? magnum * PIERCE2 * 1.15 / flow : magnum * PIERCE2 / hydro; return 0; };
+// ── 퓨리 파이터 스킬 계산식 (격투가 스킬배율 계산 시트 · 게일 / 얼티밋 오검 전용 블록) ──
+// 연속기(재능) 배율 J = ((세공 × a + 마기그래프 × b) × 차징 1.75 + 기본 배율) × 소울 보정 × 연속마 배율 3.7 × (1 + 어둠의 에르그 × 0.15%)
+// 아르카나 스킬 = 기반 연속기 J × 이중 피어싱 1.45 (재능 부분) + 아르카나 고유 추가 대미지 (유물 · 기본)
+// 마기그래프: 스크류 어퍼 · 차징피스트 · 파운딩 10 고정 · 소울리버레이트 너클이면 드롭킥 ×1.15 · 파운딩 ×1.8 · 오검 워드 효과는 아직 0
+// 오검 조합: 게일 피어스(닌 · 알름 · 에만콜) → 게일 ×1.2, 드롭킥 · 포스슬램 ×1.12 / 얼티밋 스트라이크(페른 · 케르트 · 일란드) → 얼티밋 1 · 2타 160% + 3타 230%
+const isFury = arcIdx === 9;
+const FURY_COMBO = 3.7;
+const FURY_SK = { dp: ['대쉬펀치', 460, 3, 2, 0, 1], up: ['스크류 어퍼', 690, 6, 3, 10, 1], dk: ['드롭킥', 800, 9, 4, 0, 1], cf: ['차징피스트', 700, 3, 2, 10, 1.75], ss: ['섬머솔트', 700, 6, 3, 0, 1], pd: ['파운딩', 1000, 9, 4, 10, 1] };
+Object.keys(FURY_SK).forEach((k) => { SG_KEY['f_' + k] = FURY_SK[k][0]; });
+const furySoul = wName.indexOf('소울리버레이트') >= 0 && wName.indexOf('너클') >= 0;
+const furyGale = ['닌', '알름', '에만콜'].every((x) => stgOgw.indexOf(x) >= 0);
+const furyUlt = !furyGale && ['페른', '케르트', '일란드'].every((x) => stgOgw.indexOf(x) >= 0);
+const FURY_RELIC = { '익시드 : 체인 블로우 피니시 대미지 증가': 'e1', '익시드 : 임팩트 다이브 대미지 증가': 'e2', '익시드 : 포스 슬램 대미지 증가': 'e3' };
+const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = FURY_RELIC[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
+// 스킬별 대미지 (딜 사이클 비중 키 = 띄어쓰기 없는 이름) — w: 재능 부분 가중치 (재능 보너스 대미지)
+const furyEval = (ov, w) => {
+const g = (k) => sv('f_' + k) + ((ov.sg || {})['f_' + k] || 0);
+const dE = ov.dErg !== undefined ? ov.dErg : dErgLv; const lv = ov.relic || furyRelicWith('', 0);
+const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1.15 : (k === 'pd' ? 1.8 : 1)) : 1; return ((g(k) * q[2] + q[4] * q[3]) * q[5] + q[1]) * soul * FURY_COMBO * (1 + dE * 0.0015); };
+const arc = (D, I) => ({ v: D * PIERCE2 * w + I, tal: D * PIERCE2 });
+const ultD = furyUlt ? J('up') * (3 * 1.6 + 1.5 * 2.3) : J('up') * 4.5; const ultI = furyUlt ? 2000 * 1.6 + 1500 * 2.3 : 3500;
+const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 60 + 900), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500), '게일피어스': arc(J('cf'), 1300), '포스플레어': arc(J('dk') * 0.7, 650), '얼티밋스트라이크': arc(ultD, ultI) };
+const out = { '대쉬펀치': { v: J('dp'), tal: 0 }, '스크류어퍼': { v: J('up'), tal: 0 }, '드롭킥': { v: J('dk'), tal: 0 }, '차징피스트': { v: J('cf'), tal: 0 }, '섬머솔트': { v: J('ss'), tal: 0 }, '파운딩': { v: J('pd'), tal: 0 } };
+Object.keys(A).forEach((n) => { out[n] = A[n]; }); return out;
+};
+const furyRaw = isFury ? furyEval({}, 1) : {};
+// 딜 사이클 비중을 입력하지 않았으면 시트 사이클(얼티밋 2 · 대어드 9 · 대펀 9 · 익시드 9 · 게일 20 또는 18회)로 환산한 기본 비중을 써요
+const FURY_DEF = furyUlt ? { '대쉬펀치': 6.8, '스크류어퍼': 6.8, '드롭킥': 10.4, '익시드:체인블로우': 7.7, '익시드:임팩트다이브': 9.2, '익시드:포스슬램': 23.2, '게일피어스': 20.3, '얼티밋스트라이크': 15.7 } : { '대쉬펀치': 6.6, '스크류어퍼': 6.5, '드롭킥': 11.3, '익시드:체인블로우': 7.4, '익시드:임팩트다이브': 8.9, '익시드:포스슬램': 25.1, '게일피어스': 26.2, '얼티밋스트라이크': 8.1 };
+const furyUserShare = envSkills.some((k) => furyRaw[String(k.name).replace(/\s/g, '')]);
+const furyShare = (n) => (furyUserShare ? shareOf(n) : (FURY_DEF[n] || 0) / 100);
+const talentFrac = (name) => { if (isFury) { const q = furyRaw[String(name).replace(/\s/g, '')]; return q && q.tal ? q.tal / q.v : 0; } if (!isStg) return 0; if (name === '플레임버스트') return crash * PIERCE2 / flHit; if (name === '하이드로피어스') return gyeok ? magnum * PIERCE2 * 1.15 / flow : magnum * PIERCE2 / hydro; return 0; };
 const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff + urgentBuff };
 // 부가 장비(미니어처·토템·주화) — 예시 [이름, 딜 %, 스탯 변화, 비용(만 G)] · max 최대 대미지, crate 크리티컬 확률(%p), cdmg 크리티컬 대미지(%), bonus 보너스 대미지(%)
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
@@ -925,11 +955,14 @@ return { fla: fla * ev, hyE: hyE * ev, trv: trv * ev, mag: magV };
 const stgBase = stgEval({});
 const stgGain = (ov) => { if (!isStg) return 0; const n = stgEval(ov); return shF * (n.fla / stgBase.fla - 1) + shH * (n.hyE / stgBase.hyE - 1) + shT * (n.trv / stgBase.trv - 1) + shM * (n.mag / stgBase.mag - 1); };
 const stgBaseM = stgWith(relicLvWith('', 0));
-const relicGain = (slotKey, newLv, fxNew) => stgGain({ relic: relicLvWith(slotKey, newLv, fxNew) });
+const furyBase = isFury ? furyEval({}, wT) : {};
+const furyGain = (ov) => { if (!isFury) return 0; const n = furyEval(ov, wT); return Object.keys(n).reduce((t, k) => t + furyShare(k) * (furyBase[k].v ? n[k].v / furyBase[k].v - 1 : 0), 0); };
+const skGain = (ov) => (isFury ? furyGain(ov) : stgGain(ov));
+const relicGain = (slotKey, newLv, fxNew) => (isFury ? furyGain({ relic: furyRelicWith(slotKey, newLv, fxNew) }) : stgGain({ relic: relicLvWith(slotKey, newLv, fxNew) }));
 const RELIC_SLOTS = [['relic1', '유물 1'], ['relic2', '유물 2'], ['relic3', '유물 3']];
 const rfxNew = (k) => { const d = (((gear && gear.det) || {})[k]) || {}; return d.rFx ? '' : ((s.rfx || {})[k] || ''); };
 RELIC_SLOTS.forEach((rs) => { const d0 = (((gear && gear.det) || {})[rs[0]]) || {}; const nf = rfxNew(rs[0]); const d = nf ? { rFx: nf, rLv: 0 } : d0; const tg = Number(s.up[rs[0] + '.rlv']) || 0; const lv = Number(d.rLv) || 0; if (d.rFx && tg > lv && tg <= 10) { const g = relicGain(rs[0], tg, nf); chosen.push({ key: rs[0] + '.rlv', slotKey: rs[0], slot: rs[1], dim: nf ? '유물 새로 장착' : '유물 효과 레벨', from: nf ? '미장착' : d.rFx + ' Lv.' + lv, to: nf ? nf + ' Lv.' + tg : 'Lv.' + tg, pct: Math.round(g * 1000) / 10, dmg: Math.round(g * (BASE_STATS.max || 0)), costM: 0, eff: 0, group: '장착 장비', names: '유물', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); } });
-const relicDims = (() => { if (String(cur[0]).indexOf('relic') !== 0) return []; const nf = rfxNew(cur[0]); const empty = !curDet.rFx; const d = nf ? { rFx: nf, rLv: 0 } : curDet; const lv = Number(d.rLv) || 0; const k = cur[0] + '.rlv'; const tg = Number(s.up[k]) || 0; const calc = isStg && !!RELIC_KEY[d.rFx]; const fmt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0)); const st = d.rFx && tg > lv ? relicGain(cur[0], tg, nf) : 0; const on = !!d.rFx && tg > lv;
+const relicDims = (() => { if (String(cur[0]).indexOf('relic') !== 0) return []; const nf = rfxNew(cur[0]); const empty = !curDet.rFx; const d = nf ? { rFx: nf, rLv: 0 } : curDet; const lv = Number(d.rLv) || 0; const k = cur[0] + '.rlv'; const tg = Number(s.up[k]) || 0; const calc = (isStg && !!RELIC_KEY[d.rFx]) || (isFury && !!FURY_RELIC[d.rFx]); const fmt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0)); const st = d.rFx && tg > lv ? relicGain(cur[0], tg, nf) : 0; const on = !!d.rFx && tg > lv;
 const pickDim = empty ? [{ label: '유물 새로 장착', current: '미장착', value: nf, opts: [{ v: '', label: relicList.length ? '장착 안 함' : '아르카나를 먼저 선택해 주세요' }].concat(relicList.map((q) => ({ v: q[0], label: q[0] + ' (최대 ' + q[1] + ')' }))), on: false, off: !nf, pct: '0', dmg: 0, cost: '—', costFg: '#8C7A62', border: nf ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: nf ? '#F3F8F4' : '#FBF5E8', onChange: (e) => { const r = Object.assign({}, this.state.rfx); if (e.target.value) { r[cur[0]] = e.target.value; } else { delete r[cur[0]]; } const u = Object.assign({}, this.state.up); if (e.target.value && !u[k]) { u[k] = 10; } if (!e.target.value) { delete u[k]; } this.setState({ rfx: r, up: u }); }, head: '', effect: '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }] : [];
 if (empty && !nf) return pickDim;
 return pickDim.concat([{ label: '유물 효과 레벨', current: nf ? '미장착' : d.rFx + ' Lv.' + lv, value: String(on ? tg : 0),
@@ -937,15 +970,16 @@ opts: [{ v: '0', label: nf ? '레벨 선택' : (lv >= 10 ? '최대 레벨' : '�
 on: on, off: !on, pct: on ? (Math.round(st * 1000) / 10).toFixed(1) : '0', dmg: on ? Math.round(st * (BASE_STATS.max || 0)) : 0, cost: on ? '가격 미정' : '—', costFg: on ? '#2A2119' : '#8C7A62',
 border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(k, Number(e.target.value)),
 head: on ? (calc ? '▲ ' + fmt(st) : '▲ Lv.' + lv + ' → Lv.' + tg) : '', effect: on ? (calc ? '딜 사이클 비중 기준 예상치' : '이 효과는 스킬 계산식 준비 중이에요') : '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }]); })();
-const stgHasShare = !!(shF || shH || shM || shT);
+const stgHasShare = isFury || !!(shF || shH || shM || shT);
 const SG_OPT_KEY = { '크래시샷': 'crLv', '매그넘샷': 'mgLv', '불 연금술 마스터리': 'fire', '물 연금술 마스터리': 'water', '바람 연금술 마스터리': 'wind' };
+Object.keys(FURY_SK).forEach((k) => { SG_OPT_KEY[FURY_SK[k][0]] = 'f_' + k; });
 const SG_SLOTS = ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'robe'];
 const slotName = (k) => (SLOTS.filter((sl) => sl[0] === k)[0] || [k, k])[1];
 const pctTxt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0));
 // 목표 레벨 후보 (현재 +1 ~ 최대) — [키, 이름, 현재, 최대, 이득 함수]
-const stgTargets = (k) => { if (!isStg) return []; const d = (((gear && gear.det) || {})[k]) || {}; const out = []; (Array.isArray(d.sg) ? d.sg : []).forEach((q, i) => { const key = q && SG_OPT_KEY[q.o]; if (!key) return; out.push([k + '.sg' + i, '세공 · ' + q.o, Number(q.lv) || 0, 50, (n) => stgGain({ sg: { [key]: n - (Number(q.lv) || 0) } })]); }); if (k === 'rhand') out.push([k + '.derg', '어둠의 에르그', dErgLv, 50, (n) => stgGain({ dErg: n })]); return out; };
+const stgTargets = (k) => { if (!isStg && !isFury) return []; const d = (((gear && gear.det) || {})[k]) || {}; const out = []; (Array.isArray(d.sg) ? d.sg : []).forEach((q, i) => { const key = q && SG_OPT_KEY[q.o]; if (!key) return; out.push([k + '.sg' + i, '세공 · ' + q.o, Number(q.lv) || 0, 50, (n) => skGain({ sg: { [key]: n - (Number(q.lv) || 0) } })]); }); if (k === 'rhand') out.push([k + '.derg', '어둠의 에르그', dErgLv, 50, (n) => skGain({ dErg: n })]); return out; };
 SG_SLOTS.forEach((k) => stgTargets(k).forEach((t) => { const tg = Number(s.up[t[0]]) || 0; if (tg > t[2] && tg <= t[3]) { const gn = t[4](tg); chosen.push({ key: t[0], slotKey: k, slot: slotName(k), dim: t[1], from: 'Lv.' + t[2], to: 'Lv.' + tg, pct: Math.round(gn * 1000) / 10, dmg: Math.round(gn * (BASE_STATS.max || 0)), costM: 0, eff: 0, group: '장착 장비', names: t[1], stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); } }));
-const stgDims = (() => { if (!isStg || SG_SLOTS.indexOf(cur[0]) < 0) return []; const ts = stgTargets(cur[0]); const blank = { pct: '0', dmg: 0, tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
+const stgDims = (() => { if ((!isStg && !isFury) || SG_SLOTS.indexOf(cur[0]) < 0) return []; const ts = stgTargets(cur[0]); const blank = { pct: '0', dmg: 0, tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
 const rows = ts.map((t) => { const tg = Number(s.up[t[0]]) || 0; const on = tg > t[2] && tg <= t[3]; const gn = on ? t[4](tg) : 0; const one = t[2] < t[3] ? t[4](t[2] + 1) : 0;
 return Object.assign({}, blank, { label: t[1], current: 'Lv.' + t[2] + (stgHasShare && t[2] < t[3] ? ' · +1당 총딜 +' + (Math.round(one * 10000) / 100) + '%' : ''), value: String(on ? tg : 0),
 opts: [{ v: '0', label: t[2] >= t[3] ? '최대 레벨' : '현재 유지' }].concat(Array.from({ length: Math.max(0, t[3] - t[2]) }, (_, i) => { const n = t[2] + i + 1; return { v: String(n), label: 'Lv.' + n + (stgHasShare ? ' · ' + pctTxt(t[4](n)) : '') }; })),
