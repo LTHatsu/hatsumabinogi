@@ -514,9 +514,13 @@ const setBonus = setAny('dusk') ? 5 : 0;
 const envSkills = (cInfo && Array.isArray(cInfo.skills) ? cInfo.skills : []).filter((k) => k && k.name && k.name.replace(/\s/g, '') !== '연속공격' && Number(k.share) > 0);
 const envTot = envSkills.reduce((a, k) => a + Number(k.share), 0);
 const SHARE = {}; envSkills.forEach((k) => { SHARE[k.name] = envTot ? Number(k.share) / envTot : 0; });
-// 스타더스트(블래스트 · 플레어) — 입력한 딜 비중 그대로 아르카나 스킬 비중에 포함해요 (발동 스킬이 모두 아르카나 스킬일 때만 입력). 이미 적중한 아르카나 스킬 대미지의 40 · 50%로 추가 공격하는 스킬이라
-// 보너스 대미지(일반 · 아르카나 · 무기)로 따로 늘어나지 않아요 → 딜 계산에서 비중을 고정값으로 둬요
+// 스타더스트(블래스트 · 플레어) — 입력한 딜 비중 그대로 아르카나 스킬 비중에 포함해요 (발동 스킬이 모두 아르카나 스킬일 때만 입력).
+// 이미 적중한 아르카나 스킬 대미지의 40 · 50%로 추가 공격하는 스킬이라 보너스 대미지를 따로 받지 않고, 발동시킨 아르카나 스킬이 세지는 비율만큼만 함께 세져요
+// → 스타더스트 몫은 스타더스트가 아닌 아르카나 스킬들의 증가율(비중 가중 평균)을 따라가요. 그런 스킬이 입력되지 않았으면 고정값으로 둬요
 const isDust = (n) => ['블래스트', '플레어'].indexOf(String(n || '').replace(/\s/g, '')) >= 0;
+const dustSh = envSkills.filter((k) => isDust(k.name)).reduce((a, k) => a + (SHARE[k.name] || 0), 0);
+const dustParTot = envSkills.filter((k) => k.arc && !isDust(k.name)).reduce((a, k) => a + (SHARE[k.name] || 0), 0);
+const dustCarry = dustParTot ? 1 + dustSh / dustParTot : 1; // 발동 아르카나 스킬의 비중에 스타더스트 몫을 얹는 배수
 const shareOf = (name) => SHARE[name] || 0;
 const envShares = envSkills.map((k) => ({ name: k.name, pct: (Math.round(shareOf(k.name) * 1000) / 10) + '%', fg: k.arc ? '#1E3D2E' : '#4A3D30', bg: k.arc ? '#E3EDE6' : '#FBF5E8' }));
 // ── 알케믹 스팅어 스킬 효율 (계산 시트 기준) ──
@@ -556,7 +560,8 @@ const evap = 1.1 + 0.005 * (sv('fire') + sv('water'));
 // 융합 (페른 · 이다드 · 에바드) — 1 · 2타는 그대로, 피니시 배율 +4500%p · 알케믹 시너지 중 증발 계수를 곱해요 (과열 · 전류 · 분진 · 냉각 · 부식 계수는 받는 대로 추가)
 const triFin = 4400 + (yung ? 4500 : 0); const triSyn = yung ? evap : 1;
 const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
-const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'), shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트');
+// 아르카나 스킬(플레임버스트 · 하이드로피어스 · 트라이어설트)은 자기가 발동시킨 스타더스트 몫까지 함께 세져요
+const shF = shareOf('플레임버스트') * dustCarry, shH = shareOf('하이드로피어스') * dustCarry, shM = shareOf('매그넘샷'), shT = shareOf('트라이어설트') * dustCarry;
 // 아르카나 스킬 계산식 안의 재능 스킬 비율 (재능 보너스 대미지가 이 부분에만 적용) — 알케믹 스팅어: 플레임버스트(크래시샷) · 하이드로피어스(매그넘샷)
 const talentFrac = (name) => { if (!isStg) return 0; if (name === '플레임버스트') return crash / flHit; if (name === '하이드로피어스') return gyeok ? magnum * 1.15 / flow : magnum / hydro; return 0; };
 const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (rankCd || 0) + (rfBase.cdmg || 0) + gmCd + 3 * spLv(0) + petCdLive + dollCd + briCd + hwCdSum + miniVal('miniCdmg') + miniVal('miniCdmgEx') + tmCur.cdmg + setCd, wbonus: fNum('gearBonus'), bonus: +((rfBase.bonus || 0) + miniVal('miniBonus') + miniVal('miniBonusEx') + tmCur.bonus + setBonus).toFixed(1), arcana: +(arcAwakeLv * 0.1 + briArc + haloArc).toFixed(1), talent: 2 * (spLv(2) + spLv(3)) + matBuff + radekaBuff + breathBuff + urgentBuff };
@@ -564,7 +569,7 @@ const BASE_STATS = { max: charMax + dollMax, crate: critRate + arcCrit, cdmg: (r
 // 예상 딜 = 최대 대미지 × (1 + 크리티컬 확률 × 크리티컬 대미지) × (1 + 보너스 대미지) — 스탯 변화로 딜 상승률을 계산
 // 보너스 대미지 — 같은 종류는 (1 + 합) 배. 일반 보너스: 모든 스킬 · 재능 보너스: 재능 스킬(일반 보너스와 합산 → 1 + 일반 + 재능) · 아르카나 보너스: 아르카나 스킬에 일반 보너스와 합산(1 + 일반 + 아르카나) · 무기 보너스: 모든 스킬
 // 아르카나 스킬 안의 재능 스킬 부분(talentFrac)은 (1 + 일반 + 재능 + 아르카나), 나머지는 (1 + 일반 + 아르카나). 스킬 비중은 전투 환경 입력값(합계 100% 환산)
-const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); const dustFix = envSkills.filter((k) => isDust(k.name)).reduce((a, k) => a + shareOf(k.name), 0); return dustFix + (1 + W) * envSkills.reduce((sum, k) => { const sh = shareOf(k.name); if (isDust(k.name)) return sum; if (!k.arc) return sum + sh * (1 + G + T); const tf = talentFrac(k.name); return sum + sh * ((1 - tf) * (1 + G + A) + tf * (1 + G + T + A)); }, 0); };
+const bonusFactor = (st) => { const G = (st.bonus || 0) / 100, T = (st.talent || 0) / 100, A = (st.arcana || 0) / 100, W = (st.wbonus || 0) / 100; if (!envSkills.length) return (1 + G) * (1 + W); const dustFix = dustParTot ? 0 : dustSh; return dustFix + (1 + W) * envSkills.reduce((sum, k) => { if (isDust(k.name)) return sum; const sh = shareOf(k.name) * (k.arc ? dustCarry : 1); if (!k.arc) return sum + sh * (1 + G + T); const tf = talentFrac(k.name); return sum + sh * ((1 - tf) * (1 + G + A) + tf * (1 + G + T + A)); }, 0); };
 const dealOf = (st) => st.max * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
 const dealPct = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0) }); return Math.round((n / b - 1) * 1000) / 10; };
 // 경매장 최저가 (골드) → 만 G. 프리미엄 버전도 함께 보고 더 싼 쪽을 써요
