@@ -171,7 +171,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <label class="fl" style="grid-column: 1 / -1"><span>{{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{bri.max}}" onChange="{{bri.onMax}}"></label>
 <label class="fl">크리티컬 대미지<input class="f" type="number" placeholder="0~10" value="{{bri.crit}}" onChange="{{bri.onCrit}}"></label>
 <label class="fl">아르카나 보너스 대미지 (%)<input class="f" type="number" placeholder="%" value="{{bri.arc}}" onChange="{{bri.onArc}}"></label>
-</div>
+<div style="grid-column: 1 / -1"><div style="display: flex; flex-direction: column; gap: 6px"><label style="display: flex; align-items: center; gap: 6px; min-height: 32px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{bri.priceOn}}" onChange="{{bri.onPriceOn}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">가격 정보 직접 입력</label><sc-if value="{{bri.priceOn}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px"><input class="f" type="text" inputmode="numeric" autocomplete="off" aria-label="브리레흐의 주화 가격 직접 입력 (G)" placeholder="주화 가격 직접 입력 (예: 5억)" value="{{bri.priceVal}}" onChange="{{bri.onPrice}}" style="flex-grow: 1; min-width: 0"><span style="flex-shrink: 0; font-size: 13px; font-weight: 700; color: #8A5E17">{{bri.priceRead}}</span></div></sc-if><span style="font-size: 12px; line-height: 1.5; color: #6B5A45">{{bri.priceInfo}}</span></div></div></div>
 </div>
 </section>
 
@@ -705,7 +705,9 @@ list: hits.slice(0, 30).map((x) => ({ name: x[0], sub: x[1] || '효과 없음', 
 descOn: !!hit || (!!v && !!s.tiData), desc: hit ? (hit[1] || '효과 없음') : q[2] + ' 목록에 없는 이름이에요 · 목록에서 골라 주세요',
 onChange: (e) => setT(String(e.target.value).slice(0, 60), k), onFocus: () => this.setState({ tiOpen: k }), onBlur: () => { setTimeout(() => { if (this.state.tiOpen === k) { this.setState({ tiOpen: '' }); } }, 150); } };
 }) },
-bri: { max: (s.brireh || {}).max || '', onMax: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { max: e.target.value }) }), crit: (s.brireh || {}).crit || '', arc: (s.brireh || {}).arc || '', onCrit: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { crit: e.target.value }) }), onArc: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { arc: e.target.value }) }) },
+bri: { max: (s.brireh || {}).max || '', onMax: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { max: e.target.value }) }), crit: (s.brireh || {}).crit || '', arc: (s.brireh || {}).arc || '', onCrit: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { crit: e.target.value }) }), onArc: (e) => this.upd({ brireh: Object.assign({}, s.brireh || {}, { arc: e.target.value }) }),
+// 주화 가격 — '가격 정보 직접 입력'을 체크하면 입력 (주화는 경매장 시세 없음)
+priceOn: !!(s.brireh || {}).priceOn, priceVal: (s.brireh || {}).priceRaw || '', priceRead: readG((s.brireh || {}).priceRaw || ''), priceInfo: parseGold((s.brireh || {}).priceRaw) > 0 ? '직접 입력한 가격 ' + gold(parseGold(s.brireh.priceRaw)) : '주화는 경매장 시세가 없어요 · 필요하면 직접 입력해 주세요', onPriceOn: (e) => { const o = Object.assign({}, s.brireh || {}); if (e.target.checked) { o.priceOn = 1; } else { delete o.priceOn; delete o.priceRaw; } this.upd({ brireh: o }); }, onPrice: (e) => { const o = Object.assign({}, s.brireh || {}); const v = fmtNum(String(e.target.value).slice(0, 24)); o.priceOn = 1; if (v.trim()) { o.priceRaw = v; } else { delete o.priceRaw; } this.upd({ brireh: o }); } },
 menuOpen: !!s.menuOpen, menuExp: s.menuOpen ? 'true' : 'false', toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
 charName: s.charName,
 charArcana: s.charArcana,
