@@ -16,6 +16,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;family=Gowun+Dodum&amp;display=swap" rel="stylesheet">
 <style>
+/* 두 줄 이상으로 넘어가는 이름 · 설명은 윗줄 · 아랫줄 길이를 비슷하게 */
+span,strong,h1,h2,h3,label,p,button,li{text-wrap:balance}
+
 body{margin:0;word-break:keep-all;overflow-wrap:break-word;font-family:'Gowun Dodum',sans-serif;background:#F5EDDC;color:#2A2119}
 a{color:#2F5A45}a:hover{color:#1E3D2E}
 button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
@@ -68,7 +71,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <div role="radiogroup" aria-label="아르카나 선택" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
 <sc-for list="{{arcanas}}" as="a" hint-placeholder-count="9">
 <button type="button" role="radio" aria-checked="{{a.checked}}" onClick="{{a.pick}}" style="min-height: 64px; padding: 10px; border-radius: 12px; border: {{a.border}}; background: {{a.bg}}; display: flex; align-items: center; gap: 10px; color: #2A2119; text-align: left">
-<span style="position: relative; width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><span style="position: absolute; width: 31px; height: 31px; border-radius: 7px; transform: rotate(45deg); background: {{a.iconBg}}; box-shadow: inset 0 0 0 1.5px {{a.frame}}"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.iconFg}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: relative"><path d="{{a.icon}}"></path></svg></span>
+<span style="position: relative; width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><span style="position: absolute; width: 31px; height: 31px; border-radius: 7px; transform: rotate(45deg); background: {{a.iconBg}}; box-shadow: inset 0 0 0 1.5px {{a.frame}}"></span><img src="{{a.img}}" alt="" width="36" height="36" style="position: relative; width: 36px; height: 36px; object-fit: contain; opacity: {{a.imgOp}}; filter: {{a.imgFilter}}"></span>
 <span style="font-family: 'Gowun Batang', serif; font-size: 14px; font-weight: 700; line-height: 1.3">{{a.name}}</span>
 </button>
 </sc-for>
@@ -311,7 +314,8 @@ const A = [
 // 세인트 바드(1)는 선택지에서 숨김 — 저장 번호가 바뀌지 않도록 목록 자체는 유지
 const ARC_HIDDEN = [1];
 // 아르카나를 바꾸면 딜 사이클 비중(스킬별 비중 · 아르카나 스킬 비율)을 초기화해요 — 스킬 목록이 아르카나마다 달라요
-const arcanas = A.map((a, i) => Object.assign({ name: a[0], icon: a[1], pick: () => { if (i === s.arcana) return; const f = Object.assign({}, s.fields); delete f.arcRatio; this.upd({ arcana: i, skills: [], fields: f }); } }, this.tile(i === s.arcana, accent))).filter((_, i) => ARC_HIDDEN.indexOf(i) < 0);
+// 아르카나 아이콘 — 정보 사이트(에린 데이터) 이미지를 img/arcana/{번호}.png 로 저장해 사용
+const arcanas = A.map((a, i) => Object.assign({ name: a[0], icon: a[1], img: './img/arcana/' + i + '.png', imgOp: i === s.arcana ? '1' : '0.8', imgFilter: i === s.arcana ? 'none' : 'saturate(0.6)', pick: () => { if (i === s.arcana) return; const f = Object.assign({}, s.fields); delete f.arcRatio; this.upd({ arcana: i, skills: [], fields: f }); } }, this.tile(i === s.arcana, accent))).filter((_, i) => ARC_HIDDEN.indexOf(i) < 0);
 const G = [
 ['근접 전투', 'M20.5 3.5l-.6 3.4-8.4 8.4-2.8-2.8 8.4-8.4zM6.8 11.8l5.4 5.4M9.5 14.5l-4.6 4.6M4.2 19.8h.01'],
 ['마법', 'M12 3l7.8 13.5H4.2zM12 21l-7.8-13.5h15.6z'],
