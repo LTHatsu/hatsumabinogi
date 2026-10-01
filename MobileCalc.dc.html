@@ -138,8 +138,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <sc-if value="{{det.setOk}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #4A3D30">세트 효과</span><div style="display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 2px"><sc-if value="{{det.duskOk}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setDusk}}" onChange="{{det.onDusk}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">더스크바운드 시리즈 (보너스 대미지 +5% · 크리티컬 대미지 +10%)</label></sc-if><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setCrit}}" onChange="{{det.onCrit}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">크리티컬 대미지 증가 (+7%)</label><label style="display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{det.setMagnum}}" onChange="{{det.onMagnum}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">매그넘샷 강화 (매그넘샷 배율 ×1.15)</label></div></div></sc-if>
 <sc-if value="{{det.isMain}}" hint-placeholder-val="{{ true }}">
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
-<label class="fl">에르그 등급<select class="f" value="{{det.ergGrade}}" onChange="{{det.onErgGrade}}"><option value="">등급 선택</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select></label>
-<label class="fl"><span>에르그 레벨</span><input class="f" type="number" min="1" max="50" placeholder="1~50" value="{{det.ergLv}}" onChange="{{det.onErgLv}}" onBlur="{{det.blurErgLv}}"></label>
+<label class="fl">에르그<input class="f" type="text" value="S등급 · 50레벨" readonly aria-readonly="true" style="background: #EFE5CF; color: #4A3D30; cursor: not-allowed"></label>
 <sc-if value="{{det.isMain}}" hint-placeholder-val="{{ true }}"><label class="fl"><span>어둠의 에르그</span><input class="f" type="number" min="1" max="50" placeholder="1~50" value="{{det.dErg}}" onChange="{{det.onDErg}}" onBlur="{{det.blurDErg}}"></label></sc-if>
 <label class="fl">특별 개조<select class="f" onChange="{{onField}}"><option>[R/S · 단계]</option></select></label>
 </div>
@@ -378,7 +377,7 @@ const setSg = (i, p) => { const arr = [0, 1, 2].map((k) => Object.assign({}, sgA
 const sgRows = [0, 1, 2].map((i) => { const q = sgArr[i] || {}; return { label: '세공 옵션 ' + (i + 1), value: q.o || '', lv: q.lv || '', opts: [{ v: '', label: sgList.length ? '옵션 선택' : '이 아르카나의 세공 옵션 준비 중' }].concat(sgList.filter((o) => o === q.o || !sgArr.some((z, k) => k !== i && z && z.o === o)).map((o) => ({ v: o, label: o }))), onOpt: (e) => setSg(i, { o: e.target.value, lv: e.target.value ? (q.lv || '1') : '' }), onLv: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setSg(i, { lv: raw === '' ? '' : String(Math.min(50, Math.max(1, Number(raw)))) }); } else { e.target.value = q.lv || ''; } }, lvOff: !q.o }; });
 // 인챈트 유동 옵션 범위 — 인챈트별 범위가 정해지면 ENC_RANGE에 추가 (지금은 모두 8~12)
 const ENC_RANGE = {};
-// 에르그 레벨 1~50, 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30
+// 에르그는 S등급 50레벨 고정 (입력 없음) · 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30
 const FIELD_RANGE = { ergLv: [1, 50], dErg: [1, 50], hwMax: [1, 30] };
 const FIELD_NAME = { pre: '인챈트 수치는', suf: '인챈트 수치는', ergLv: '에르그 레벨은', dErg: '어둠의 에르그 레벨은', hwMax: '성수 수치는' };
 const encRange = (k) => FIELD_RANGE[k] || ENC_RANGE[selKey + '.' + k] || [8, 12];

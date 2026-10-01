@@ -330,7 +330,6 @@ const DIMS = [
 ['pre', '인챈트 접두', '[현재 접두]', false, [['[상위 접두 A]', 1.8, 16, 1500], ['[상위 접두 B]', 3.0, 27, 4200]]],
 ['suf', '인챈트 접미', '[현재 접미]', false, [['[상위 접미 A]', 2.2, 20, 1800], ['[상위 접미 B]', 4.2, 38, 5200]]],
 ['ref', '세공 랭크', '[현재 랭크]', false, [['1랭크 상승', 1.5, 13, 900], ['2랭크 상승', 3.1, 27, 2600], ['3랭크 상승', 4.8, 42, 6000]]],
-['erg', '에르그', 'Lv.[현재]', true, [['+5 레벨', 2.4, 21, 3000], ['+10 레벨', 5.6, 52, 6500], ['+20 레벨', 9.0, 82, 15000]]],
 ['sp', '특별 개조', '[R/S] [현재]단계', true, [['+1 단계', 3.5, 31, 5000], ['+2 단계', 7.8, 71, 14000], ['+3 단계', 12.0, 110, 30000]]]
 ];
 // 상위 장비로 통째 교체 — 예시 후보 [이름, 딜 %, 최대 대미지, 비용(만 G)]
@@ -420,8 +419,6 @@ const swapSt = curSwap > 0 ? swapOf(cur, curSwap - 1) : null;
 const swapDim = { label: '장비 교체', current: cur[3] + (curDet.wmax ? ' · ' + MX + ' ' + curDet.wmax : ''), value: String(curSwap), opts: [{ v: '0', label: '현재 장비 유지' }].concat(SWAP[kindOf(cur)].map((o, i) => { const x = swapOf(cur, i); return { v: String(i + 1), label: x.name + ' · ' + MX + ' +' + x.dmg }; })), on: !!swapSt, head: swapSt ? '▲ ' + MX + ' +' + swapSt.dmg : '', off: !swapSt, pct: swapSt ? swapSt.pct.toFixed(1) : '0', dmg: swapSt ? swapSt.dmg : 0, cost: swapSt ? won(swapSt.costM) : '—', costFg: swapSt ? '#2A2119' : '#8C7A62', border: swapSt ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: swapSt ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(cur[0] + '.item', Number(e.target.value)), effect: '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
 dims.unshift(swapDim);
 dims.forEach((d) => { if (d.head === undefined) { d.head = '▲ +' + d.pct + '%'; } });
-// 에르그 — 최대 대미지 증가분만 계산 (조준 속도 등 부가 효과는 제외)
-dims.forEach((d) => { if (d.label === '에르그') { d.effect = '조준 속도 증가 등 에르그의 부가 효과는 실질적인 딜 상승치 계산이 어려워 최대 대미지에 대한 딜 상승치만 표기돼요.'; } });
 const mine = chosen.filter((c) => c.slotKey === cur[0]);
 const slotPct = mine.reduce((t, c) => t + c.pct, 0);
 const slotDmg = mine.reduce((t, c) => t + c.dmg, 0);
@@ -1004,8 +1001,6 @@ const avgMul = (cr, cd) => { const c = Math.min(Math.max(cr, 0), 100) / 100; ret
 const critGain = (st) => (avgMul(BASE_STATS.crate + (st.crate || 0), BASE_STATS.cdmg + (st.cdmg || 0)) * bonusFactor({ bonus: BASE_STATS.bonus + (st.bonus || 0), talent: BASE_STATS.talent + (st.talent || 0), arcana: BASE_STATS.arcana + (st.arcana || 0), wbonus: BASE_STATS.wbonus + (st.wbonus || 0) })) / (avgMul(BASE_STATS.crate, BASE_STATS.cdmg) * bonusFactor(BASE_STATS)) - 1;
 const critMx = (st) => (BASE_STATS.max || 0) * critGain(st);
 // 보너스 대미지 변화도 같은 방식으로 최대 대미지 환산
-// 에르그 — 예시 딜 % 대신 늘어나는 최대 대미지만으로 딜 상승을 계산해요
-chosen.forEach((c) => { if (c.dim === '에르그') { c.stats = { max: c.dmg, crate: 0, cdmg: 0, bonus: 0 }; c.pct = dealPct({ max: c.dmg }); c.eff = c.costM ? c.pct / (c.costM / 10000) : 0; } });
 chosen.forEach((c) => { if (c.stats && (c.stats.crate || c.stats.cdmg || c.stats.bonus || c.stats.talent || c.stats.arcana || c.stats.wbonus)) { c.dmg = (c.stats.max || 0) + Math.round(critMx(c.stats)); } });
 const rows = chosen.slice().sort((a, b) => (b.eff - a.eff) || (b.pct - a.pct));
 const maxEff = rows.length ? rows[0].eff : 1;
