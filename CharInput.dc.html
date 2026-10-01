@@ -125,7 +125,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </sc-for>
 </div>
 </div>
-<div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">{{rfLabel}}</strong><span style="font-size: 14px">{{rfEffect}}</span><sc-if value="{{rfDark}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #E3EDE6">다크 메이지 전용 효과</span></sc-if></div>
+<sc-if value="{{notDual}}" hint-placeholder-val="{{ true }}"><div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">{{rfLabel}}</strong><span style="font-size: 14px">{{rfEffect}}</span><sc-if value="{{rfDark}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #E3EDE6">다크 메이지 전용 효과</span></sc-if></div></sc-if>
 <sc-if value="{{sub2On}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 14px; padding-top: 16px; border-top: 1px dashed #D9C8A6">
 <div class="fl"><span id="rf2-l">보조무기 특별 개조 · {{sub2Name}}</span>
 <div role="radiogroup" aria-labelledby="rf2-l" style="display: flex; gap: 4px">
@@ -141,8 +141,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </sc-for>
 </div>
 </div>
-<div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">{{rf2Label}}</strong><span style="font-size: 14px">{{rf2Effect}}</span></div>
-<div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #2A2119; color: #FBF5E8"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">두 무기 적용 효과</strong><span style="font-size: 14px">{{rfSum}}</span><span style="flex-basis: 100%; font-size: 12px; color: #D9C8A6">쌍수 장착 시 S 개조는 대미지 증가율을 산출할 공식이 확인되지 않아 딜 상승량을 제공하지 않으며, R 개조만 선택할 수 있어요.</span></div>
+<div role="status" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 12px 16px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><strong style="font-family: 'Gowun Batang', serif; font-size: 16px">{{rfPair}}</strong><span style="font-size: 14px">{{rfSum}}</span><span style="flex-basis: 100%; font-size: 12px; line-height: 1.5; color: #4A3D30">쌍수 장착 시 S 개조는 대미지 증가율을 산출할 공식이 확인되지 않아 딜 상승량을 제공하지 않으며, R 개조만 선택할 수 있어요.</span></div>
 </div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start">
 <label class="fl"><span>현재 {{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{fv.maxDmg}}" onChange="{{fc.maxDmg}}"></label>
@@ -570,7 +569,7 @@ bonusFixed: wBonusFixed, bonusEditable: !wBonusFixed, bonusFixedVal: wValid ? St
 subOpts: subOpts, subValue: sEff, onSub: (e) => { const o = Object.assign({}, s.fields || {}); o.sub = e.target.value; const bd = totDef(wCur, o.sub); if (bd) { o.gearBonus = String(bd); } this.upd({ fields: o }); },
 rankOpts: rankOpts, rankValue: CRIT_RANK.some((r) => r[0] === (s.fields || {}).critRank) ? (s.fields || {}).critRank : '', mo: mo, mv: mv, mxTitle: MX, fcA: { main: fc[miniA], ex: fc[miniA + 'Ex'] }, dollOpts: dollOpts, dollValue: DOLL_BAGS.some((d) => d[0] === (s.fields || {}).dollBag) ? (s.fields || {}).dollBag : '', weaponOpts: weaponOpts, weaponValue: wList.indexOf(wCur) >= 0 ? wCur : '', onWeapon: (e) => { const o = Object.assign({}, s.fields || {}); o.weapon = e.target.value; if (subListOf(o.weapon).indexOf(o.sub || '') < 0) { o.sub = ''; } const bd = totDef(o.weapon, o.sub || ''); if (bd) { o.gearBonus = String(bd); } const lim = !canS8(o.weapon); this.upd(lim && s.stage > 6 ? { fields: o, stage: 6 } : { fields: o }); },
 rfLabel: (rfType ? 'S' : 'R') + rfStage + '강', rfEffect: rfText(rfMain, rfType, rfDark), rfDark: rfDark,
-sub2On: sub2On, sub2Name: sEff, reforges2: this.seg(['R 개조'], 0, 'reforge2'), stages2: this.seg(['1', '2', '3', '4', '5', '6', '7', '8'], rfStage2 - 1, 'stage2'), rf2Label: (rfType2 ? 'S' : 'R') + rfStage2 + '강', rf2Effect: rfText(rfSub, rfType2, false), rfSum: rfDeltaText(rfSumD),
+sub2On: sub2On, notDual: !sub2On, rfPair: 'R' + rfStage + '강 + R' + rfStage2 + '강', sub2Name: sEff, reforges2: this.seg(['R 개조'], 0, 'reforge2'), stages2: this.seg(['1', '2', '3', '4', '5', '6', '7', '8'], rfStage2 - 1, 'stage2'), rf2Label: (rfType2 ? 'S' : 'R') + rfStage2 + '강', rf2Effect: rfText(rfSub, rfType2, false), rfSum: rfDeltaText(rfSumD),
 critGm: critGm + '%', critTotal: (30 + critGm + sealCr) + '%', critSeal: sealCr ? ' + 정령 봉인 해제 5%' : '',
 skillBox: skillBox, dust: dust, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, petSum: '크리티컬 대미지 +' + petCd + '%',
 canAdd: roster.length < 3, isFull: roster.length >= 3, addChar: () => this.addChar(),
