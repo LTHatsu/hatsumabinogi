@@ -199,12 +199,12 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <section aria-label="타이틀" style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 12px">
 <h2 style="margin: 0; padding-left: 4px; font-family: 'Gowun Batang', serif; font-size: 22px">타이틀</h2>
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
-<sc-for list="{{title.rows}}" as="t" hint-placeholder-count="2"><div class="fl" style="position: relative; justify-content: flex-start"><span>{{t.label}}</span><input class="f" type="search" autocomplete="off" placeholder="{{t.ph}}" value="{{t.value}}" onChange="{{t.onChange}}" onFocus="{{t.onFocus}}" onBlur="{{t.onBlur}}">
+<sc-for list="{{title.rows}}" as="t" hint-placeholder-count="2"><div class="fl" style="position: relative; justify-content: flex-start"><span style="padding-left: 4px">{{t.label}}</span><input class="f" type="search" autocomplete="off" placeholder="{{t.ph}}" value="{{t.value}}" onChange="{{t.onChange}}" onFocus="{{t.onFocus}}" onBlur="{{t.onBlur}}">
 <sc-if value="{{t.sugOn}}" hint-placeholder-val="{{ false }}"><div role="listbox" aria-label="{{t.label}} 목록" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px; max-height: 320px; overflow-y: auto; background: #FFFBF2; border: 1px solid #B6A27E; border-radius: 10px; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.16)">
 <sc-for list="{{t.list}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 9px 14px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; cursor: pointer"><span style="font-size: 15px; color: #2A2119">{{x.name}}</span><span style="font-size: 12px; color: #6B5A45">{{x.sub}}</span></button></sc-for>
 <sc-if value="{{t.more}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 8px 14px; font-size: 12px; color: #6B5A45">{{t.moreText}}</span></sc-if>
 </div></sc-if>
-<sc-if value="{{t.descOn}}" hint-placeholder-val="{{ false }}"><span style="padding-left: 13px; font-size: 13px; line-height: 1.5; color: #4A3D30">{{t.desc}}</span></sc-if></div></sc-for>
+<sc-if value="{{t.descOn}}" hint-placeholder-val="{{ false }}"><span style="padding-left: 4px; font-size: 13px; line-height: 1.5; color: #4A3D30">{{t.desc}}</span></sc-if></div></sc-for>
 </div>
 </section>
 
