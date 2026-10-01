@@ -450,7 +450,10 @@ const EPK = s.eqPicks;
 const kindOf = (sl) => sl[4] === 'relic' ? 'relic' : (sl[4] ? 'weapon' : 'armor');
 if (ED2 && this._edKRef !== ED2) { this._edKRef = ED2; this._edK = {}; Object.keys(ED2.slots).forEach((sk) => { const m = {}; ED2.slots[sk].forEach((x) => { m[x[0]] = (x[1] || []).join(','); }); this._edK[sk] = m; }); }
 // 켜진 세트 효과 = 장비 · 오검에서 체크한 세트 + 더스크바운드 개조 옵션(머리 · 의상 · 장갑 · 신발 4부위가 모두 더스크바운드일 때) · 같은 세트는 한 번만
-const actSets = {}; Object.keys((gear && gear.det) || {}).forEach((k) => { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { actSets[q] = 1; }); });
+// 체크박스에서 숨긴 세트(setHide)는 예전에 체크해 둔 값이 남아 있어도 빼요 · 주무기 아이템의 세트 효과는 체크 없이 항상 켜져요
+const SET_HIDE = (s.eqData && s.eqData.setHide) || [];
+const actSets = {}; Object.keys((gear && gear.det) || {}).forEach((k) => { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { if (SET_HIDE.indexOf(q) < 0) { actSets[q] = 1; } }); });
+const wSets = (((s.eqData && s.eqData.itemSetList) || {})[String(((gear && gear.eq) || {}).rhand || '') || fInfo.weapon || ''] || []).map((x) => x[0]); wSets.forEach((q) => { actSets[q] = 1; });
 const ckSets = Object.assign({}, actSets);
 const duskSl = ['head', 'body', 'hands', 'feet']; const duskAll4 = duskSl.every((k) => String(((gear && gear.eq) || {})[k] || '').indexOf('더스크바운드') >= 0);
 // 스탯 세트 효과 (세트 id → 스탯) · 스킬 강화 세트는 스킬 계산식으로 계산
@@ -471,10 +474,10 @@ return EPK.weapon.filter((n) => n !== curN && km[n] === ck && EPK.wstat[n]).map(
 // 방어구 · 장신구: 장비에 있는 모든 세트 효과(에린 데이터) 중 아직 안 켜진 딜 세트를 더하고, 이 칸에서 켠 세트가 새 장비에 없으면 빼요 (다른 장비에서도 켜져 있으면 유지)
 // 스킬 강화 세트(매그넘샷 · 크래시샷 · 윈드밀 등)는 스킬 계산식(아르카나 스킬 안의 재능 부분 포함)으로 구한 총딜 증가율 (sgMemo, 아래에서 계산)
 const SG = this._sgMemo || { add: {}, loss: {} }; const SLS = ED2.itemSetList || {}; const nm0 = (q) => (q === 'crit' ? '크리티컬 대미지 7% 세트' : (q === 'CriticalDamageUp_3' ? '크리티컬 대미지 3% 세트' : ((ED2.setDefs || {})[q] || [q])[0]));
-const elseOn = {}; Object.keys((gear && gear.det) || {}).forEach((k) => { if (k !== sl[0]) { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { elseOn[q] = 1; }); } });
-const mySets = Object.keys((((gear && gear.det) || {})[sl[0]] || {}).sets || {}).concat(duskCur && duskSl.indexOf(sl[0]) >= 0 ? [duskCur] : []);
-const pool = {}; EPK.armor.forEach((n) => { pool[n] = 1; }); Object.keys(SLS).forEach((n) => { if (SLS[n].some((x) => (SG.add[x[0]] || 0) > 0)) { pool[n] = 1; } });
-return Object.keys(pool).filter((n) => n !== curN && km[n] !== undefined).map((n) => { const ids = (SLS[n] || []).map((x) => x[0]); const dk = n.indexOf('더스크바운드') >= 0; const lost = mySets.filter((q, i) => mySets.indexOf(q) === i && !elseOn[q] && ids.indexOf(q) < 0 && !(q === duskCur && dk)); const add = ids.filter((q) => !actSets[q] && (SG.add[q] || 0) > 0); const st = { cdmg: 0, bonus: 0 }; let sk = 0; let tot = 0; add.forEach((q) => { tot += SG.add[q]; if (SET_ST[q]) { st.cdmg += SET_ST[q].cdmg || 0; st.bonus += SET_ST[q].bonus || 0; } else { sk += SG.add[q]; } }); lost.forEach((q) => { const l = SG.loss[q] || 0; tot -= l; if (SET_ST[q]) { st.cdmg -= SET_ST[q].cdmg || 0; st.bonus -= SET_ST[q].bonus || 0; } else { sk -= l; } }); const t = add.map((q) => nm0(q) + ' +' + SG.add[q] + '%').concat(lost.filter((q) => SG.loss[q]).map((q) => nm0(q) + ' 해제 -' + SG.loss[q] + '%')); return { name: n, stats: st, skPct: Math.round(sk * 10) / 10, tot: tot, txt: t.join(' · ') + ' (세트 완성 시)', price: pItemG(n) }; }).filter((x) => x.tot > 0).sort((p, q) => q.tot - p.tot).slice(0, 12);
+const elseOn = {}; wSets.forEach((q) => { elseOn[q] = 1; }); Object.keys((gear && gear.det) || {}).forEach((k) => { if (k !== sl[0]) { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { elseOn[q] = 1; }); } });
+const mySets = Object.keys((((gear && gear.det) || {})[sl[0]] || {}).sets || {}).filter((q) => SET_HIDE.indexOf(q) < 0).concat(duskCur && duskSl.indexOf(sl[0]) >= 0 ? [duskCur] : []);
+const pool = {}; EPK.armor.forEach((n) => { pool[n] = 1; }); Object.keys(SLS).forEach((n) => { if (SLS[n].some((x) => SET_HIDE.indexOf(x[0]) < 0 && (SG.add[x[0]] || 0) > 0)) { pool[n] = 1; } });
+return Object.keys(pool).filter((n) => n !== curN && km[n] !== undefined).map((n) => { const ids = (SLS[n] || []).map((x) => x[0]); const dk = n.indexOf('더스크바운드') >= 0; const lost = mySets.filter((q, i) => mySets.indexOf(q) === i && !elseOn[q] && ids.indexOf(q) < 0 && !(q === duskCur && dk)); const add = ids.filter((q) => SET_HIDE.indexOf(q) < 0 && !actSets[q] && (SG.add[q] || 0) > 0); const st = { cdmg: 0, bonus: 0 }; let sk = 0; let tot = 0; add.forEach((q) => { tot += SG.add[q]; if (SET_ST[q]) { st.cdmg += SET_ST[q].cdmg || 0; st.bonus += SET_ST[q].bonus || 0; } else { sk += SG.add[q]; } }); lost.forEach((q) => { const l = SG.loss[q] || 0; tot -= l; if (SET_ST[q]) { st.cdmg -= SET_ST[q].cdmg || 0; st.bonus -= SET_ST[q].bonus || 0; } else { sk -= l; } }); const t = add.map((q) => nm0(q) + ' +' + SG.add[q] + '%').concat(lost.filter((q) => SG.loss[q]).map((q) => nm0(q) + ' 해제 -' + SG.loss[q] + '%')); return { name: n, stats: st, skPct: Math.round(sk * 10) / 10, tot: tot, txt: t.join(' · ') + ' (세트 완성 시)', price: pItemG(n) }; }).filter((x) => x.tot > 0).sort((p, q) => q.tot - p.tot).slice(0, 12);
 };
 // 장비 교체 시세 — 기본은 경매장 최저가, 직접 입력하면(예: 15억, 1억 4천만, 150000000) 이 페이지에서는 그 값으로 계산해요 · 고른 장비가 바뀌면 입력값은 초기화
 const parseGold = (t) => { const s0 = String(t || '').replace(/[,\sGg]|골드/g, ''); if (!s0) return 0; if (/^\d+(\.\d+)?$/.test(s0)) return Number(s0); let v = 0; let rest = s0; const m1 = s0.match(/(\d+(?:\.\d+)?)억/); if (m1) { v += Number(m1[1]) * 1e8; rest = s0.slice(s0.indexOf('억') + 1); } const m2 = rest.match(/(\d+(?:\.\d+)?)천만/); const m3 = rest.match(/(\d+(?:\.\d+)?)백만/); const m4 = rest.match(/(\d+(?:\.\d+)?)만/); if (m2) { v += Number(m2[1]) * 1e7; } else if (m3) { v += Number(m3[1]) * 1e6; } else if (m4) { v += Number(m4[1]) * 1e4; } return Math.round(v); };
@@ -652,7 +655,8 @@ const sv = (k) => (SG_KEY[k] ? sgSum(SG_KEY[k]) : (k === 'magi' ? 10 : 0));
 // 무기 세트 효과: 장비 · 오검 페이지 주무기 이름 우선, 없으면 캐릭터 정보의 무기 종류
 const wName = String(((gear && gear.eq) || {}).rhand || '') || (cInfo && cInfo.fields && cInfo.fields.weapon) || '';
 const wSoul = wName.indexOf('소울 리버레이트') >= 0 && wName.indexOf('보우') >= 0;
-const wCr = wSoul ? 1.2 : (wName.indexOf('나이트브링어') >= 0 ? 1.15 : 1);
+// 나이트브링어 로그 · 프레데터의 크래시샷 +15%는 주무기 세트 효과(Crash_Shot_enhance)로 자동 적용돼서 여기선 빼요
+const wCr = wSoul ? 1.2 : 1;
 const wMg = wSoul ? 1.15 : 1;
 // 매그넘샷 강화 세트 효과(장비 · 오검 페이지 체크) → 매그넘샷 배율 ×1.15
 const setMg = actSets.magnum ? 1.15 : 1;

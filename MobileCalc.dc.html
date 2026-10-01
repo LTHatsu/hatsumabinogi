@@ -408,7 +408,7 @@ const DUSK_SL = ['head', 'body', 'hands', 'feet'];
 const duskAll = DUSK_SL.every((k) => String((s.eq || {})[k] || '').indexOf('더스크바운드') >= 0);
 const duskOpt = duskAll ? (DUSK_SL.map((k) => (detAll[k] || {}).duskOpt).filter(Boolean)[0] || '') : '';
 // 장비를 바꾸면 새 장비에 없는 세트 효과 체크는 지워요 (다른 장비에 남은 체크는 그대로)
-const pruneSets = (det0, key, nm) => { if (!ED || !ED.itemSetList) return det0; const d = (det0 || {})[key]; if (!d || !d.sets) return det0; const ok = itemSetsOf(nm).map((x) => x[0]); const o = {}; Object.keys(d.sets).forEach((q) => { if (ok.indexOf(q) >= 0) { o[q] = 1; } }); const all = Object.assign({}, det0); all[key] = Object.assign({}, d); if (Object.keys(o).length) { all[key].sets = o; } else { delete all[key].sets; } return all; };
+const pruneSets = (det0, key, nm) => { if (!ED || !ED.itemSetList) return det0; const d = (det0 || {})[key]; if (!d || !d.sets) return det0; const ok = itemSetsOf(nm).map((x) => x[0]).filter((q) => ((ED && ED.setHide) || []).indexOf(q) < 0); const o = {}; Object.keys(d.sets).forEach((q) => { if (ok.indexOf(q) >= 0) { o[q] = 1; } }); const all = Object.assign({}, det0); all[key] = Object.assign({}, d); if (Object.keys(o).length) { all[key].sets = o; } else { delete all[key].sets; } return all; };
 // 장비 종류가 바뀌면(세공 장비 키 · 인챈트 가능 그룹 · 장비 종류 코드가 다른 아이템으로 교체) 그 칸의 세부 입력(인챈트 · 세공 · 세트 효과 · 성수 · 에르그 · 무기 수치 등)을 모두 초기화해요 · 같은 종류끼리 바꾸면 새 장비에 없는 세트 효과 체크만 지워요
 const itemSig = (key, nm) => { if (!ED || !nm) return ''; const r = ((this._edG || {})[edSlot(key)] || {})[nm]; const k = ((this._edMap || {})[edSlot(key)] || {})[nm]; return r && k ? k.join(',') + '|' + r[0] + '|' + r[1] : ''; };
 const curItemOf = (key) => { const v = String((this.state.eq || {})[key] || '').trim(); return v || (key === 'rhand' ? this.state.charWeapon || '' : (key === 'lhand' ? this.state.charSub || '' : '')); };
@@ -423,7 +423,9 @@ const sgList = !ED ? [] : ED.opts.filter((o) => o[1].some((k) => sgKeys.indexOf(
 const sgFind = (o) => sgList.filter((x) => x.name === o)[0];
 const sgMax = (o) => { const x = sgFind(o); return x ? x.mx : 50; };
 const sgPh = (o) => { const x = sgFind(o); return x ? '1~' + x.cap + (x.mx > x.cap ? ' (한계돌파 ' + x.mx + ')' : '') : '레벨'; };
-const itemSetRows = itemSetsOf(sgItem);
+// 체크박스는 전투 스탯 · 계산식에 영향을 주는 세트만 (equip-data.json setHide에 있는 세트는 숨김, 데이터는 유지) · 주무기 세트 효과는 체크 없이 항상 적용
+const SET_HIDE = (ED && ED.setHide) || [];
+const itemSetRows = selKey === 'rhand' ? [] : itemSetsOf(sgItem).filter((x) => SET_HIDE.indexOf(x[0]) < 0);
 const duskOn = duskAll && DUSK_SL.indexOf(selKey) >= 0;
 const setToggle = (k) => (e) => { const o = Object.assign({}, dCur.sets || {}); if (e.target.checked) { o[k] = 1; } else { delete o[k]; } setDet('sets', Object.keys(o).length ? o : ''); };
 const isWeaponSlot = selKey === 'rhand' || selKey === 'lhand';
