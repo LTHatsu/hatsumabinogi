@@ -124,7 +124,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </sc-for>
 </div></div>
 <div role="status" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><strong style="font-family: 'Gowun Batang', serif; font-size: 15px">{{rf2Label}}</strong><span style="font-size: 13px; line-height: 1.5">{{rf2Effect}}</span></div>
-<div role="status" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #2A2119; color: #FBF5E8"><strong style="font-family: 'Gowun Batang', serif; font-size: 15px">주무기 + 보조무기 합계</strong><span style="font-size: 13px; line-height: 1.5">{{rfSum}}</span></div>
+<div role="status" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #2A2119; color: #FBF5E8"><strong style="font-family: 'Gowun Batang', serif; font-size: 15px">두 무기 적용 효과</strong><span style="font-size: 13px; line-height: 1.5">{{rfSum}}</span><span style="font-size: 11px; line-height: 1.5; color: #D9C8A6">크리티컬 · 보너스 대미지는 합, 최대 · 최소 대미지는 평균이에요</span></div>
 </div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start">
 <label class="fl"><span>현재 {{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{fv.maxDmg}}" onChange="{{fc.maxDmg}}"></label>
@@ -444,11 +444,11 @@ const rfDeltaText = (d) => [['cdmg', '크리티컬 대미지', '%'], ['max', MX,
 const rfType = s.reforge === 0 ? 0 : 1; const rfStage = Math.min((typeof s.stage === 'number' ? s.stage : 0) + 1, stageMax); const rfDark = rfType === 1 && s.arcana === 2;
 const rfEk = s.arcana === 0 && EK_ONE_HAND.indexOf(wCur) >= 0;
 const rfMain = rfAt(rfType, rfStage, rfDark, rfEk);
-// 보조무기 특별 개조 — 엘레멘탈 나이트가 소울리버레이트 소드 · 해머 2개를 장착했을 때만 (효과는 주무기와 합산)
+// 보조무기 특별 개조 — 엘레멘탈 나이트가 소울리버레이트 소드 · 해머 2개를 장착했을 때만 (크리티컬 · 보너스 대미지는 합, 최대 · 최소 대미지는 두 무기 평균)
 const sub2On = s.arcana === 0 && EK_SUB_OK.indexOf(wCur) >= 0 && EK_SUB_OK.indexOf(sEff) >= 0;
 const rfType2 = s.reforge2 === 0 ? 0 : 1; const rfStage2 = Math.min((typeof s.stage2 === 'number' ? s.stage2 : 4) + 1, 8);
 const rfSub = rfAt(rfType2, rfStage2, false, true);
-const rfSumD = rfDelta({ cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false }, { cdmg: rfMain.cdmg + rfSub.cdmg, max: rfMain.max + rfSub.max, min: rfMain.min + rfSub.min, bonus: rfMain.bonus + rfSub.bonus, matk: 0, unknown: rfMain.unknown || rfSub.unknown });
+const rfSumD = rfDelta({ cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false }, { cdmg: rfMain.cdmg + rfSub.cdmg, max: (rfMain.max + rfSub.max) / 2, min: (rfMain.min + rfSub.min) / 2, bonus: rfMain.bonus + rfSub.bonus, matk: 0, unknown: rfMain.unknown || rfSub.unknown });
 const roster = this.loadStore().chars;
 const FK = ["arcLevel", "arcAwake", "totalLevel", "maxDmg", "gearBonus", "miniNormal", "miniMax", "miniMaxEx", "miniMatk", "miniMatkEx", "miniCdmg", "miniCdmgEx", "miniBonus", "miniBonusEx", "miniExtra", "dollBag", "arcRatio", "critRank"];
 // 딜 사이클 비중 — 스킬별 딜 비중 (스킬 명 · 아르카나 스킬 여부 · 딜 비중 %) → 아르카나 스킬 비중을 자동 계산해 fields.arcRatio 에도 저장

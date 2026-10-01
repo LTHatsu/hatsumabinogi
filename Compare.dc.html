@@ -356,7 +356,7 @@ const z = { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false };
 if (!stage) return z;
 if (type === 0) return Object.assign(z, { cdmg: (ek ? RF_R_EK : RF_R)[stage - 1] });
 if (dark) { const r = RF_SDM[stage - 1]; return Object.assign(z, { matk: r[0], bonus: r[1] }); }
-const r = (ek ? RF_S_EK : RF_S)[stage - 1]; return Object.assign(z, { max: r[0] || 0, min: r[1] || 0, bonus: r[2] || 0, unknown: r[0] === null });
+const r = (ek ? RF_S_EK : RF_S)[stage - 1]; return Object.assign(z, { max: r[0] || 0, min: r[1] || 0, bonus: r[2] || 0, unknown: r[0] === null, tbd: r[2] === null });
 };
 const rfDelta = (a, b) => ({ cdmg: b.cdmg - a.cdmg, max: b.max - a.max, min: b.min - a.min, bonus: b.bonus - a.bonus, matk: b.matk - a.matk, unknown: a.unknown || b.unknown });
 const rfDeltaText = (d) => [['cdmg', '크리티컬 대미지', '%'], ['max', MX, ''], ['min', '최소 대미지', ''], ['matk', '마법 공격력', ''], ['bonus', '보너스 대미지', '%']].filter((k) => d[k[0]]).map((k) => k[1] + ' ' + (d[k[0]] > 0 ? '+' : '') + d[k[0]] + k[2]).join(' · ') + (d.unknown ? ' (S8 효과 확인 중)' : '');
@@ -375,11 +375,14 @@ const type = typeof ty0 === 'number' ? ty0 : 1;
 const stageMax = weapon && weapon.indexOf('소울리버레이트') !== 0 && weapon !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울리버레이트 · 태양과 달의 검 전용
 const stage = Math.min((typeof st0 === 'number' ? st0 : 4) + 1, stageMax);
 const ek = arcIdx === 0 && EK_ONE_HAND.indexOf(weapon) >= 0;
-const at = (ty, st) => rfAt(ty, st, ty === 1 && arcIdx === 2, ek);
+// 엘레멘탈 나이트 한손 2개: 최대 · 최소 대미지는 두 무기 평균이라 무기별 몫은 절반 (크리티컬 · 보너스 대미지는 합)
+const dual = arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(rfFields.sub || '') >= 0;
+const at = (ty, st) => { const x = rfAt(ty, st, ty === 1 && arcIdx === 2, ek); if (dual) { x.max /= 2; x.min /= 2; } return x; };
 const cur = at(type, stage);
 const map = {}; const opts = [];
-for (let tg = stage + 1; tg <= stageMax; tg++) { const d = rfDelta(cur, at(type, tg)); map[rfName(type, tg)] = d; opts.push([rfName(type, tg), RF_STEP_PCT[tg - stage - 1], d.max + d.matk, RF_STEP_COST[tg - stage - 1]]); }
-return { type: type, stage: stage, cur: cur, map: map, dim: ['sp', '특별 개조', rfName(type, stage), true, opts], swapDelta: (v) => { const fs = stage + (v || 0); return rfDelta(at(type, fs), at(1 - type, fs)); } };
+// 효과가 확인되지 않은 단계(엘레멘탈 나이트 한손 S8)는 목표 단계에서 빼요
+for (let tg = stage + 1; tg <= stageMax; tg++) { if (at(type, tg).tbd) continue; const d = rfDelta(cur, at(type, tg)); map[rfName(type, tg)] = d; opts.push([rfName(type, tg), RF_STEP_PCT[tg - stage - 1], d.max + d.matk, RF_STEP_COST[tg - stage - 1]]); }
+return { type: type, stage: stage, cur: cur, map: map, dim: ['sp', '특별 개조', rfName(type, stage), true, opts], swapDelta: (v) => { const fs = stage + (v || 0); const a = at(type, fs); const b = at(1 - type, fs); return a.tbd || b.tbd ? { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: true } : rfDelta(a, b); } };
 };
 const RFC = { rhand: rfCtx('rhand'), lhand: rfCtx('lhand') };
 DIMS[DIMS.findIndex((dm) => dm[0] === 'sp')] = RFC.rhand.dim;
