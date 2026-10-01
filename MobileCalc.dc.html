@@ -414,9 +414,9 @@ const encOk = (k, v) => { const r = encRange(k); const n = Number(v); return /^-
 // 입력하는 동안은 숫자면 그대로 두고, 다른 칸으로 이동하는 순간 범위를 확인해 벗어나면 지우고 안내해요
 const encCh = (k) => (e) => { const raw = String(e.target.value).trim(); if (raw === '') { setDet(k, ''); return; } if (/^-?\d*$/.test(raw)) { setDet(k, raw); return; } e.target.value = dCur[k] || ''; };
 const encBlur = (k) => () => { if (dCur[k] && !encOk(k, dCur[k])) { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); delete o[k]; all[selKey] = o; this.upd({ det: all, detErr: k }); } };
-// 경매장 시세 — prices.json(예약 작업이 NEXON Open API로 주기적으로 갱신)의 최저가 · 장비는 아이템 이름으로, 인챈트는 스크롤 이름에서 '인챈트 스크롤'을 뺀 이름으로 맞춰요
+// 경매장 시세 — prices.json(예약 작업이 NEXON Open API로 주기적으로 갱신)의 최저가 · 장비는 아이템 이름으로, 인챈트는 스크롤 이름('[개방된] [전용] 인챈트 스크롤 - 이름')의 '-' 뒤 이름으로 맞춰 가장 싼 값을 써요
 const pAll = s.prices ? Object.assign({}, s.prices.categoryItems || {}, s.prices.items || {}) : {};
-if (s.prices && this._pRef !== s.prices) { this._pRef = s.prices; this._pEnc = {}; Object.keys(pAll).forEach((n) => { if (n.indexOf('인챈트') < 0) return; const k = n.replace(/인챈트\s*스크롤|인챈트/g, '').replace(/[\s\-()[\]:·]/g, ''); const x = pAll[n]; const v = Number(x && typeof x === 'object' ? x.min : x); if (k && v > 0 && (!this._pEnc[k] || v < this._pEnc[k])) { this._pEnc[k] = v; } }); }
+if (s.prices && this._pRef !== s.prices) { this._pRef = s.prices; this._pEnc = {}; Object.keys(pAll).forEach((n) => { if (n.indexOf('인챈트 스크롤') < 0 || n.indexOf(' - ') < 0) return; const k = n.slice(n.lastIndexOf(' - ') + 3).replace(/\s/g, ''); const x = pAll[n]; const v = Number(x && typeof x === 'object' ? x.min : x); if (k && v > 0 && (!this._pEnc[k] || v < this._pEnc[k])) { this._pEnc[k] = v; } }); }
 const gold = (n) => { const e = Math.floor(n / 1e8); const m = Math.floor((n % 1e8) / 1e4); const p = []; if (e) { p.push(e + '억'); } if (m) { p.push(m % 1000 === 0 ? m / 1000 + '천만' : m.toLocaleString() + '만'); } return (p.length ? p.join(' ') : Math.round(n).toLocaleString()) + 'G'; };
 const pItem = (nm) => { const x = pAll[nm]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? gold(v) : ''; };
 const pEnc = (nm) => { const v = (this._pEnc || {})[String(nm).replace(/\s/g, '')]; return v ? gold(v) : ''; };
