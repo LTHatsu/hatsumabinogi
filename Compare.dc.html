@@ -371,18 +371,18 @@ const sub = slot === 'lhand';
 const weapon = (sub ? rfFields.sub : rfFields.weapon) || '';
 if (sub && !(arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(weapon) >= 0)) return null;
 const ty0 = rfInfo ? rfInfo[sub ? 'reforge2' : 'reforge'] : undefined; const st0 = rfInfo ? rfInfo[sub ? 'stage2' : 'stage'] : undefined;
-const type = typeof ty0 === 'number' ? ty0 : 1;
+// 엘레멘탈 나이트 한손 2개(소울리버레이트 소드 · 해머)는 주무기 · 보조무기 모두 R 개조만 가능 — 크리티컬 대미지는 두 무기의 합
+const dual = arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(rfFields.sub || '') >= 0;
+const type = dual ? 0 : (typeof ty0 === 'number' ? ty0 : 1);
 const stageMax = weapon && weapon.indexOf('소울리버레이트') !== 0 && weapon !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울리버레이트 · 태양과 달의 검 전용
 const stage = Math.min((typeof st0 === 'number' ? st0 : 4) + 1, stageMax);
 const ek = arcIdx === 0 && EK_ONE_HAND.indexOf(weapon) >= 0;
-// 엘레멘탈 나이트 한손 2개: 최대 · 최소 대미지는 두 무기 평균이라 무기별 몫은 절반 (크리티컬 · 보너스 대미지는 합)
-const dual = arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(rfFields.sub || '') >= 0;
-const at = (ty, st) => { const x = rfAt(ty, st, ty === 1 && arcIdx === 2, ek); if (dual) { x.max /= 2; x.min /= 2; } return x; };
+const at = (ty, st) => rfAt(ty, st, ty === 1 && arcIdx === 2, ek);
 const cur = at(type, stage);
 const map = {}; const opts = [];
 // 효과가 확인되지 않은 단계(엘레멘탈 나이트 한손 S8)는 목표 단계에서 빼요
 for (let tg = stage + 1; tg <= stageMax; tg++) { if (at(type, tg).tbd) continue; const d = rfDelta(cur, at(type, tg)); map[rfName(type, tg)] = d; opts.push([rfName(type, tg), RF_STEP_PCT[tg - stage - 1], d.max + d.matk, RF_STEP_COST[tg - stage - 1]]); }
-return { type: type, stage: stage, cur: cur, map: map, dim: ['sp', '특별 개조', rfName(type, stage), true, opts], swapDelta: (v) => { const fs = stage + (v || 0); const a = at(type, fs); const b = at(1 - type, fs); return a.tbd || b.tbd ? { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: true } : rfDelta(a, b); } };
+return { noSwap: dual, type: type, stage: stage, cur: cur, map: map, dim: ['sp', '특별 개조', rfName(type, stage), true, opts], swapDelta: (v) => { const fs = stage + (v || 0); const a = at(type, fs); const b = at(1 - type, fs); return a.tbd || b.tbd ? { cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: true } : rfDelta(a, b); } };
 };
 const RFC = { rhand: rfCtx('rhand'), lhand: rfCtx('lhand') };
 DIMS[DIMS.findIndex((dm) => dm[0] === 'sp')] = RFC.rhand.dim;
@@ -393,7 +393,7 @@ SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
 const upv = (key, dm) => { const v = s.up[key] || 0; return v <= dm[4].length ? v : 0; };
 SLOTS.forEach((sl) => dimsFor(sl).forEach((dm) => { const v = upv(sl[0] + '.' + dm[0], dm); if (v > 0) { const st = stepOf(sl, dm, v - 1); chosen.push({ key: sl[0] + '.' + dm[0], slotKey: sl[0], slot: sl[1], dim: dm[1], from: dm[2], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000), rfd: dm[0] === 'sp' ? RFC[sl[0]].map[st.name] : null }); } }));
-SLOTS.filter((sl) => RFC[sl[0]]).forEach((sl) => { const R = RFC[sl[0]]; if (s.up[sl[0] + '.spx']) { const spv = upv(sl[0] + '.sp', R.dim); const fs = R.stage + spv; const d = R.swapDelta(spv); const pct = 2.0; const costM = 3000; chosen.push({ key: sl[0] + '.spx', slotKey: sl[0], slot: sl[1], dim: '특별 개조 전환', from: rfName(R.type, fs), to: rfName(1 - R.type, fs), pct: pct, dmg: d.max + d.matk, costM: costM, eff: pct / (costM / 10000), rfd: d }); } });
+SLOTS.filter((sl) => RFC[sl[0]]).forEach((sl) => { const R = RFC[sl[0]]; if (s.up[sl[0] + '.spx'] && !R.noSwap) { const spv = upv(sl[0] + '.sp', R.dim); const fs = R.stage + spv; const d = R.swapDelta(spv); const pct = 2.0; const costM = 3000; chosen.push({ key: sl[0] + '.spx', slotKey: sl[0], slot: sl[1], dim: '특별 개조 전환', from: rfName(R.type, fs), to: rfName(1 - R.type, fs), pct: pct, dmg: d.max + d.matk, costM: costM, eff: pct / (costM / 10000), rfd: d }); } });
 const setUp = (k, v) => { const u = Object.assign({}, s.up); if (v > 0) { u[k] = v; } else { delete u[k]; } this.setState({ up: u }); };
 const slots = SLOTS.map((sl) => {
 const on = sl[0] === s.slot;
@@ -423,7 +423,7 @@ border: st ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: st ? '#F3F8F4' :
 onChange: (e) => setUp(k, Number(e.target.value)),
 head: st ? '▲ ' + dimStat(dm, st) : '', effect: '',
 tEffect: dm[0] === 'sp' ? rfDeltaText(RFC[cur[0]].swapDelta(v)) + ' (' + rfName(1 - RFC[cur[0]].type, RFC[cur[0]].stage + v) + ' 기준)' : '',
-hasToggle: dm[0] === 'sp', toggled: dm[0] === 'sp' && !!s.up[cur[0] + '.spx'], untoggled: dm[0] === 'sp' && !s.up[cur[0] + '.spx'],
+hasToggle: dm[0] === 'sp' && !RFC[cur[0]].noSwap, toggled: dm[0] === 'sp' && !RFC[cur[0]].noSwap && !!s.up[cur[0] + '.spx'], untoggled: dm[0] === 'sp' && !RFC[cur[0]].noSwap && !s.up[cur[0] + '.spx'],
 tPct: (2.0 * cur[5]).toFixed(1),
 onToggle: (e) => setUp(cur[0] + '.spx', e.target.checked ? 1 : 0)
 };
