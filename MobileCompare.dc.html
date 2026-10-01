@@ -211,6 +211,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <sc-if value="{{ogDiff.off}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: #8C7A62">현재 오검과 같아요</span></sc-if>
 <sc-for list="{{ogDiff.lines}}" as="l" hint-placeholder-count="0"><span style="font-size: 12px; line-height: 1.5; color: #2A2119"><strong style="color: #1E3D2E">{{l.slot}}</strong> · {{l.text}}</span></sc-for>
 <sc-if value="{{ogDiff.comboOn}}" hint-placeholder-val="{{ false }}"><strong role="status" style="font-size: 12px; color: #1E3D2E">{{ogDiff.comboLine}}</strong></sc-if>
+<sc-if value="{{ogDiff.warnOn}}" hint-placeholder-val="{{ false }}"><div role="alert" style="border-radius: 10px; background: #F6E7C8; border: 1px solid #D9B26A; padding: 10px 12px; font-size: 13px; line-height: 1.55; color: #6B4510">오검 조합이 변경(제거) 되었어요. 딜 사이클 비중이 크게 달라져 부정확한 정보가 제공돼요. 해당 오검 조합에 맞춰서 다시 딜 사이클 비중을 설정해 주세요.</div></sc-if>
 <sc-if value="{{ogDiff.on}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ogDiff.reset}}" style="align-self: flex-start; min-height: 40px; padding: 0 14px; border: 1.5px solid #B6A27E; border-radius: 999px; background: transparent; color: #2A2119; font-size: 12px">현재 오검으로 되돌리기</button></sc-if>
 <sc-if value="{{ogDiff.gainOn}}" hint-placeholder-val="{{ false }}"><strong role="status" style="font-size: 14px; color: #1E3D2E">{{ogDiff.gainLine}}</strong></sc-if>
 <span style="font-size: 11px; color: #8C7A62">바꾼 오검 효과를 스킬 계산식과 무기 마스터리 등 전투 스탯에 넣어 예상 딜 상승을 계산해요 · 오검 조합이 바뀌면 바뀐 조합의 계산식으로 계산해요</span>
@@ -1066,7 +1067,8 @@ const ogLines = [1, 2, 3, 4, 5].map((n) => { const a = ogBase.ogw[n] || ''; cons
 const baseEq = Object.keys(ogBase.ogw).map((k) => ogBase.ogw[k]);
 const baseHit = combos.filter((c) => c[1].every((x) => baseEq.includes(x)))[0];
 const comboChg = (baseHit ? baseHit[0] : '') !== (hit ? hit[0] : '');
-const ogDiff = { gainOn: false, gainLine: '', on: ogLines.length > 0 || comboChg, off: !(ogLines.length > 0 || comboChg), lines: ogLines, comboOn: comboChg, comboLine: '오검 조합 · ' + (baseHit ? baseHit[0] : '없음') + ' → ' + (hit ? hit[0] : '없음'), reset: () => this.setState({ ogSim: null }) };
+// 현재 오검 조합이 빠지거나 다른 조합으로 바뀌면 딜 사이클 비중이 크게 달라져서 안내해요
+const ogDiff = { warnOn: !!baseHit && comboChg, gainOn: false, gainLine: '', on: ogLines.length > 0 || comboChg, off: !(ogLines.length > 0 || comboChg), lines: ogLines, comboOn: comboChg, comboLine: '오검 조합 · ' + (baseHit ? baseHit[0] : '없음') + ' → ' + (hit ? hit[0] : '없음'), reset: () => this.setState({ ogSim: null }) };
 // 브리레흐의 주화 — 바꿀 주화의 최대 대미지 · 크리티컬 대미지 · 아르카나 보너스 대미지를 직접 입력 (비운 칸은 현재 값 유지) · 미보유 체크 시 입력 숨김 (캐릭터별 저장)
 const coinNone = !!(curChar && curChar.simOpt && curChar.simOpt.noCoin);
 const setNoCoin = (on) => { try { const st2 = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (st2 && st2.chars && st2.chars[st2.cur]) { st2.chars[st2.cur].simOpt = Object.assign({}, st2.chars[st2.cur].simOpt, { noCoin: on }); window.localStorage.setItem('hatz-mabinogi-v1', JSON.stringify(st2)); } } catch (e) {} this.forceUpdate(); };
