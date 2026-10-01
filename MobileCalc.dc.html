@@ -280,6 +280,7 @@ componentDidMount() {
 // 장비 목록 · 세공 데이터 (에린 데이터 기준, equip-data.json)
 try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./title-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.p) { this.setState({ tiData: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./equip-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.weapon) { this.setState({ eqPicks: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./enchant-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.pre) { this.setState({ enPicks: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this._edMap = null; this._edG = null; this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
@@ -670,9 +671,14 @@ clear: () => { const o = Object.assign({}, og); delete o[ogSel]; const w2 = Obje
 // 장비 아이템 검색 — 입력한 글자를 포함하는 장비(부위별, 에린 데이터 기준)를 최대 30개 보여주고 골라요
 const sugAll = ED && String(s.sel).indexOf('relic') !== 0 ? (ED.slots[edSlot(selKey)] || []) : [];
 const sugQ = String((s.eq || {})[selKey] || '').trim(); const sugN = sugQ.replace(/\s/g, '').toLowerCase();
-const sugHits = s.sugOpen && sugN ? sugAll.filter((x) => x[0] !== sugQ && x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) >= 0) : [];
-sugHits.sort((x, y) => (x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) - (y[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) || x[0].length - y[0].length);
-const sugV = { on: sugHits.length > 0, more: sugHits.length > 30, moreText: '전체 ' + sugHits.length + '개 중 30개 · 더 입력하면 좁혀져요', list: sugHits.slice(0, 30).map((x) => ({ name: x[0], price: pItem(x[0]), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const eq = Object.assign({}, this.state.eq); eq[selKey] = x[0]; this.upd({ eq: eq, saved: selKey, sugOpen: false, det: detOnItem(this.state.det, selKey, x[0]) }); } })) };
+// 추천 장비(equip-picks.json — 무기: 등급 보너스가 있는 상위 무기, 방어구: 딜 관련 세트 효과 장비)는 맨 위에 '추천'으로, 빈 칸을 누르면 추천 장비만 먼저 보여줘요
+const EPK = s.eqPicks ? ((selKey === 'rhand' || selKey === 'lhand') ? s.eqPicks.weapon : s.eqPicks.armor) || [] : [];
+// 빈 칸에서 보여주는 추천 무기는 지금 무기와 같은 종류만
+const sugCurK = (selKey === 'rhand' || selKey === 'lhand') && ED ? (((this._edMap || {})[edSlot(selKey)] || {})[sgItem] || []).join(',') : '';
+const pkRank = (n) => { const i = EPK.indexOf(n); return i < 0 ? 1e9 : i; };
+const sugHits = s.sugOpen ? (sugN ? sugAll.filter((x) => x[0] !== sugQ && x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) >= 0) : sugAll.filter((x) => pkRank(x[0]) < 1e9 && (!sugCurK || (x[1] || []).join(',') === sugCurK))) : [];
+sugHits.sort((x, y) => (pkRank(x[0]) < 1e9 ? 0 : 1) - (pkRank(y[0]) < 1e9 ? 0 : 1) || (pkRank(x[0]) < 1e9 && pkRank(y[0]) < 1e9 ? pkRank(x[0]) - pkRank(y[0]) : 0) || (x[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) - (y[0].replace(/\s/g, '').toLowerCase().indexOf(sugN) === 0 ? 0 : 1) || x[0].length - y[0].length);
+const sugV = { on: sugHits.length > 0, more: sugHits.length > 30, moreText: '전체 ' + sugHits.length + '개 중 30개 · 더 입력하면 좁혀져요', list: sugHits.slice(0, 30).map((x) => ({ name: x[0], price: (pkRank(x[0]) < 1e9 ? '추천' + (pItem(x[0]) ? ' · ' : '') : '') + pItem(x[0]), pick: (e) => { if (e && e.preventDefault) e.preventDefault(); const eq = Object.assign({}, this.state.eq); eq[selKey] = x[0]; this.upd({ eq: eq, saved: selKey, sugOpen: false, det: detOnItem(this.state.det, selKey, x[0]) }); } })) };
 return {
 mxLabel: MX,
 accent: accent,
