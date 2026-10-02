@@ -97,7 +97,8 @@
   },
   "keywords": [
     "인형 가방",
-    "능력 상승"
+    "능력 상승",
+    "+1 주문서"
   ],
   "errors": [
     "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
