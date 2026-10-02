@@ -392,7 +392,7 @@ const ty0 = rfInfo ? rfInfo[sub ? 'reforge2' : 'reforge'] : undefined; const st0
 // 엘레멘탈 나이트 한손 2개(소울 리버레이트 소드 · 해머)는 주무기 · 보조무기 모두 R 개조만 가능 — 크리티컬 대미지는 두 무기의 합
 const dual = arcIdx === 0 && EK_SUB_OK.indexOf(rfFields.weapon || '') >= 0 && EK_SUB_OK.indexOf(rfFields.sub || '') >= 0;
 const type = dual ? 0 : (typeof ty0 === 'number' ? ty0 : 1);
-const stageMax = weapon && weapon.indexOf('소울 리버레이트') !== 0 && weapon !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울 리버레이트 · 태양과 달의 검 전용
+const wEff = (this._rfPlanW || {})[slot] || weapon; /* 세팅 시뮬레이터에서 무기를 바꾸면 바꾼 무기 기준 (8단계 가능 여부) */ const stageMax = wEff && wEff.indexOf('소울 리버레이트') !== 0 && wEff !== '태양과 달의 검' ? 7 : 8; // 8단계는 소울 리버레이트 · 태양과 달의 검 전용
 const stage = Math.min((typeof st0 === 'number' ? st0 : 4) + 1, stageMax);
 const ek = arcIdx === 0 && EK_ONE_HAND.indexOf(weapon) >= 0;
 const at = (ty, st) => rfAt(ty, st, ty === 1 && arcIdx === 2, ek);
@@ -537,6 +537,8 @@ const dimsFor0 = (sl) => sl[4] === 'echo' ? [] : sl[4] === 'relic' ? DIMS.filter
 const isAmmoSl = (sl) => sl[0] === 'lhand' && (/화살|볼트/.test(String(sl[3] || '')) || arcIdx === 3 || /보우$/.test(String(((gear && gear.eq) || {}).rhand || '') || fInfo.weapon || '')); /* 레인보우 빔 소드 같은 이름은 빼요 */
 const dimsFor = (sl) => dimsFor0(sl).filter((dm) => !(isAmmoSl(sl) && (dm[0] === 'pre' || dm[0] === 'suf'))).map((dm) => (dm[0] === 'pre' || dm[0] === 'suf' ? encDim(sl, dm) : dm)).filter(Boolean);
 const chosen = [];
+// 특별 개조 최대 단계(7 · 8)는 바꾼 무기 기준 — 바꾼 무기 이름을 기억해 두고 다음 렌더의 rfCtx가 써요
+{ const pw = {}; ['rhand', 'lhand'].forEach((k) => { const sl = SLOTS.filter((x) => x[0] === k)[0]; const v = Number(s.up[k + '.item']) || 0; const o = sl && v > 0 ? swapOf(sl, v - 1) : null; if (o) { pw[k] = o.name; } }); const pk = JSON.stringify(pw); if (pk !== this._rfPlanKey) { this._rfPlanKey = pk; this._rfPlanW = pw; setTimeout(() => this.setState({ rfPlanV: pk }), 0); } }
 SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const st = swapOf(sl, v - 1); if (st) chosen.push({ dP: st.dP, pgE: st.pg, swapStats: st.stats, swapSk: st.skPct, key: sl[0] + '.item', slotKey: sl[0], slot: sl[1], dim: ['head', 'body', 'hands', 'feet'].indexOf(sl[0]) >= 0 ? '방어구 종류 변경' : '장비 교체', from: sl[3], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } });
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
 const upv = (key, dm) => { const v = s.up[key] || 0; return v <= dm[4].length ? v : 0; };
@@ -1449,7 +1451,7 @@ const HW_TIERS = { max: [[1, 6], [7, 12], [13, 18], [19, 24], [25, 30]], matk: [
 const hwP = (tiers, n) => tiers.reduce((t, r) => t + (n <= r[0] ? 1 : (n > r[1] ? 0 : (r[1] - n + 1) / (r[1] - r[0] + 1))), 0) / HW_N;
 const hwPrice = (() => { const x = (s.prices && ((s.prices.items || {})['무리아스의 성수'] || (s.prices.categoryItems || {})['무리아스의 성수'])) || null; const h = s.prices && (s.prices.historyItems || {})['무리아스의 성수']; return x && x.min > 0 ? { v: x.min } : (h && h.last > 0 ? { v: h.last, hist: true } : { v: 870000, tmp: true }); /* 시세가 아직 없으면 임시 87만 G */ })();
 const HW_SLOTS = ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'acc1', 'acc2'];
-const hwTargets = (k) => { if (HW_SLOTS.indexOf(k) < 0) return []; if (k === 'lhand' && isAmmoSl(SLOTS.filter((sl) => sl[0] === 'lhand')[0] || ['lhand'])) return []; /* 화살 · 볼트에는 성수를 쓸 수 없어요 */ const d = (((gear && gear.det) || {})[k]) || {}; const ty = d.hwType || ''; const cm = ty === 'max' ? Math.max(0, Number(d.hwMax) || 0) : 0; const cc = ty === 'cdmg' ? Math.max(0, Number(d.hwCd) || 0) : 0; const tK = MXK === 'matk' ? 'matk' : (MXK === 'alch' ? 'alch' : 'max'); const top = HW_TIERS[tK][4][1]; const out = [];
+const hwTargets = (k) => { if (HW_SLOTS.indexOf(k) < 0) return []; const d = (((gear && gear.det) || {})[k]) || {}; const ty = d.hwType || ''; const cm = ty === 'max' ? Math.max(0, Number(d.hwMax) || 0) : 0; const cc = ty === 'cdmg' ? Math.max(0, Number(d.hwCd) || 0) : 0; const tK = MXK === 'matk' ? 'matk' : (MXK === 'alch' ? 'alch' : 'max'); const top = HW_TIERS[tK][4][1]; const out = [];
 for (let n = Math.max(cm + 1, 20); n <= top; n++) { out.push({ id: 'm' + n, label: MX + ' ' + n + ' 이상', st: { max: n - cm, cdmg: -cc }, p: hwP(HW_TIERS[tK], n) }); }
 [3, 4].forEach((c) => { if (c > cc) { out.push({ id: 'c' + c, label: '크리티컬 대미지 ' + c + '%' + (c < 4 ? ' 이상' : ''), st: { max: -cm, cdmg: c - cc }, p: hwP(HW_TIERS.cdmg, c) }); } });
 return out.map((o) => { const uses = o.p > 0 ? 1 / o.p : 0; return Object.assign(o, { uses: uses, cost: hwPrice && uses ? hwPrice.v * uses : 0, cur: ty === 'max' ? MX + ' ' + cm : (ty === 'cdmg' ? '크리티컬 대미지 ' + cc + '%' : '효과 없음') }); }); };
