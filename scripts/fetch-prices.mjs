@@ -131,6 +131,16 @@ try {
   prices.echo = ec; prices.echoHistory = ecH; prices.echoUpdatedAt = new Date().toISOString();
   delete prices.echoNames; delete prices.echoSample;
 } catch (e) { errors.push(String(e.message || e)); }
+// 삼색 보석 반지 — 고유 옵션(최대 대미지 · 마법 공격력 · 연금술 대미지 1~7 등)마다 값이 달라서 옵션별 최저가 · 최근 거래가를 따로 모아요 (색상 · 내구력 등 공통 옵션은 빼요)
+try {
+  const RING = '삼색 보석 반지'; const SKIP = /색상|내구력|남은 전용|전용 해제|아이템 보호|인챈트 불가|의장/;
+  const rkey = (it) => (it.item_option || []).filter((o) => !SKIP.test(String(o.option_type || ''))).map((o) => [o.option_type, o.option_sub_type, o.option_value, o.option_value2].filter((v) => v !== undefined && v !== null && v !== '').join(' ')).join(' / ');
+  const live = (await collect('/mabinogi/v1/auction/list', { item_name: RING }, 10)).filter((it) => !unfinished(it));
+  const rg = {}; for (const it of live) { const price = Number(it.auction_price_per_unit); const k = rkey(it); if (!(price > 0)) continue; const c = rg[k]; if (!c) rg[k] = { min: price, count: 1 }; else { c.min = Math.min(c.min, price); c.count += 1; } }
+  const rgH = Object.assign({}, prices.ringHistory || {});
+  for (const it of await collect('/mabinogi/v1/auction/history', { item_name: RING }, 5)) { const price = Number(it.auction_price_per_unit); if (!(price > 0) || unfinished(it)) continue; const at = it.date_auction_buy || it.date_auction_expire || ''; const k = rkey(it); const c = rgH[k]; if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) rgH[k] = { last: price, at }; }
+  prices.ring = rg; prices.ringHistory = rgH; prices.ringSample = live.slice(0, 2).map((it) => it.item_option || []); prices.ringUpdatedAt = new Date().toISOString();
+} catch (e) { errors.push(String(e.message || e)); }
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);
