@@ -540,8 +540,8 @@ const enRg = (r) => (r[0] === r[1] ? String(r[0]) : r[0] + '~' + r[1]);
 const enSel = {};
 const setDetMany = (p) => { const all = Object.assign({}, detAll); const o = Object.assign({}, dCur); Object.keys(p).forEach((kk) => { if (p[kk] === '' || p[kk] == null) { delete o[kk]; } else { o[kk] = p[kk]; } }); all[selKey] = o; this.upd({ det: all, detErr: false, saved: selKey }); };
 // 로브에는 인챈트 칸을 두지 않아요
-// 보조무기 화살 · 볼트(알케믹 스팅어 등)는 인챈트 · 세공을 붙일 수 없어서 칸을 숨겨요
-const isAmmo = selKey === 'lhand' && /화살|볼트/.test(sgItem);
+// 보조무기 화살 · 볼트(알케믹 스팅어 · 보우 · 크로스보우)는 인챈트 · 세공을 붙일 수 없어서 칸을 숨겨요
+const isAmmo = selKey === 'lhand' && (/화살|볼트/.test(sgItem) || s.charArcana === '알케믹 스팅어' || /보우/.test(String((s.eq || {}).rhand || '').trim() || s.charWeapon || '')); // 알케믹 스팅어 · 보우 · 크로스보우의 보조무기는 화살 · 볼트
 const enRows = (selKey === 'robe' || isAmmo ? [] : [['pre', 0, '접두 인챈트', '접두'], ['suf', 1, '접미 인챈트', '접미']]).map((q) => {
 const k = q[0]; const nk = k + 'Name'; const nm = String(dCur[nk] || ''); const idx = enFind(nm, q[1]); const rg = idx !== undefined ? enRangeOf(idx) : null;
 if (rg) { enSel[k] = rg; }
