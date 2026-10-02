@@ -131,6 +131,8 @@ try {
   prices.echo = ec; prices.echoHistory = ecH; prices.echoUpdatedAt = new Date().toISOString();
   delete prices.echoNames; delete prices.echoSample;
 } catch (e) { errors.push(String(e.message || e)); }
+// 삼색 보석 반지는 고유 옵션(1~7)마다 값이 크게 달라서 시세를 모으지 않고 직접 입력해요 (지난 수집값은 지워요)
+delete prices.ring; delete prices.ringHistory; delete prices.ringSample; delete prices.ringUpdatedAt;
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);
