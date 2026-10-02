@@ -204,7 +204,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 22px; padding: 20px 24px; display: flex; gap: 24px; align-items: center">
 <span style="width: 60px; height: 60px; flex-shrink: 0; border-radius: 16px; background: {{accent}}; display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FBF5E8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18zM12 6.3a5.7 5.7 0 1 1 0 11.4a5.7 5.7 0 1 1 0-11.4zM12 8.8l1 2.2 2.2 1-2.2 1-1 2.2-1-2.2-2.2-1 2.2-1z"></path></svg></span>
 <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
-<label class="fl"><span>{{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{bri.max}}" onChange="{{bri.onMax}}"></label>
+<label class="fl"><span>{{briLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{bri.max}}" onChange="{{bri.onMax}}"></label>
 <label class="fl">크리티컬 대미지<input class="f" type="number" placeholder="0~10" value="{{bri.crit}}" onChange="{{bri.onCrit}}"></label>
 <label class="fl">아르카나 보너스 대미지 (%)<input class="f" type="number" placeholder="%" value="{{bri.arc}}" onChange="{{bri.onArc}}"></label>
 <div style="grid-column: 1 / -1"><div style="display: flex; flex-direction: column; gap: 6px"><label style="display: flex; align-items: center; gap: 6px; min-height: 32px; font-size: 13px; color: #2A2119; cursor: pointer"><input type="checkbox" checked="{{bri.priceOn}}" onChange="{{bri.onPriceOn}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">가격 정보 직접 입력</label><sc-if value="{{bri.priceOn}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px"><input class="f" type="text" inputmode="numeric" autocomplete="off" aria-label="브리레흐의 주화 가격 직접 입력 (G)" placeholder="주화 가격 직접 입력 (예: 5억)" value="{{bri.priceVal}}" onChange="{{bri.onPrice}}" style="flex-grow: 1; min-width: 0"><span style="flex-shrink: 0; font-size: 13px; font-weight: 700; color: #8A5E17">{{bri.priceRead}}</span></div></sc-if><span style="font-size: 12px; line-height: 1.5; color: #6B5A45">{{bri.priceInfo}}</span></div></div></div>
@@ -220,7 +220,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <span style="width: 60px; height: 60px; flex-shrink: 0; border-radius: 16px; background: {{accent}}; display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FBF5E8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 3h7v5h-7zM7 8h10v6H7zM8.5 14h7v7h-7zM10.5 5.5h.01M13.5 5.5h.01M10 11h4M4.5 10.5H7M17 10.5h2.5"></path></svg></span>
 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px"><div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
 <sc-for list="{{totem.num}}" as="q" hint-placeholder-count="3"><label class="fl"><span>{{q.label}}</span><input class="f" type="text" inputmode="decimal" placeholder="{{q.ph}}" value="{{q.value}}" onChange="{{q.onChange}}" onBlur="{{q.onBlur}}"></label></sc-for>
-<label class="fl">알반 기사단의 토템<select class="f" value="{{totem.albanType}}" onChange="{{totem.onAlbanType}}"><option value="">선택 안 함</option><option value="max">최대 대미지 (+5~25)</option><option value="cdmg">크리티컬 대미지 (+1~5%)</option></select></label>
+<label class="fl">알반 기사단의 토템<select class="f" value="{{totem.albanType}}" onChange="{{totem.onAlbanType}}"><sc-for list="{{totem.albanTypes}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label>
 <label class="fl">알반 기사단의 토템 단계<select class="f" value="{{totem.albanLv}}" onChange="{{totem.onAlbanLv}}"><sc-for list="{{totem.albanLvOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label>
 <label class="fl">신비한 에린사전 (보너스 대미지 토템)<select class="f" value="{{totem.erin}}" onChange="{{totem.onErin}}"><sc-for list="{{totem.erinOpts}}" as="o" hint-placeholder-count="11"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label>
 </div>
@@ -429,12 +429,12 @@ const RELIC_FX = {
 '퓨리 파이터': [['익시드 : 체인 블로우 피니시 대미지 증가', '500%'], ['익시드 : 임팩트 다이브 대미지 증가', '500%'], ['익시드 : 포스 슬램 대미지 증가', '1000%']]
 };
 // 토템 — 최대 대미지 토템(1~35) · 왕립 학회 주화(1~20) · 보너스 대미지 애뮬릿(1~3%) · 알반 기사단의 토템(최대 대미지 5단계 +5씩 또는 크리티컬 대미지 5단계 +1%씩 중 1개) · 신비한 에린사전(보너스 대미지 0.1~1.0%)
-const TOTEM_NUM = [['max', '최대 대미지 토템', 1, 35, '1~35', '은'], ['coin', '왕립 학회 주화', 1, 20, '1~20', '는'], ['amulet', '보너스 대미지 애뮬릿 (%)', 1, 3, '1~3', '은']];
+const TOTEM_NUM = [['max', MX === '마법 공격력' ? '마법 공격력 토템' : (MX === '연금술 대미지' ? '모든 연금술 대미지 토템' : '최대 대미지 토템'), 1, 35, '1~35', '은']].concat(MX === '연금술 대미지' ? [] : [['coin', MX === '마법 공격력' ? '왕립 학회 주화 (마법 공격력)' : '왕립 학회 주화', 1, 20, '1~20', '는']]).concat([['amulet', '보너스 대미지 애뮬릿 (%)', 1, 3, '1~3', '은']]); /* 다크 메이지는 마법 공격력 토템 · 왕립 학회 주화(마법 공격력), 포비든 알케미스트는 모든 연금술 대미지 토템 (왕립 학회 주화 없음) */
 const tmS = s.totem || {};
 const tmSet = (k, v) => { const o = Object.assign({}, tmS); if (v === '' || v == null) { delete o[k]; } else { o[k] = v; } this.upd({ totem: o, totErr: '' }); };
 const totemVals = {
 num: TOTEM_NUM.map((q) => ({ label: q[1], value: tmS[q[0]] || '', ph: q[4], onChange: (e) => { const raw = String(e.target.value).trim(); if (raw === '') { tmSet(q[0], ''); return; } if (/^\d*\.?\d*$/.test(raw)) { tmSet(q[0], raw); return; } e.target.value = tmS[q[0]] || ''; }, onBlur: () => { const v = tmS[q[0]]; if (v === undefined || v === '') return; const n = Number(v); if (isNaN(n) || n < q[2] || n > q[3]) { const o = Object.assign({}, tmS); delete o[q[0]]; this.upd({ totem: o, totErr: q[1].replace(' (%)', '') + q[5] + ' ' + q[4] + ' 사이만 입력할 수 있어요' }); } } })),
-albanType: tmS.albanType || '', onAlbanType: (e) => { const v = e.target.value; const o = Object.assign({}, tmS); if (v) { o.albanType = v; if (!o.albanLv) { o.albanLv = '1'; } } else { delete o.albanType; delete o.albanLv; } this.upd({ totem: o, totErr: '' }); },
+albanTypes: [{ v: '', label: '선택 안 함' }].concat((MX === '연금술 대미지' ? [] : [{ v: 'max', label: (MX === '마법 공격력' ? '마법 공격력' : '최대 대미지') + ' (+5~25)' }]).concat([{ v: 'cdmg', label: '크리티컬 대미지 (+1~5%)' }])), /* 알반: 다크 메이지는 마법 공격력, 포비든 알케미스트는 크리티컬 대미지만 */ albanType: (MX === '연금술 대미지' && tmS.albanType === 'max') ? '' : tmS.albanType || '', onAlbanType: (e) => { const v = e.target.value; const o = Object.assign({}, tmS); if (v) { o.albanType = v; if (!o.albanLv) { o.albanLv = '1'; } } else { delete o.albanType; delete o.albanLv; } this.upd({ totem: o, totErr: '' }); },
 albanLv: tmS.albanLv || '', onAlbanLv: (e) => tmSet('albanLv', e.target.value),
 albanLvOpts: tmS.albanType ? [1, 2, 3, 4, 5].map((n) => ({ v: String(n), label: n + '단계 · ' + (tmS.albanType === 'max' ? '최대 대미지 +' + n * 5 : '크리티컬 대미지 +' + n + '%') })) : [{ v: '', label: '—' }],
 erin: tmS.erin || '', onErin: (e) => tmSet('erin', e.target.value),
@@ -819,7 +819,7 @@ const TM_P = [['max', '최대 대미지 토템'], ['coin', '왕립 학회 주화
 const tmPr = tmS.price || {};
 Object.assign(totemVals, { priceOn: !!tmS.priceOn, prices: TM_P.map((q) => ({ label: q[1] + ' 가격', val: tmPr[q[0]] || '', read: readG(tmPr[q[0]] || ''), ph: '직접 입력 (예: 1억)', onChange: (e) => { const pr = Object.assign({}, tmPr); const v = fmtNum(String(e.target.value).slice(0, 24)); if (v.trim()) { pr[q[0]] = v; } else { delete pr[q[0]]; } this.upd({ totem: Object.assign({}, tmS, { price: pr, priceOn: 1 }) }); } })), priceInfo: (() => { const sum = TM_P.reduce((t, q) => t + parseGold(tmPr[q[0]]), 0); return sum > 0 ? '입력한 토템 가격 합계 ' + gold(sum) : '토템은 경매장 시세가 없어요 · 필요하면 토템별로 직접 입력해 주세요'; })(), onPriceOn: (e) => { const o = Object.assign({}, tmS); if (e.target.checked) { o.priceOn = 1; } else { delete o.priceOn; delete o.price; } this.upd({ totem: o }); } });
 return {
-mxLabel: MX,
+mxLabel: MX, briLabel: MX === '연금술 대미지' ? '모든 연금술 대미지' : MX,
 accent: accent,
 totem: totemVals,
 // 타이틀 · 2차 타이틀 — 에린 데이터(title-data.json)의 1차 · 2차 타이틀 목록에서 검색해 고르고, 고른 타이틀의 효과를 보여줘요
