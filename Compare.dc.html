@@ -55,7 +55,7 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 <p style="margin: 0; font-size: 15.5px; letter-spacing: -0.04em; line-height: 1.7; color: #6B5A45; white-space: nowrap">장비, 인챈트 등의 목표 단계를 설정하면, 예상되는 최종 대미지 상승량을 계산하고 이를 {{mxLabel}}로 환산한 수치를 표기해요.</p>
 <sc-if value="{{pierceOn}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-size: 14px; line-height: 1.6; color: #8A5E17">{{pierceNote}}</p></sc-if>
 </div>
-<div style="width: 320px; flex-shrink: 0; display: flex; justify-content: center"><span style="flex-shrink: 0; display: flex; align-items: center; gap: 5px; padding: 7px 10px; border-radius: 999px; background: #EFE5CF; color: #4A3D30; font-size: 12px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>예시 수치 · 계산 로직 연결 후 실제 값으로 바뀌어요</span></div>
+<div style="width: 320px; flex-shrink: 0; display: flex; justify-content: center"></div>
 </div>
 </section>
 
@@ -363,7 +363,7 @@ const fInfo = (store && store.chars[store.cur] && store.chars[store.cur].info &&
 // 에코스톤 각성 능력 '퓨리 오브 콘누스 [변신 중] 최대 대미지' — 변신 중에만 붙는 최대 대미지라 딜 계산에는 빼고 전투 스탯에 따로 표기 (여러 개면 높은 쪽)
 const echoTf = ['echo1', 'echo2', 'echo3'].reduce((mx, k) => { const q = ((((gear && gear.det) || {})[k] || {}).sg || [])[0]; if (!q || q.o !== '퓨리 오브 콘누스 [변신 중] 최대 대미지') return mx; const ab = s.echoData ? Object.keys(s.echoData.ab).map((id) => s.echoData.ab[id]).filter((a) => a[0] === q.o)[0] : null; const lv = Number(q.lv) || 0; return ab && lv ? Math.max(mx, (Number(ab[1]) || 0) + (lv - 1) * (Number(ab[2]) || 0)) : mx; }, 0);
 SLOTS.forEach((sl) => { if (sl[0] === 'rhand' && fInfo.weapon) { sl[3] = fInfo.weapon; } if (sl[0] === 'lhand' && fInfo.sub) { sl[3] = fInfo.sub; } });
-// 예시 수치 — 실제 계산 로직을 연결하면 교체돼요. [단계 이름, 딜 %, 최대 대미지, 비용(만 G)]
+// 목표 항목 틀 [키, 이름, 현재, 주무기 전용, 단계] — 렌더할 때 인챈트는 encDim(실제 후보 · 시세), 특별 개조는 RFC(실제 개조 효과표)로 바꿔 써요 (아래 단계 값은 자리 표시용)
 const DIMS = [
 ['pre', '인챈트 접두', '[현재 접두]', false, [['[상위 접두 A]', 1.8, 16, 1500], ['[상위 접두 B]', 3.0, 27, 4200]]],
 ['suf', '인챈트 접미', '[현재 접미]', false, [['[상위 접미 A]', 2.2, 20, 1800], ['[상위 접미 B]', 4.2, 38, 5200]]],
@@ -823,7 +823,7 @@ const FURY_COMBO_BASE = 1.0 + 0.7 + 1.0 + furyWeaponCombo;
 const FURY_SK = { dp: ['대쉬펀치', 460, 3, 2, 0, 1], up: ['스크류 어퍼', 690, 6, 3, 10, 1], dk: ['드롭킥', 800, 9, 4, 0, 1], cf: ['차징피스트', 700, 3, 2, 10, 1.75], ss: ['섬머솔트', 700, 6, 3, 0, 1], pd: ['파운딩', 1000, 9, 4, 10, 1] };
 // 퓨리 파이터 세공 옵션 (에린 데이터 이름)
 Object.assign(SG_KEY, { f_dp: '연속기 : 대쉬 펀치 대미지', f_up: '연속기 : 스크류 어퍼 대미지', f_dk: '연속기 : 드롭킥 대미지', f_cf: '연속기 : 차징 피스트 대미지', f_ss: '연속기 : 섬머솔트 대미지', f_pd: '연속기 : 파운딩 대미지', f_cm: '연속기 마스터리 대미지' });
-// TODO(오검 연동 후): 오검 워드 '연속기 마스터리' 효과 1개당 최대 2%(0.02)를 장착 수만큼 연속마 배율에 더하기 — 시트의 3.7 = 소울 너클 3.5 + 장갑 세공 10레벨 0.1 + 오검 2% × 5개 0.1
+// 오검 워드 '연속기 마스터리' 효과(레벨별 수치)는 연속마 배율에 더해요 (아래 J의 ogV) — 시트의 3.7 = 소울 너클 3.5 + 장갑 세공 10레벨 0.1 + 오검 2% × 5개 0.1
 const furySoul = wName.indexOf('소울 리버레이트') >= 0 && wName.indexOf('너클') >= 0;
 let furyGale = ['닌', '알름', '에만콜'].every((x) => stgOgw.indexOf(x) >= 0);
 let furyUlt = !furyGale && ['페른', '케르트', '일란드'].every((x) => stgOgw.indexOf(x) >= 0);
