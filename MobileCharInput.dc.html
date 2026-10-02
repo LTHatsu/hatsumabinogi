@@ -51,6 +51,14 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </ol>
 <h1 style="margin: 0; padding-left: 4px; font-family: 'Gowun Batang', serif; font-size: 28px; font-weight: 700">캐릭터 정보</h1>
 <p style="margin: 0; padding-left: 4px; font-size: 14px; line-height: 1.65; color: #6B5A45">아이콘을 눌러 선택하세요. 입력 내용은 이 브라우저에 자동 저장돼요.</p>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"><button type="button" onClick="{{onExport}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #B6A27E; background: #FFFBF2; color: #2A2119; font-size: 14px; font-weight: 700; white-space: nowrap">정보 내보내기</button><button type="button" aria-expanded="{{bkOpen}}" onClick="{{onBkToggle}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #B6A27E; background: #FFFBF2; color: #2A2119; font-size: 14px; font-weight: 700; white-space: nowrap">정보 불러오기</button></div>
+<sc-if value="{{bkOpen}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FBF5E8; border: 1px solid #E6D8BC">
+<strong style="font-size: 15px; color: #2A2119">캐릭터 정보 불러오기</strong>
+<span style="font-size: 13px; line-height: 1.5; color: #8A5E17">불러오면 이 브라우저에 저장된 캐릭터 · 장비 · 오검 정보가 모두 바뀌어요</span>
+<textarea class="f" aria-label="내보낸 캐릭터 정보 붙여넣기" rows="4" placeholder="내보내기로 복사한 내용을 여기에 붙여 넣어 주세요" value="{{bkText}}" onChange="{{onBkText}}" style="min-height: 96px; padding: 10px 12px; font-family: monospace; font-size: 12px; resize: vertical"></textarea>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><button type="button" onClick="{{onBkApply}}" style="min-height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: #1E3D2E; color: #FBF5E8; font-size: 14px; font-weight: 700">붙여 넣은 내용 불러오기</button><label style="min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #B6A27E; background: #FFFBF2; color: #2A2119; font-size: 14px; font-weight: 700; display: flex; align-items: center; cursor: pointer">파일에서 불러오기<input type="file" accept=".json,application/json" aria-label="캐릭터 정보 파일 선택" onChange="{{onBkFile}}" style="display: none"></label></div>
+</div></sc-if>
+<sc-if value="{{hasBkMsg}}" hint-placeholder-val="{{ false }}"><span role="status" style="font-size: 13px; color: #1E3D2E">{{bkMsg}}</span></sc-if>
 <div role="radiogroup" aria-label="캐릭터 선택" style="display: flex; gap: 8px; background: #2A2119; border-radius: 14px; padding: 8px">
 <sc-for list="{{chars}}" as="c" hint-placeholder-count="2">
 <button type="button" role="radio" aria-checked="{{c.checked}}" onClick="{{c.pick}}" style="flex-grow: 1; min-height: 44px; border-radius: 10px; border: {{c.border}}; background: {{c.bg}}; color: #FBF5E8; font-family: 'Gowun Batang', serif; font-size: 15px; font-weight: 700">{{c.name}}</button>
@@ -242,6 +250,22 @@ c.info = info; c.arcana = next.arcana; st.cur = next.char; st.savedAt = this.now
 patch = Object.assign({}, patch, { savedAt: st.savedAt });
 }
 this.setState(Object.assign({ confirmDel: false }, patch));
+}
+exportData() {
+// 캐릭터 정보 내보내기 — 이 브라우저에 저장된 전체 데이터(캐릭터 · 장비 · 오검)를 JSON으로 복사하고 파일로도 받아요
+let txt = ''; try { txt = window.localStorage.getItem('hatz-mabinogi-v1') || ''; } catch (e) {}
+if (!txt) { this.setState({ bkMsg: '저장된 정보가 없어요' }); return; }
+const d = new Date(); const p = (n) => (n < 10 ? '0' : '') + n; const fname = 'hatz-mabinogi-' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '.json';
+try { const url = URL.createObjectURL(new Blob([txt], { type: 'application/json' })); const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); } catch (e) {}
+const done = (ok) => this.setState({ bkMsg: (ok ? '클립보드에 복사하고 ' : '') + fname + ' 파일로 내보냈어요' });
+try { navigator.clipboard.writeText(txt).then(() => done(true), () => done(false)); } catch (e) { done(false); }
+}
+importData(txt) {
+// 캐릭터 정보 불러오기 — 내보낸 JSON을 붙여 넣거나 파일로 골라 이 브라우저의 저장 정보를 바꿔요
+let v = null; try { v = JSON.parse(String(txt || '').trim()); } catch (e) {}
+if (!v || !Array.isArray(v.chars) || !v.chars.length) { this.setState({ bkMsg: '올바른 캐릭터 정보가 아니에요 · 내보내기로 받은 내용을 그대로 넣어 주세요' }); return; }
+v.cur = v.chars[v.cur] ? v.cur : 0; this.saveStore(v); const st = this.loadStore(); const cur = st.chars[st.cur] ? st.cur : 0;
+this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false, nameDraft: null, nameMsg: '', bkOpen: false, bkText: '', bkMsg: '캐릭터 ' + st.chars.length + '개 정보를 불러왔어요' }));
 }
 saveName() {
 const st = this.loadStore(); const c = st.chars[this.state.char]; if (!c) return;
@@ -561,6 +585,7 @@ sub2On: sub2On, notDual: !sub2On, rfPair: 'R' + rfStage + '강 + R' + rfStage2 +
 critGm: critGm + '%', critTotal: (30 + critGm + sealCr) + '%', critSeal: sealCr ? ' + 정령 봉인 해제 5%' : '',
 skillBox: skillBox, dust: dust, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, isSacred: s.arcana === 4, petSum: '크리티컬 대미지 +' + petCd + '%',
 menuOpen: !!s.menuOpen, menuExp: s.menuOpen ? 'true' : 'false', toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
+bkOpen: !!s.bkOpen, bkText: s.bkText || '', bkMsg: s.bkMsg || '', hasBkMsg: !!s.bkMsg, onExport: () => this.exportData(), onBkToggle: () => this.setState({ bkOpen: !s.bkOpen, bkMsg: '' }), onBkText: (e) => this.setState({ bkText: e.target.value }), onBkApply: () => this.importData(this.state.bkText), onBkFile: (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => this.importData(r.result); r.readAsText(f); e.target.value = ''; },
 canAdd: roster.length < 3, isFull: roster.length >= 3, addChar: () => this.addChar(),
 nameValue: s.nameDraft == null ? ((roster[s.char] || {}).name || '') : s.nameDraft, onNameDraft: (e) => this.setState({ nameDraft: e.target.value, nameMsg: '' }), onNameKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.saveName(); } }, saveName: () => this.saveName(), nameMsg: s.nameMsg || '', canDel: roster.length > 1, delChar: () => this.delChar(), delLabel: s.confirmDel ? '한 번 더 누르면 삭제돼요' : '이 캐릭터 삭제', delFg: s.confirmDel ? '#F2B8A8' : '#E8D9B8',
 savedLabel: s.savedAt ? '자동 저장됨 · ' + s.savedAt : '입력하면 자동으로 저장돼요',
