@@ -814,8 +814,9 @@ const lv = ov.relic || furyRelicWith('', 0); const MM = ov.M !== undefined ? ov.
 const ds = g('ds') > 0 ? (100 + 20 * (g('ds') - 1)) / 100 : 0;
 const lc = (295 + 4 * g('lc')) / 100 * (2 + 0.025 * g('ft')) * (14 + (4 + ds) * 1.4) / 14 * (1.2 + 0.03 * g('md')) * (1 + ogV('랜스 차지 차지 대미지 배율 증가') / 100);
 const h = (tal, own, m) => arcHit(MM * tal, MM * own, w, m);
-const odS = h(0, (500 + ogV('오버 드라이브 대미지 배율 증가')) / 100, 1.35); const odB = h(lc, (lv.l1 || 0) * 0.7, 1.35);
-const anS = h(0, (1000 + ogV('어나이얼레이션 대미지 배율 증가')) / 100, 1.55); const anB = h(lc, 5 * (0.3 * LANCE_MANA / 100 + 6 + (lv.l2 || 0) * 0.3), 1.55);
+/* 옵드 · 어나이 오검 배율은 폭발 대미지에 더해요 */
+const odS = h(0, 5, 1.35); const odB = h(lc, (lv.l1 || 0) * 0.7 + ogV('오버 드라이브 대미지 배율 증가') / 100, 1.35);
+const anS = h(0, 10, 1.55); const anB = h(lc, 5 * (0.3 * LANCE_MANA / 100 + 6 + (lv.l2 || 0) * 0.3) + ogV('어나이얼레이션 대미지 배율 증가') / 100, 1.55);
 const cb = h(0, 500, 1); /* 캐스케이드 버스트(각성기): 딜 50,000% 고정 — 세공 · 기반 스킬 · 다른 배율 영향 없음 */
 return { '오버드라이브': { v: odS.v + odB.v, tal: odB.tal }, '어나이얼레이션': { v: anS.v + anB.v, tal: anB.tal }, '캐스케이드버스트': { v: cb.v, tal: 0 } };
 };
