@@ -272,8 +272,11 @@ anchor(); this.setState({ bkMsg: head + fname + ' 파일로 내려받았어요 (
 importData(txt) {
 // 캐릭터 정보 불러오기 — 내보낸 JSON을 붙여 넣거나 파일로 골라 이 브라우저의 저장 정보를 바꿔요
 let v = null; try { v = JSON.parse(String(txt || '').trim()); } catch (e) {}
+// 형식만 맞고 내용이 깨진 값(null 캐릭터, 잘못된 타입)은 걸러서 저장해요 — 깨진 값이 저장되면 모든 페이지가 열리지 않아요
+const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
+if (v && Array.isArray(v.chars)) { v.chars = v.chars.filter(isObj).slice(0, 3).map((c) => { const o = Object.assign({}, c); if (typeof o.name !== 'string' || !o.name.trim()) o.name = '캐릭터'; if (isObj(o.info)) { const i = Object.assign({}, o.info); ['gm', 'pets', 'fields', 'stinger'].forEach((k) => { if (i[k] !== undefined && !isObj(i[k])) delete i[k]; }); if (i.spirit !== undefined && !Array.isArray(i.spirit)) delete i.spirit; if (i.skills !== undefined) { i.skills = Array.isArray(i.skills) ? i.skills.filter(isObj) : []; } o.info = i; } else { o.info = null; } if (!isObj(o.gear)) { o.gear = null; } else { const g = Object.assign({}, o.gear); ['eq', 'og', 'ogw', 'det'].forEach((k) => { if (g[k] !== undefined && !isObj(g[k])) delete g[k]; }); o.gear = g; } return o; }); }
 if (!v || !Array.isArray(v.chars) || !v.chars.length) { this.setState({ bkMsg: '올바른 캐릭터 정보가 아니에요 · 내보내기로 받은 내용을 그대로 넣어 주세요' }); return; }
-v.cur = v.chars[v.cur] ? v.cur : 0; this.saveStore(v); const st = this.loadStore(); const cur = st.chars[st.cur] ? st.cur : 0;
+v.cur = Number.isInteger(v.cur) && v.chars[v.cur] ? v.cur : 0; this.saveStore(v); const st = this.loadStore(); const cur = st.chars[st.cur] ? st.cur : 0;
 this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false, nameDraft: null, nameMsg: '', bkOpen: false, bkText: '', bkOut: '', bkMsg: '캐릭터 ' + st.chars.length + '개 정보를 불러왔어요' }));
 }
 saveName() {
