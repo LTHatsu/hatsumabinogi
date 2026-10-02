@@ -103,14 +103,11 @@ try {
 } catch (e) { errors.push(String(e.message || e)); }
 // 탈라가흐 인챈트 선택 스크롤 — 신규 인챈트(미련의 · 망집 등)를 골라 받는 스크롤 · 매물(최저가)과 거래 내역(최근 거래가)을 표시 이름 · 옵션별로 모아요 (형식 확인용 샘플 포함)
 try {
-  const SEL = '탈라가흐 인챈트 선택 스크롤';
+  const SEL = '탈라 가흐 인챈트 선택 스크롤'; /* 경매장 이름은 '탈라 가흐'로 띄어 써요 */
   const keyOf = (it) => { const opt = (it.item_option || []).map((o) => [o.option_type, o.option_sub_type, o.option_value, o.option_value2].filter((v) => v !== undefined && v !== null && v !== '').join(' ')).join(' / '); return (it.item_display_name || it.item_name || SEL) + (opt ? ' | ' + opt : ''); };
-  // 아이템 이름이 정확히 일치해야 해서 키워드 '탈라가흐'로 찾고, 찾은 이름으로 거래 내역을 받아요
-  const kw = await collect('/mabinogi/v1/auction/keyword-search', { keyword: '탈라가흐' }, 5);
+  // 아이템 이름이 정확히 일치해야 해서 키워드 '탈라 가흐'로 찾고, 찾은 이름으로 거래 내역을 받아요
+  const kw = await collect('/mabinogi/v1/auction/keyword-search', { keyword: '탈라 가흐' }, 5);
   prices.talagahKeywordNames = [...new Set(kw.map((it) => it.item_name).filter(Boolean))].slice(0, 30);
-  // 진단 — 실제 경매장 이름을 찾으려고 관련 키워드 결과의 이름(표시 이름 · 카테고리)을 기록해요
-  const probe = {}; for (const k of ['인챈트 선택', '선택 스크롤', '미련의', '망집', '탈라']) { try { const r = await collect('/mabinogi/v1/auction/keyword-search', { keyword: k }, 2); probe[k] = [...new Set(r.map((it) => [it.item_name, it.item_display_name, it.auction_item_category].join(' | ')))].slice(0, 25); } catch (e) { probe[k] = [String(e.message || e).slice(0, 120)]; } }
-  prices.talagahProbe = probe;
   const live = kw.filter((it) => /인챈트/.test(String(it.item_name || '') + String(it.item_display_name || '')));
   const sel = {};
   for (const it of live) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const k = keyOf(it); const c = sel[k]; if (!c) sel[k] = { min: price, count: 1 }; else { c.min = Math.min(c.min, price); c.count += 1; } }
