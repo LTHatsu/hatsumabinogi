@@ -466,7 +466,9 @@ const swapCurStat = (sl) => { if (!EPK || !ED2) return ''; const n = String(sl[3
 const swapOf = (sl, i) => { const o = swapList(sl)[i]; if (!o) return null; const cp = swapCustom(sl, o.name); const g = cp || o.price; return { newTxt: o.newTxt || o.txt, name: o.name, skPct: o.skPct || 0, pct: 0, dmg: o.stats.max || 0, costM: Math.round(g / 10000), stats: o.stats, txt: o.txt, auction: o.price, custom: cp }; };
 const stepOf = (sl, dm, i) => { const o = dm[4][i]; if (dm[5] && dm[5].enc) { return { name: o[0], pct: 0, dmg: o[2], costM: o[3], idx: i }; } const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
 const dimsFor0 = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand' || (dm[0] === 'sp' && RFC[sl[0]])) && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')).map((dm) => dm[0] === 'sp' ? RFC[sl[0]].dim : dm); // 특별 개조는 주무기 (엘레멘탈 나이트 한손 2개면 보조무기도)
-const dimsFor = (sl) => dimsFor0(sl).map((dm) => (dm[0] === 'pre' || dm[0] === 'suf' ? encDim(sl, dm) : dm)).filter(Boolean);
+// 보조무기 화살 · 볼트는 인챈트를 붙일 수 없어요
+const isAmmoSl = (sl) => sl[0] === 'lhand' && /화살|볼트/.test(String(sl[3] || ''));
+const dimsFor = (sl) => dimsFor0(sl).filter((dm) => !(isAmmoSl(sl) && (dm[0] === 'pre' || dm[0] === 'suf'))).map((dm) => (dm[0] === 'pre' || dm[0] === 'suf' ? encDim(sl, dm) : dm)).filter(Boolean);
 const chosen = [];
 SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const st = swapOf(sl, v - 1); if (st) chosen.push({ swapStats: st.stats, swapSk: st.skPct, key: sl[0] + '.item', slotKey: sl[0], slot: sl[1], dim: '장비 교체', from: sl[3], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } });
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
