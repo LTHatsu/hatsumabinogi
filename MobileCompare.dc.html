@@ -321,6 +321,8 @@ SLOTS.forEach((sl) => { if (sl[4] === 'echo') { const e = (((gear && gear.det) |
 SLOTS.forEach((sl) => { if (sl[4] === 'relic') { sl[3] = (gear && ((gear.eq || {})[sl[0]] || (((gear.det || {})[sl[0]]) || {}).rFx)) ? '무리아스의 유물' : '비어 있음'; } });
 // 캐릭터 정보에서 고른 무기 · 보조무기를 현재 장비로 표기
 const fInfo = (store && store.chars[store.cur] && store.chars[store.cur].info && store.chars[store.cur].info.fields) || {};
+// 에코스톤 각성 능력 '퓨리 오브 콘누스 [변신 중] 최대 대미지' — 변신 중에만 붙는 최대 대미지라 딜 계산에는 빼고 전투 스탯에 따로 표기 (여러 개면 높은 쪽)
+const echoTf = ['echo1', 'echo2', 'echo3'].reduce((mx, k) => { const q = ((((gear && gear.det) || {})[k] || {}).sg || [])[0]; if (!q || q.o !== '퓨리 오브 콘누스 [변신 중] 최대 대미지') return mx; const ab = s.echoData ? Object.keys(s.echoData.ab).map((id) => s.echoData.ab[id]).filter((a) => a[0] === q.o)[0] : null; const lv = Number(q.lv) || 0; return ab && lv ? Math.max(mx, (Number(ab[1]) || 0) + (lv - 1) * (Number(ab[2]) || 0)) : mx; }, 0);
 SLOTS.forEach((sl) => { if (sl[0] === 'rhand' && fInfo.weapon) { sl[3] = fInfo.weapon; } if (sl[0] === 'lhand' && fInfo.sub) { sl[3] = fInfo.sub; } });
 // 예시 수치 — 실제 계산 로직을 연결하면 교체돼요. [단계 이름, 딜 %, 최대 대미지, 비용(만 G)]
 const DIMS = [
@@ -1158,7 +1160,7 @@ const d = tot[k[0]] || 0; const b = BASE_STATS[k[0]];
 const dollD = k[0] === 'max' ? chosen.filter((c) => c.key === 'x.doll').reduce((sm, c) => sm + ((c.stats && c.stats.max) || 0), 0) : 0;
 // 비전 오브 라데카는 합계에만 반영하고 따로 표기하지 않아요 (칸 크기 유지)
 const talSplit = k[0] === 'talent' ? [].concat(BASE_STATS.talent2 ? ['어전트샷 추가 대미지 +' + r1(BASE_STATS.talent2) + '% (보너스 미적용)'] : []).concat(d ? ['변경 +' + r1(d) + '%'] : []).join(' · ') : '';
-const split = k[0] === 'talent' ? talSplit : k[0] === 'max' ? ['캐릭터 기본 ' + r1(charMax)].concat(dollMax + dollD ? ['인형 가방 ' + (dollMax + dollD > 0 ? '+' : '') + r1(dollMax + dollD)] : []).concat(d - dollD ? ['장비 ' + (d - dollD > 0 ? '+' : '') + r1(d - dollD)] : []).join(' · ') : (k[0] === 'arcana' && (haloArc || relicArc) ? ['기본 ' + r1(b - haloArc - relicArc) + '%'].concat(haloArc ? ['공상의\u00a0왕관\u00a0헤일로\u00a0+' + haloArc + '%'] : []).concat(relicArc ? ['유물\u00a0인챈트\u00a0+' + relicArc + '%'] : []).concat(d ? ['변경 ' + (d > 0 ? '+' : '') + r1(d) + '%'] : []).join(' · ') : '');
+const split = k[0] === 'talent' ? talSplit : k[0] === 'max' ? ['캐릭터 기본 ' + r1(charMax)].concat(dollMax + dollD ? ['인형 가방 ' + (dollMax + dollD > 0 ? '+' : '') + r1(dollMax + dollD)] : []).concat(d - dollD ? ['장비 ' + (d - dollD > 0 ? '+' : '') + r1(d - dollD)] : []).concat(echoTf ? ['변신\u00a0시\u00a0최대\u00a0대미지\u00a0+' + r1(echoTf)] : []).join(' · ') : (k[0] === 'arcana' && (haloArc || relicArc) ? ['기본 ' + r1(b - haloArc - relicArc) + '%'].concat(haloArc ? ['공상의\u00a0왕관\u00a0헤일로\u00a0+' + haloArc + '%'] : []).concat(relicArc ? ['유물\u00a0인챈트\u00a0+' + relicArc + '%'] : []).concat(d ? ['변경 ' + (d > 0 ? '+' : '') + r1(d) + '%'] : []).join(' · ') : '');
 return { hasToggle: k[0] === 'talent', noMat: !matOn, matNote: matOn ? '정령 실체화 +' + (10 + 3 * matLv) + '%' : '정령 실체화 제외됨', onToggle: (e) => setNoMat(!!e.target.checked), // 설명 줄바꿈 시 수치(+3% 등)만 다음 줄로 떨어지지 않게 앞 단어와 붙여요
 split: typeof split === 'string' ? split.replace(/ ([+\-−]?[\d.,]+%?)(?= ·|$)/g, '\u00a0$1') : split, hasSplit: !!split, label: k[1], value: r1(b + d) + k[2], base: '기존 ' + r1(b) + k[2], delta: d ? (d > 0 ? '▲ +' : '▼ ') + r1(d) + (k[0] === 'crate' ? '%p' : k[2]) : '변동 없음', deltaFg: d ? '#1E3D2E' : '#8C7A62', border: d ? '1.5px solid ' + accent : '1.5px solid transparent', bg: d ? '#F3F8F4' : '#F5EDDC' };
 });
