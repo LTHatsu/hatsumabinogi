@@ -86,6 +86,21 @@ try {
   }
   prices.relics = relics; prices.relicSample = list.slice(0, 3).map((it) => it.item_option || []); prices.relicUpdatedAt = new Date().toISOString();
 } catch (e) { errors.push(String(e.message || e)); }
+// 무리아스의 유물 거래 내역 — 지금 매물이 없는 효과 · 수치는 최근 거래가로 보여주려고 효과 · 수치별 가장 최근 거래 1건(가격 · 시각)을 모아요 (지난 값에 덮어써요)
+try {
+  const list = await collect('/mabinogi/v1/auction/history', { item_name: '무리아스의 유물' }, Number(prices.relicHistoryMaxPages) || 10);
+  const hist = Object.assign({}, prices.relicHistory || {});
+  for (const it of list) {
+    const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue;
+    const at = it.date_auction_buy || it.date_auction_expire || '';
+    const all = it.item_option || []; const fx = all.filter((o) => /유물/.test(String(o.option_type || '') + String(o.option_sub_type || '')));
+    const key = (fx.length ? fx : all).map((o) => [o.option_sub_type, o.option_value, o.option_value2].filter((v) => v !== undefined && v !== null && v !== '').join(' ')).join(' / ');
+    if (!key) continue;
+    const c = hist[key];
+    if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) hist[key] = { last: price, at };
+  }
+  prices.relicHistory = hist; prices.relicHistoryUpdatedAt = new Date().toISOString();
+} catch (e) { errors.push(String(e.message || e)); }
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);
