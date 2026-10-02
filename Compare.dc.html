@@ -1474,6 +1474,20 @@ remove: () => (a.key === 'x.dh' ? this.setState({ dh: {} }) : a.key === 'c.coin'
 }));
 dims.forEach((d) => { if (d.hasPrice) { d.priceRead = readG(d.priceVal); } });
 list.forEach((r) => { r.costRead = readG(r.costVal); });
+// ── 효율 요약 (장비 · 오검 페이지에 숨겨 띄운 시뮬레이터가 계산해 보내요 · ?embed=eff) — 지금 세팅에서 항목마다 +1 올렸을 때 총딜 증가율(%)과 최대 대미지 환산 ──
+if (this._embed === undefined) { try { this._embed = /[?&]embed=eff\b/.test(location.search) && window.parent !== window; } catch (e) { this._embed = false; } }
+if (this._embed && curChar) { try {
+const eqOf = (p) => (MXEQ ? p / 100 * MXEQ : 0);
+const row = (label, p, sub) => ({ label: label, sub: sub || '', pct: Math.round(p * 1000) / 1000, eq: Math.round(eqOf(p) * 10) / 10 });
+const stats = [[MX + ' +1', { max: 1 }], ['크리티컬 확률 +1%p', { crate: 1 }], ['크리티컬 대미지 +1%', { cdmg: 1 }], ['보너스 대미지 +1%', { bonus: 1 }], ['아르카나 보너스 대미지 +1%', { arcana: 1 }], ['재능 보너스 대미지 +1%', { talent: 1 }], ['무기 보너스 대미지 +1%', { wbonus: 1 }]].map((q) => row(q[0], dealPctRaw(q[1])));
+if (PIERCE_IN < 11) { stats.push(row('피어싱 +1', piercePctW(1), PIERCE_IN + ' → ' + (PIERCE_IN + 1))); }
+const sgR = []; SG_SLOTS.forEach((k) => stgTargets(k).forEach((t) => { if (t[2] >= t[3] || (t[5] && !t[6])) return; const g = t[4](t[2] + 1) * 100; if (!(Math.abs(g) > 1e-6)) return; sgR.push(row(t[1].replace(/^(세공|각성 능력) · /, ''), g, slotName(k) + ' · Lv.' + t[2] + ' → ' + (t[2] + 1) + (t[1].indexOf('각성 능력') === 0 ? ' (각성 능력)' : ''))); }));
+const relR = []; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const lv = Number(d.rLv) || 0; if (!d.rFx || lv >= 10) return; const calc = (isStg && !!RELIC_KEY[d.rFx]) || (isFury && !!FURY_RELIC[d.rFx]) || (isSacred && d.rFx === '심판의 일격 대미지 증가'); if (!calc) { relR.push({ label: d.rFx, sub: slotName(k) + ' · Lv.' + lv + ' → ' + (lv + 1), pct: null, eq: null }); return; } relR.push(row(d.rFx, relicGain(k, lv + 1) * 100, slotName(k) + ' · Lv.' + lv + ' → ' + (lv + 1))); });
+const ogR = []; const gOg = (gear && gear.og) || {}; const gOgw = (gear && gear.ogw) || {}; const ogB = ogEvalOf(gOg, gOgw).pct; [1, 2, 3, 4, 5].forEach((n) => { if (!gOgw[n]) return; (gOg[n] || []).forEach((q, i) => { const L = q && OG_LV[q.e]; const lv = Number(q && q.lv) || 1; if (!L || lv >= L.length - 1) return; const o2 = Object.assign({}, gOg); const arr = (o2[n] || []).slice(); arr[i] = Object.assign({}, q, { lv: lv + 1 }); o2[n] = arr; const g = ogEvalOf(o2, gOgw).pct - ogB; if (!(Math.abs(g) > 1e-6)) return; ogR.push(row(q.e, g, gOgw[n] + ' · Lv.' + lv + ' → ' + (lv + 1))); }); });
+const by = (a, b) => (b.pct === null ? -1 : a.pct === null ? 1 : b.pct - a.pct);
+const snap = { v: 1, char: String(curChar.name || ''), mx: MX, mxeq: Math.round(MXEQ / 10) / 10, share: !!stgHasShare, skillCalc: !!(isStg || isFury || isSacred), stats: stats.sort(by), sg: sgR.sort(by), relic: relR.sort(by), og: ogR.sort(by) };
+const js = JSON.stringify(snap); if (js !== this._effLast) { this._effLast = js; setTimeout(() => { try { window.parent.postMessage({ type: 'hatz-eff', data: snap }, '*'); } catch (e) {} }, 0); }
+} catch (e) { try { window.parent.postMessage({ type: 'hatz-eff', error: String(e && e.message || e) }, '*'); } catch (e2) {} } }
 return {
 mxLabel: MX,
 sacDH: sacDHv,

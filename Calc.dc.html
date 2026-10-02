@@ -302,6 +302,26 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </div>
 </div>
 
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px"><h2 style="margin: 0; padding-left: 8px; font-family: 'Gowun Batang', serif; font-size: 30px">효율 한눈에 보기</h2><span style="font-size: 14px; color: #6B5A45">{{effNote}}</span></div>
+<p style="margin: 0; padding-left: 8px; font-size: 14px; line-height: 1.6; color: #6B5A45">입력한 캐릭터 정보와 장비 · 오검 기준으로, 항목을 하나씩 +1 올렸을 때의 예상 딜 상승률과 {{mxLabel}} 환산 수치예요. 세팅 시뮬레이터와 같은 계산식이고, 입력을 바꾸면 자동으로 다시 계산해요.</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start">
+<sc-for list="{{effGroups}}" as="g" hint-placeholder-count="4">
+<div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 20px; padding: 20px 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><strong style="font-family: 'Gowun Batang', serif; font-size: 20px">{{g.title}}</strong><span style="font-size: 13px; color: #8C7A62">{{g.unit}}</span></div>
+<sc-if value="{{g.empty}}" hint-placeholder-val="{{ false }}"><span style="font-size: 15px; line-height: 1.5; color: #8C7A62">{{g.emptyMsg}}</span></sc-if>
+<sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid #EFE5CF">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 15px; color: #2A2119">{{r.label}}</span><sc-if value="{{r.hasSub}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #8C7A62">{{r.sub}}</span></sc-if></span>
+<span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0"><strong style="font-size: 15px; color: {{r.fg}}">{{r.pct}}</strong><span style="font-size: 13px; color: #6B5A45">{{r.eq}}</span></span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<iframe src="Compare.dc.html?embed=eff" title="효율 계산" aria-hidden="true" tabindex="-1" style="position: absolute; left: -10000px; top: 0; width: 1440px; height: 900px; border: 0; visibility: hidden; pointer-events: none"></iframe>
+</div>
+
 <a href="Compare.dc.html" style="text-decoration: none; color: #FBF5E8; background: {{accent}}; border-radius: 20px; padding: 24px 32px; display: flex; justify-content: space-between; align-items: center">
 <span style="display: flex; flex-direction: column; gap: 6px"><strong style="font-family: 'Gowun Batang', serif; font-size: 22px">세팅 시뮬레이터 보기</strong><span style="font-size: 15px; color: #E3EDE6">장비, 인챈트 등의 목표 단계를 설정하면, 예상되는 최종 대미지 상승량을 계산하고 이를 {{mxLabel}}로 환산한 수치를 표기해요.</span></span>
 <span style="font-size: 17px; font-weight: 700">다음 단계 →</span>
@@ -329,6 +349,9 @@ return Object.assign(c.gear ? { eq: c.gear.eq || {}, og: c.gear.og || {}, ogw: c
 }
 syncStore() { const n = this.fromStore(); const cur = this.state; if (JSON.stringify([n.charWeapon, n.charSub, n.charName, n.charArcana, n.eq, n.og, n.ogw, n.brireh, n.totem, n.title, n.det]) !== JSON.stringify([cur.charWeapon, cur.charSub, cur.charName, cur.charArcana, cur.eq, cur.og, cur.ogw, cur.brireh, cur.totem, cur.title, cur.det])) { this.setState(n); } }
 componentDidMount() {
+// 효율 한눈에 보기 — 숨겨 띄운 세팅 시뮬레이터(Compare.dc.html?embed=eff)가 계산한 효율 요약을 받아요
+this._effMsg = (e) => { const d = e && e.data; if (!d || d.type !== 'hatz-eff') return; const fr = document.querySelector('iframe[src^="Compare.dc.html?embed=eff"]'); if (fr && e.source !== fr.contentWindow) return; this.setState(d.error ? { effErr: d.error } : { eff: d.data, effErr: '' }); };
+window.addEventListener('message', this._effMsg);
 // 장비 목록 · 세공 데이터 (에린 데이터 기준, equip-data.json)
 try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./title-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.p) { this.setState({ tiData: d }); } }).catch(() => {}); } catch (e) {}
@@ -344,7 +367,7 @@ try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) 
 this._sync = () => this.syncStore();
 window.addEventListener('storage', this._sync); window.addEventListener('focus', this._sync); document.addEventListener('visibilitychange', this._sync); this._poll = setInterval(this._sync, 1500);
 }
-componentWillUnmount() { clearInterval(this._poll); window.removeEventListener('storage', this._sync); window.removeEventListener('focus', this._sync); document.removeEventListener('visibilitychange', this._sync); }
+componentWillUnmount() { window.removeEventListener('message', this._effMsg); clearInterval(this._poll); window.removeEventListener('storage', this._sync); window.removeEventListener('focus', this._sync); document.removeEventListener('visibilitychange', this._sync); }
 
 loadStore() {
 try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { // 아이템 이름을 경매장 · 아이템 정보 이름으로 맞춰요 (예전 저장값 변환)
@@ -827,7 +850,19 @@ const sugV = { on: sugHits.length > 0, more: sugHits.length > 30, moreText: '전
 const TM_P = [['max', '최대 대미지 토템'], ['coin', '왕립 학회 주화'], ['amulet', '보너스 대미지 애뮬릿'], ['alban', '알반 기사단의 토템'], ['erin', '신비한 에린사전']];
 const tmPr = tmS.price || {};
 Object.assign(totemVals, { priceOn: !!tmS.priceOn, prices: TM_P.map((q) => ({ label: q[1] + ' 가격', val: tmPr[q[0]] || '', read: readG(tmPr[q[0]] || ''), ph: '직접 입력 (예: 1억)', onChange: (e) => { const pr = Object.assign({}, tmPr); const v = fmtNum(String(e.target.value).slice(0, 24)); if (v.trim()) { pr[q[0]] = v; } else { delete pr[q[0]]; } this.upd({ totem: Object.assign({}, tmS, { price: pr, priceOn: 1 }) }); } })), priceInfo: (() => { const sum = TM_P.reduce((t, q) => t + parseGold(tmPr[q[0]]), 0); return sum > 0 ? '입력한 토템 가격 합계 ' + gold(sum) : '토템은 경매장 시세가 없어요 · 필요하면 토템별로 직접 입력해 주세요'; })(), onPriceOn: (e) => { const o = Object.assign({}, tmS); if (e.target.checked) { o.priceOn = 1; } else { delete o.priceOn; delete o.price; } this.upd({ totem: o }); } });
+// 효율 한눈에 보기 (시뮬레이터가 보낸 요약을 그룹별 목록으로)
+const effS = s.eff;
+const effFmt = (p) => (p === null || p === undefined ? '계산식 준비 중' : (p >= 0 ? '+' : '') + (Math.abs(p) >= 0.1 ? p.toFixed(2) : p.toFixed(3)) + '%');
+const effRows = (list) => (list || []).map((r) => ({ label: r.label, sub: r.sub || '', hasSub: !!r.sub, pct: effFmt(r.pct), fg: r.pct === null ? '#8C7A62' : (r.pct > 0 ? '#1E3D2E' : '#7A3B2E'), eq: r.eq === null || r.eq === undefined ? '' : (effS.mx || MX) + ' 환산 ' + (r.eq >= 0 ? '+' : '') + (Math.abs(r.eq) >= 10 ? Math.round(r.eq) : r.eq) }));
+const effGroups = effS ? [
+{ title: '전투 스탯', unit: '+1 기준', list: effS.stats, emptyMsg: '캐릭터 정보를 먼저 입력해 주세요' },
+{ title: '세공 · 각성 능력', unit: '+1레벨 기준', list: effS.sg, emptyMsg: effS.share || !effS.skillCalc ? '올릴 수 있는 세공이 없거나, 아직 딜 계산식이 없는 옵션이에요' : '캐릭터 정보에서 딜 사이클 비중을 입력하면 스킬 세공도 계산돼요' },
+{ title: '무리아스의 유물', unit: '+1레벨 기준', list: effS.relic, emptyMsg: '장착한 유물이 없거나 모두 최대 레벨이에요' },
+{ title: '오검 워드 효과', unit: '+1단계 기준', list: effS.og, emptyMsg: '장착한 오검 효과가 없거나 모두 최대 단계예요' }
+].map((g) => { const rows = effRows(g.list); return { title: g.title, unit: g.unit, rows: rows, empty: !rows.length, emptyMsg: g.emptyMsg }; }) : [{ title: '효율', unit: '', rows: [], empty: true, emptyMsg: s.effErr ? '효율을 계산하지 못했어요 (' + s.effErr + ')' : '효율을 계산하는 중이에요…' }];
+const effNote = effS ? (effS.char ? effS.char + ' · ' : '') + '총딜 1% ≈ ' + (effS.mx || MX) + ' ' + effS.mxeq : '';
 return {
+effGroups: effGroups, effNote: effNote,
 mxLabel: MX, briLabel: MX === '연금술 대미지' ? '모든 연금술 대미지' : MX,
 accent: accent,
 totem: totemVals,
