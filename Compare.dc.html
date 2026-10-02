@@ -1022,7 +1022,10 @@ const tmChanged = ['max', 'cdmg', 'bonus'].some((q) => tmSt[q]);
 const tmDesc = (t) => { const a = []; if (Number(t.max)) a.push(TM_NUM[0][1] + ' +' + t.max); if (Number(t.coin) && MX !== '연금술 대미지') a.push('왕립 학회 주화 +' + t.coin); if (Number(t.amulet)) a.push('애뮬릿 +' + t.amulet + '%'); if (t.albanType && Number(t.albanLv)) a.push('알반 ' + t.albanLv + '단계(' + (t.albanType === 'max' ? (MX === '마법 공격력' ? '마법 공격력 +' : '최대 대미지 +') + t.albanLv * 5 : '크리티컬 대미지 +' + t.albanLv + '%') + ')'); if (Number(t.erin)) a.push('에린사전 +' + t.erin + '%'); return a.length ? a.join(' · ') : '없음'; };
 const sgnT = (v) => (v > 0 ? '+' : '') + v;
 const tmLine = [['max', MX, ''], ['cdmg', '크리티컬 대미지', '%'], ['bonus', '보너스 대미지', '%']].filter((q) => tmSt[q[0]]).map((q) => q[1] + ' ' + sgnT(tmSt[q[0]]) + q[2]).join(' · ');
-if (tmChanged) { chosen.push({ key: 't.totem', slotKey: 't.totem', slot: '부가 장비', dim: '토템 변경', from: tmDesc(tmGear), to: tmDesc(tmNext), pct: dealPct(tmSt), dmg: tmSt.max, costM: 0, eff: 0, group: '부가 장비', names: '토템', stats: tmSt }); }
+// 추천 순위에는 값이 바뀐 토템만 적어요 (바뀌지 않은 토템은 빼요)
+const tmParts = (t) => { const o = {}; if (Number(t.max)) o.max = TM_NUM[0][1] + ' +' + t.max; if (Number(t.coin) && MX !== '연금술 대미지') o.coin = '왕립 학회 주화 +' + t.coin; if (Number(t.amulet)) o.amulet = '애뮬릿 +' + t.amulet + '%'; if (t.albanType && Number(t.albanLv)) o.alban = '알반 ' + t.albanLv + '단계(' + (t.albanType === 'max' ? (MX === '마법 공격력' ? '마법 공격력 +' : '최대 대미지 +') + t.albanLv * 5 : '크리티컬 대미지 +' + t.albanLv + '%') + ')'; if (Number(t.erin)) o.erin = '에린사전 +' + t.erin + '%'; return o; };
+const tmDiffDesc = (a, b) => { const pa = tmParts(a); const pb = tmParts(b); const ks = ['max', 'coin', 'amulet', 'alban', 'erin'].filter((k) => (pa[k] || '') !== (pb[k] || '')); const f = (p) => (ks.map((k) => p[k] || (k === 'alban' ? '알반 없음' : k === 'erin' ? '에린사전 없음' : k === 'amulet' ? '애뮬릿 없음' : k === 'coin' ? '왕립 학회 주화 없음' : TM_NUM[0][1] + ' 없음')).join(' · ') || '없음'); return [f(pa), f(pb)]; };
+if (tmChanged) { const td = tmDiffDesc(tmGear, tmNext); chosen.push({ key: 't.totem', slotKey: 't.totem', slot: '부가 장비', dim: '토템 변경', from: td[0], to: td[1], pct: dealPct(tmSt), dmg: tmSt.max, costM: 0, eff: 0, group: '부가 장비', names: '토템', stats: tmSt }); }
 const tmSetIn = (k, v) => this.setState({ totem: Object.assign({}, this.state.totem, { [k]: v }), totErr: '' });
 const tmType = tmIn.albanType || '';
 const tmTypeEff = tmType === 'none' ? '' : (tmType || tmGear.albanType || '');
@@ -1504,7 +1507,7 @@ chosen.forEach((c) => { if (c.key === 't.totem' && tmPriceSum > 0) { c.costM = M
 chosen.forEach((c) => { const q = /\.item$/.test(c.key) ? null : (s.costOv || {})[c.key]; if (q && (q.to === c.to || q.to === '*')) { const g = parseGold(q.raw); if (g > 0) { c.costM = Math.round(g / 10000); c.eff = c.costM ? c.pct / (c.costM / 10000) : 0; c.custom = true; } } else if (/\.item$/.test(c.key)) { const sp = (s.swapPrice || {})[c.slotKey]; if (sp && sp.name === c.to && parseGold(sp.raw) > 0) { c.custom = true; } } });
 // 효율은 표시하는 소수 첫째 자리 기준으로 비교 — 같으면 최대 대미지 환산이 큰 쪽, 그다음 딜 상승률 순 (표시는 같은데 반올림 전 값 때문에 순서가 뒤집히지 않게)
 const effR = (x) => Math.round((Number(x) || 0) * 10) / 10;
-const rows = chosen.slice().sort((a, b) => (effR(b.eff) - effR(a.eff)) || ((b.dmg || 0) - (a.dmg || 0)) || (b.pct - a.pct));
+const rows = chosen.filter((c) => (Number(c.pct) || 0) > 0).sort((a, b) => (effR(b.eff) - effR(a.eff)) || ((b.dmg || 0) - (a.dmg || 0)) || (b.pct - a.pct));
 const maxEff = rows.length && rows[0].eff > 0 ? rows[0].eff : 0;
 const list = rows.map((a, i) => ({
 rank: i + 1, slot: a.slot, dim: a.dim, from: a.from, to: a.to, pct: pctT(a.pct), dmg: a.dmg, sgP: a.pct < 0 ? '' : '+', sgD: a.dmg < 0 ? '' : '+', sgE: a.eff < 0 ? '' : '+', cost: a.costM ? won(a.costM) : '가격 미정', eff: a.eff.toFixed(1),
