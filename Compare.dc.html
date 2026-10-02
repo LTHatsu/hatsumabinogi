@@ -727,7 +727,12 @@ const PIERCE_G = (1 - PROT_RED1) / (1 - PROT_RED0); // 피어싱 증폭 1.4444
 const PROT_K = (1 - PROT_RED0) * PIERCE_G; // 피어싱 증폭 × 보호 피해감소 = 0.26
 const hitOut = (raw) => Math.max(0, raw * PROT_K - DEF_V);
 // 방어 차감 때문에 절대 대미지가 필요해요 — 최대 대미지를 입력하지 않았으면 3000 기준
-const MREF = charMax + dollMax > 0 ? charMax + dollMax : 3000;
+// 실전 버프로 커지는 최대 대미지 (마도카 실측 구조) — 일반 맥댐 × 포션(1.2) × 인젝션(1.1) × 전장 · 상지 · 힘결, 아르카나 링크 보너스는 포션 · 인젝션을 받지 않아요
+// 전장 · 상지 · 힘결은 모든 맥댐에 같이 곱해져서 딜 상승률에서는 상쇄돼요 → 계산은 버프 전 기준 단위로 하고, 링크 보너스 몫만 ÷(포션 × 인젝션)으로 줄여요
+const LINK_MX = { 0: 250, 2: 250, 3: 100, 5: 200, 6: 100, 7: 200 }[arcIdx] || 0; const fF = (cInfo && cInfo.fields) || {};
+const BUF_D = (fF.potOff ? 1 : 1.2) * (arcIdx === 0 && !fF.injOff ? 1.1 : 1);
+const realMx = (m) => (m > LINK_MX && LINK_MX ? m - LINK_MX + LINK_MX / BUF_D : m);
+const MREF = charMax + dollMax > 0 ? realMx(charMax + dollMax) : 3000;
 // tal · own: 재능 부분 · 고유 부분 절대 대미지, w: 재능 보너스 가중치, mul: 스킬 전체에 곱하는 계수(증발 등)
 const arcHit = (tal, own, w, mul) => { const m = mul || 1; const inW = Math.max(0, tal) * PIERCE_G * w; const pre = (inW + own) * m; const v = Math.max(0, pre * PROT_K - DEF_V); return { v: v, tal: inW * m * PROT_K, pre: pre, inW: inW * m }; };
 // 화면 표시용 스킬 배율 (보호 · 피어싱 적용 전)
@@ -843,7 +848,7 @@ const sacMaxFrac = (() => { if (!isSacred) return 1; let a = 0, t = 0; Object.ke
 const wS = (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100);
 const STG_K = { '플레임버스트': 'fla', '하이드로피어스': 'hyE', '트라이어설트': 'trv', '매그넘샷': 'mag' };
 const stgBaseS = isStg ? stgParts({}, wS) : null; const furyBaseS = isFury ? furyEval({}, wS) : null;
-const sacScale = (st) => { const M0 = BASE_STATS.max || 0; if (!M0 || !(isSacred || isStg || isFury)) return st.max; if (isStg || isFury) { let a = 0, t = 0; if (isStg) { const n = stgParts({ M: st.max }, wS); envSkills.forEach((k) => { const key = STG_K[String(k.name).replace(/\s/g, '')]; const sh = shareOf(k.name); if (!key || !sh || !stgBaseS[key].v) return; a += sh * n[key].v / stgBaseS[key].v; t += sh; }); } else { const n = furyEval({ M: st.max }, wS); Object.keys(furyBaseS).forEach((k) => { const sh = furyShare(k); if (!sh || !furyBaseS[k].v) return; a += sh * n[k].v / furyBaseS[k].v; t += sh; }); } return M0 * (a + Math.max(0, 1 - t) * st.max / M0); } const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
+const sacScale = (st) => { const M0 = BASE_STATS.max || 0; if (!M0) return st.max; if (!(isSacred || isStg || isFury)) return realMx(st.max) * M0 / realMx(M0); /* 링크 보너스 몫은 버프를 덜 받아서 맥댐 +1의 효과가 조금 더 커요 */ if (isStg || isFury) { let a = 0, t = 0; if (isStg) { const n = stgParts({ M: realMx(st.max) }, wS); envSkills.forEach((k) => { const key = STG_K[String(k.name).replace(/\s/g, '')]; const sh = shareOf(k.name); if (!key || !sh || !stgBaseS[key].v) return; a += sh * n[key].v / stgBaseS[key].v; t += sh; }); } else { const n = furyEval({ M: realMx(st.max) }, wS); Object.keys(furyBaseS).forEach((k) => { const sh = furyShare(k); if (!sh || !furyBaseS[k].v) return; a += sh * n[k].v / furyBaseS[k].v; t += sh; }); } return M0 * (a + Math.max(0, 1 - t) * realMx(st.max) / realMx(M0)); } const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
 // 총딜 증가율 → 최대 대미지 환산 (세이크리드 가드는 최대 대미지 비례 비율로 나눠요)
 const dealOf = (st) => sacScale(st) * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
 // 최대 대미지 환산 기준 — 최대 대미지 +10일 때의 총딜 증가율로 '총딜 1%가 최대 대미지 몇에 해당하는지' 구해요 (모든 아르카나 같은 방식)
