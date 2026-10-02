@@ -778,8 +778,9 @@ const h = (tal, own, m) => arcHit(MM * tal, MM * own, w, m);
 /* 옵드 · 어나이 오검 배율은 폭발 대미지에 더해요 */
 const odS = h(0, 5, 1.35); const odB = h(lc, (lv.l1 || 0) * 0.7 + ogV('오버 드라이브 대미지 배율 증가') / 100, 1.35);
 const anS = h(0, 10, 1.55); const anB = h(lc, 5 * (0.3 * LANCE_MANA / 100 + 6 + (lv.l2 || 0) * 0.3) + ogV('어나이얼레이션 대미지 배율 증가') / 100, 1.55);
+const lcS = h(lc, 0, 1); /* 블랜 전용 랜스 차지 단독 사용 */
 const cb = h(0, 500, 1); /* 캐스케이드 버스트(각성기): 딜 50,000% 고정 — 세공 · 기반 스킬 · 다른 배율 영향 없음 */
-return { '오버드라이브': { v: odS.v + odB.v, tal: odB.tal }, '어나이얼레이션': { v: anS.v + anB.v, tal: anB.tal }, '캐스케이드버스트': { v: cb.v, tal: 0 } };
+return { '오버드라이브': { v: odS.v + odB.v, tal: odB.tal }, '어나이얼레이션': { v: anS.v + anB.v, tal: anB.tal }, '캐스케이드버스트': { v: cb.v, tal: 0 }, '랜스차지': { v: lcS.v, tal: lcS.tal } };
 };
 const furyEval = (ov, w) => {
 if (isLance) return lanceEval(ov, w);
