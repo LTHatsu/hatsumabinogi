@@ -103,10 +103,10 @@ try {
 } catch (e) { errors.push(String(e.message || e)); }
 // 탈라가흐 인챈트 선택 스크롤 — 신규 인챈트(미련의 · 망집 등)를 골라 받는 스크롤 · 매물(최저가)과 거래 내역(최근 거래가)을 표시 이름 · 옵션별로 모아요 (형식 확인용 샘플 포함)
 try {
-  const SEL = '탈라가흐 인챈트 선택 스크롤';
+  const SEL = '탈라 가흐 인챈트 선택 스크롤'; /* 경매장 이름은 '탈라 가흐'로 띄어 써요 */
   const keyOf = (it) => { const opt = (it.item_option || []).map((o) => [o.option_type, o.option_sub_type, o.option_value, o.option_value2].filter((v) => v !== undefined && v !== null && v !== '').join(' ')).join(' / '); return (it.item_display_name || it.item_name || SEL) + (opt ? ' | ' + opt : ''); };
-  // 아이템 이름이 정확히 일치해야 해서 키워드 '탈라가흐'로 찾고, 찾은 이름으로 거래 내역을 받아요
-  const kw = await collect('/mabinogi/v1/auction/keyword-search', { keyword: '탈라가흐' }, 5);
+  // 아이템 이름이 정확히 일치해야 해서 키워드 '탈라 가흐'로 찾고, 찾은 이름으로 거래 내역을 받아요
+  const kw = await collect('/mabinogi/v1/auction/keyword-search', { keyword: '탈라 가흐' }, 5);
   prices.talagahKeywordNames = [...new Set(kw.map((it) => it.item_name).filter(Boolean))].slice(0, 30);
   const live = kw.filter((it) => /인챈트/.test(String(it.item_name || '') + String(it.item_display_name || '')));
   const sel = {};
