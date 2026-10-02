@@ -832,14 +832,14 @@ Object.assign(totemVals, { priceOn: !!tmS.priceOn, prices: TM_P.map((q) => ({ la
 // 효율 한눈에 보기 (시뮬레이터가 보낸 요약을 그룹별 목록으로)
 const effS = s.eff;
 const effFmt = (p) => (p === null || p === undefined ? '계산식 준비 중' : (p >= 0 ? '+' : '') + (Math.abs(p) >= 0.1 ? p.toFixed(2) : p.toFixed(3)) + '%');
-const effRows = (list) => (list || []).map((r) => ({ label: r.label, sub: r.sub || '', hasSub: !!r.sub, pct: effFmt(r.pct), fg: r.pct === null ? '#8C7A62' : (r.pct > 0 ? '#1E3D2E' : '#7A3B2E'), eq: r.eq === null || r.eq === undefined ? '' : (effS.mx || MX) + ' 환산 ' + (r.eq >= 0 ? '+' : '') + (Math.abs(r.eq) >= 10 ? Math.round(r.eq) : r.eq) }));
+const effRows = (list) => (list || []).map((r) => ({ label: r.label, sub: r.sub || '', hasSub: !!r.sub, pct: effFmt(r.pct), fg: r.pct === null ? '#8C7A62' : (r.pct > 0 ? '#1E3D2E' : '#7A3B2E'), eq: r.eq === null || r.eq === undefined || !effS.mxeq ? '' : (effS.mx || MX) + ' 환산 ' + (r.eq >= 0 ? '+' : '') + (Math.abs(r.eq) >= 10 ? Math.round(r.eq) : r.eq) }));
 const effGroups = effS ? [
 { title: '전투 스탯', unit: '+1 기준', list: effS.stats, emptyMsg: '캐릭터 정보를 먼저 입력해 주세요' },
 { title: '세공 · 각성 능력', unit: '+1레벨 기준', list: effS.sg, emptyMsg: effS.share || !effS.skillCalc ? '올릴 수 있는 세공이 없거나, 아직 딜 계산식이 없는 옵션이에요' : '캐릭터 정보에서 딜 사이클 비중을 입력하면 스킬 세공도 계산돼요' },
 { title: '무리아스의 유물', unit: '+1레벨 기준', list: effS.relic, emptyMsg: '장착한 유물이 없거나 모두 최대 레벨이에요' },
 { title: '오검 워드 효과', unit: '+1단계 기준', list: effS.og, emptyMsg: '장착한 오검 효과가 없거나 모두 최대 단계예요' }
 ].map((g) => { const rows = effRows(g.list); return { title: g.title, unit: g.unit, rows: rows, empty: !rows.length, emptyMsg: g.emptyMsg }; }) : [{ title: '효율', unit: '', rows: [], empty: true, emptyMsg: s.effErr ? '효율을 계산하지 못했어요 (' + s.effErr + ')' : '효율을 계산하는 중이에요…' }];
-const effNote = effS ? (effS.char ? effS.char + ' · ' : '') + '총딜 1% ≈ ' + (effS.mx || MX) + ' ' + effS.mxeq : '';
+const effNote = effS ? (effS.char ? effS.char + ' · ' : '') + (effS.mxeq ? '총딜 1% ≈ ' + (effS.mx || MX) + ' ' + effS.mxeq : '캐릭터 정보에 ' + (effS.mx || MX) + ' 수치를 넣으면 환산 수치도 나와요') : '';
 return {
 effGroups: effGroups, effNote: effNote,
 mxLabel: MX, briLabel: MX === '연금술 대미지' ? '모든 연금술 대미지' : MX,
