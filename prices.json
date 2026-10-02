@@ -1,6 +1,6 @@
 {
   "source": "NEXON Open API · 마비노기 경매장",
-  "updatedAt": "2026-10-02T16:36:02.372Z",
+  "updatedAt": "2026-10-02T16:37:04.330Z",
   "watch": [
     "샛바람 용병단 세트 인형 가방 상자",
     "샛바람 용병단 프리미엄 세트 인형 가방 상자",
@@ -131,7 +131,7 @@
     },
     "인형 가방 보관함": {
       "min": 900000,
-      "count": 38
+      "count": 37
     },
     "린든 인형 가방 상자": {
       "min": 550000,
@@ -933,9 +933,7 @@
   "keywords": [
     "인형 가방"
   ],
-  "errors": [
-    "/mabinogi/v1/auction/history 400: {\"error\":{\"name\":\"OPENAPI00004\",\"message\":\"Please input valid parameter\"}}"
-  ],
+  "errors": [],
   "categoryEveryHours": 6,
   "categoryMaxPages": 20,
   "categories": [
@@ -66143,8 +66141,8 @@
       "count": 1
     },
     "파이어 리프 어택 대미지 300% 증가 (최대 500%)": {
-      "min": 11000000,
-      "count": 2
+      "min": 12000000,
+      "count": 1
     },
     "아이스 윈드밀 대미지 360% 증가 (최대 600%)": {
       "min": 50000000,
@@ -66205,7 +66203,7 @@
       }
     ]
   ],
-  "relicUpdatedAt": "2026-10-02T16:35:59.020Z",
+  "relicUpdatedAt": "2026-10-02T16:37:02.703Z",
   "relicHistory": {
     "헤비 아틸러리 대미지 300% 증가 (최대 300%)": {
       "last": 350000000,
@@ -66336,15 +66334,63 @@
       "at": "2026-10-02T15:50:55.000Z"
     }
   },
-  "relicHistoryUpdatedAt": "2026-10-02T16:35:59.475Z",
-  "talagah": {},
+  "relicHistoryUpdatedAt": "2026-10-02T16:37:03.252Z",
+  "talagah": {
+    "탈라 가흐 인챈트 선택 스크롤 | 남은 거래 횟수 1": {
+      "min": 608450000,
+      "count": 11
+    }
+  },
   "talagahHistory": {},
   "talagahNames": [
-    "탈라가흐 인챈트 선택 스크롤"
+    "탈라 가흐 인챈트 선택 스크롤"
   ],
-  "talagahSample": [],
-  "talagahUpdatedAt": "2026-10-02T16:36:02.372Z",
-  "talagahKeywordNames": [],
+  "talagahSample": [
+    {
+      "item_name": "탈라 가흐 인챈트 선택 스크롤",
+      "item_display_name": "탈라 가흐 인챈트 선택 스크롤",
+      "item_option": [
+        {
+          "option_type": "남은 거래 횟수",
+          "option_sub_type": null,
+          "option_value": "1",
+          "option_value2": null,
+          "option_desc": null
+        }
+      ]
+    },
+    {
+      "item_name": "탈라 가흐 인챈트 선택 스크롤",
+      "item_display_name": "탈라 가흐 인챈트 선택 스크롤",
+      "item_option": [
+        {
+          "option_type": "남은 거래 횟수",
+          "option_sub_type": null,
+          "option_value": "1",
+          "option_value2": null,
+          "option_desc": null
+        }
+      ]
+    },
+    {
+      "item_name": "탈라 가흐 인챈트 선택 스크롤",
+      "item_display_name": "탈라 가흐 인챈트 선택 스크롤",
+      "item_option": [
+        {
+          "option_type": "남은 거래 횟수",
+          "option_sub_type": null,
+          "option_value": "1",
+          "option_value2": null,
+          "option_desc": null
+        }
+      ]
+    }
+  ],
+  "talagahUpdatedAt": "2026-10-02T16:37:04.330Z",
+  "talagahKeywordNames": [
+    "탈라 가흐 인챈트 선택 스크롤",
+    "탈라 가흐 오렌지 마법의 잉크"
+  ],
   "talagahProbe": {
     "인챈트 선택": [
       "탈라 가흐 인챈트 선택 스크롤 | 탈라 가흐 인챈트 선택 스크롤 | 기타"
