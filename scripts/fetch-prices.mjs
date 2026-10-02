@@ -128,8 +128,8 @@ try {
   prices.echo = ec; prices.echoHistory = ecH; prices.echoUpdatedAt = new Date().toISOString();
   delete prices.echoNames; delete prices.echoSample;
 } catch (e) { errors.push(String(e.message || e)); }
-// 진단 — 미완성(공정률) 장비 옵션 이름 확인용: 신발 · 경갑옷 매물의 옵션 종류와 예시
-try { const ot = {}; for (const cat of ['신발', '경갑옷']) { for (const it of await collect('/mabinogi/v1/auction/list', { auction_item_category: cat }, 3)) { (it.item_option || []).forEach((o) => { const k = String(o.option_type); if (!ot[k]) ot[k] = { n: 0, ex: [it.item_name, o.option_sub_type, o.option_value, o.option_value2, o.option_desc].map((x) => (x == null ? '' : String(x).slice(0, 40))).join(' | ') }; ot[k].n += 1; }); } } prices.optProbe = ot; } catch (e) { errors.push(String(e.message || e)); }
+// 진단 — 미완성(공정률) 장비 확인용: 이름 · 표시 이름 차이, '공정' · '완성' 이 들어간 옵션 · 이름 (임시)
+try { const out = { diffName: [], opt: [], kw: [] }; for (const cat of ['중갑옷', '경갑옷', '천옷', '신발', '장갑', '모자/가발']) { for (const it of await collect('/mabinogi/v1/auction/list', { auction_item_category: cat }, 5)) { if (it.item_display_name && it.item_display_name !== it.item_name && out.diffName.length < 40) out.diffName.push(it.item_name + ' => ' + it.item_display_name); (it.item_option || []).forEach((o) => { const t = [o.option_type, o.option_sub_type, o.option_value, o.option_value2, o.option_desc].join(' | '); if (/공정|완성|제작/.test(t) && out.opt.length < 40) out.opt.push(it.item_name + ' :: ' + t.slice(0, 120)); }); } } for (const it of await collect('/mabinogi/v1/auction/keyword-search', { keyword: '미완성' }, 2)) { if (out.kw.length < 30) out.kw.push(it.item_name + ' => ' + it.item_display_name + ' :: ' + (it.item_option || []).map((o) => o.option_type + '=' + o.option_value).join(', ').slice(0, 150)); } prices.optProbe = out; } catch (e) { errors.push(String(e.message || e)); }
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);
