@@ -106,7 +106,9 @@ try {
   const SEL = '탈라가흐 인챈트 선택 스크롤';
   const keyOf = (it) => { const opt = (it.item_option || []).map((o) => [o.option_type, o.option_sub_type, o.option_value, o.option_value2].filter((v) => v !== undefined && v !== null && v !== '').join(' ')).join(' / '); return (it.item_display_name || it.item_name || SEL) + (opt ? ' | ' + opt : ''); };
   // 아이템 이름이 정확히 일치해야 해서 키워드 '탈라가흐'로 찾고, 찾은 이름으로 거래 내역을 받아요
-  const live = (await collect('/mabinogi/v1/auction/keyword-search', { keyword: '탈라가흐' }, 5)).filter((it) => /인챈트/.test(String(it.item_name || '') + String(it.item_display_name || '')));
+  const kw = await collect('/mabinogi/v1/auction/keyword-search', { keyword: '탈라가흐' }, 5);
+  prices.talagahKeywordNames = [...new Set(kw.map((it) => it.item_name).filter(Boolean))].slice(0, 30);
+  const live = kw.filter((it) => /인챈트/.test(String(it.item_name || '') + String(it.item_display_name || '')));
   const sel = {};
   for (const it of live) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const k = keyOf(it); const c = sel[k]; if (!c) sel[k] = { min: price, count: 1 }; else { c.min = Math.min(c.min, price); c.count += 1; } }
   const selNames = [...new Set(live.map((it) => it.item_name).filter(Boolean))]; if (!selNames.length) selNames.push(SEL);
