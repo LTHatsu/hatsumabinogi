@@ -26,8 +26,11 @@ async function collect(path, params, maxPages = MAX_PAGES) {
   }
   return items;
 }
+// 미완성 장비(표시 이름 끝에 '(미완성)', 공정률이 남은 제작품)는 완성품보다 훨씬 싸서 시세에서 빼요
+const unfinished = (it) => /\(미완성\)/.test(String(it.item_display_name || ''));
 function summarize(list, into) {
   for (const it of list) {
+    if (unfinished(it)) continue;
     const price = Number(it.auction_price_per_unit);
     if (!(price > 0)) continue;
     // 인챈트 스크롤 등은 표시 이름에 인챈트 이름이 붙어 있어 두 이름 모두 기록해요
@@ -60,7 +63,7 @@ if (catDue && (prices.categories || []).length) {
     try {
       const list = await collect('/mabinogi/v1/auction/history', { auction_item_category: cat }, Number(prices.historyMaxPages) || 10);
       for (const it of list) {
-        const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue;
+        const price = Number(it.auction_price_per_unit); if (!(price > 0) || unfinished(it)) continue;
         const at = it.date_auction_buy || it.date_auction_expire || '';
         for (const name of new Set([it.item_name, it.item_display_name].filter(Boolean))) {
           const c = fresh[name];
@@ -116,6 +119,17 @@ try {
   const selH = Object.assign({}, prices.talagahHistory || {});
   for (const it of histL) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const at = it.date_auction_buy || it.date_auction_expire || ''; const k = keyOf(it); const c = selH[k]; if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) selH[k] = { last: price, at }; }
   prices.talagah = sel; prices.talagahHistory = selH; prices.talagahNames = selNames; prices.talagahSample = live.concat(histL).slice(0, 3).map((it) => ({ item_name: it.item_name, item_display_name: it.item_display_name, item_option: it.item_option || [] })); prices.talagahUpdatedAt = new Date().toISOString();
+} catch (e) { errors.push(String(e.message || e)); }
+// 에코스톤 — 색 · 각성 능력 · 각성 레벨에 따라 값이 달라서 '색|각성 능력|레벨'(30등급만)별 최저가를 모아요 · 매물이 없으면 거래 내역의 최근 거래가 (echoHistory)
+try {
+  const ecKey = (it) => { const op = it.item_option || []; const g = op.filter((o) => o.option_type === '에코스톤 등급')[0]; if (!g || String(g.option_value) !== '30') return ''; const a = op.filter((o) => o.option_type === '에코스톤 각성 능력')[0]; const m = a ? /^(.*?)\s+(\d+)\s*레벨/.exec(String(a.option_value || '')) : null; return m ? it.item_name + '|' + m[1].trim() + '|' + m[2] : ''; };
+  const inhOf = (it) => Number(((it.item_option || []).filter((o) => o.option_type === '에코스톤 고유 능력')[0] || {}).option_value) || 0;
+  const live = (await collect('/mabinogi/v1/auction/keyword-search', { keyword: '에코스톤' }, Number(prices.echoMaxPages) || 10)).filter((it) => /^(레드|블루|옐로|실버|블랙) 에코스톤$/.test(String(it.item_name || '')));
+  const ec = {}; for (const it of live) { const price = Number(it.auction_price_per_unit); const k = ecKey(it); if (!(price > 0) || !k) continue; const c = ec[k]; if (!c) ec[k] = { min: price, count: 1, inh: inhOf(it) }; else { if (price < c.min) { c.min = price; c.inh = inhOf(it); } c.count += 1; } }
+  const ecH = Object.assign({}, prices.echoHistory || {});
+  for (const nm of [...new Set(live.map((it) => it.item_name))]) { try { for (const it of await collect('/mabinogi/v1/auction/history', { item_name: nm }, 3)) { const price = Number(it.auction_price_per_unit); const k = ecKey(it); if (!(price > 0) || !k) continue; const at = it.date_auction_buy || it.date_auction_expire || ''; const c = ecH[k]; if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) ecH[k] = { last: price, at }; } } catch (e) { errors.push(String(e.message || e)); } }
+  prices.echo = ec; prices.echoHistory = ecH; prices.echoUpdatedAt = new Date().toISOString();
+  delete prices.echoNames; delete prices.echoSample;
 } catch (e) { errors.push(String(e.message || e)); }
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');

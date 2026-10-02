@@ -19,6 +19,12 @@
 /* 두 줄 이상으로 넘어가는 이름 · 설명은 윗줄 · 아랫줄 길이를 비슷하게 */
 span,strong,h1,h2,h3,label,p,button,li{text-wrap:balance}
 
+/* ? 도움말 — 마우스를 올리거나(데스크톱) 눌러서(모바일) 설명 보기 */
+.qtip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#B6A27E;color:#FFFBF2;font-size:11px;font-weight:700;line-height:1;cursor:help;flex-shrink:0;outline:none}
+.qtip:focus-visible{box-shadow:0 0 0 2px #2F5A45}
+.qtip .qtip-box{display:none;position:absolute;left:-8px;bottom:calc(100% + 8px);z-index:40;width:max-content;max-width:260px;padding:10px 12px;border-radius:8px;background:#2A2119;color:#FBF5E8;font-size:12px;font-weight:400;line-height:1.55;text-align:left;white-space:normal;box-shadow:0 8px 20px rgba(42,33,25,.25);cursor:default}
+.qtip:hover .qtip-box,.qtip:focus .qtip-box,.qtip:focus-within .qtip-box{display:block}
+
 body{margin:0;word-break:keep-all;overflow-wrap:break-word;font-family:'Gowun Dodum',sans-serif;background:#F5EDDC;color:#2A2119}
 a{color:#2F5A45}a:hover{color:#1E3D2E}
 button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
@@ -155,7 +161,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">정령</h2>
 <sc-for list="{{spirits}}" as="s" hint-placeholder-count="5">
 <div role="radiogroup" aria-label="{{s.name}}" style="display: flex; flex-direction: column; gap: 6px">
-<span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: #4A3D30">{{s.name}}</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #4A3D30">{{s.name}}<span class="qtip" tabindex="0" role="button" aria-label="{{s.name}} 설명">?<span class="qtip-box" role="tooltip"><sc-for list="{{s.tip}}" as="t" hint-placeholder-count="3"><span style="display: block; font-weight: {{t.w}}; color: {{t.fg}}">{{t.txt}}</span></sc-for></span></span></span>
 <div style="display: flex; gap: 4px">
 <sc-for list="{{s.levels}}" as="l" hint-placeholder-count="6">
 <button type="button" role="radio" aria-checked="{{l.checked}}" onClick="{{l.pick}}" style="flex-grow: 1; height: 44px; border-radius: 10px; border: {{l.border}}; background: {{l.bg}}; color: {{l.fg}}; font-size: 14px">{{l.label}}</button>
@@ -421,11 +427,19 @@ const SP = [
 ];
 // 화면 표시 순서 (저장 순서는 그대로)
 const SP_ORDER = [0, 2, 3, 1, 4];
+// 정령 ? 도움말 — [첫 줄(무엇인지), 레벨별 효과 줄...] (계산에 쓰는 수치와 같게)
+const SP_TIP = [
+['정령 무기의 연마 단계 — 크리티컬 대미지 증가', '1~5레벨 — 레벨당 크리티컬 대미지 +3% (최대 +15%)', '0레벨 — 효과 없음'],
+['무기 최종 크리티컬 확률 (상한을 넘어서 적용)', '활성화 — 크리티컬 확률 +5% (상한 +5%)', '비활성화 — 효과 없음'],
+['정령 스킬 · 약점 분석 — 재능 보너스 대미지 증가', '1~5레벨 — 레벨당 재능 보너스 대미지 +2% (최대 +10%)', '0레벨 — 효과 없음'],
+['정령 스킬 · 광폭화 — 재능 보너스 대미지 증가', '1~5레벨 — 레벨당 재능 보너스 대미지 +2% (최대 +10%)', '0레벨 — 효과 없음'],
+['정령 실체화 중 받는 재능 보너스 대미지 버프 강화', '기본 실체화 버프 10% + 레벨당 3% (5레벨 25%)', '세팅 시뮬레이터에서 \'정령 실체화 보너스 대미지 제외\'로 뺄 수 있어요']
+];
 const spirits = SP_ORDER.map((si) => {
 const sp = SP[si];
 const lv = s.spirit[si] || 0;
 return {
-name: sp[0], effect: sp[2](lv), effFg: lv || si === 4 ? '#1E3D2E' : '#8C7A62',
+name: sp[0], tip: SP_TIP[si].map((t, k) => ({ txt: t, w: k ? 400 : 700, fg: k ? '#FBF5E8' : '#E8C27A' })), effect: sp[2](lv), effFg: lv || si === 4 ? '#1E3D2E' : '#8C7A62',
 levels: sp[1].map((label, i) => {
 const on = lv === i;
 return { label: label, checked: on ? 'true' : 'false', bg: on ? accent : '#FBF5E8', fg: on ? '#FBF5E8' : '#2A2119', border: on ? '1px solid ' + accent : '1px solid #D9C8A6', pick: () => { const arr = s.spirit.slice(); arr[si] = i; this.upd({ spirit: arr }); } };
