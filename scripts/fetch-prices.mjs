@@ -117,6 +117,16 @@ try {
   for (const it of histL) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const at = it.date_auction_buy || it.date_auction_expire || ''; const k = keyOf(it); const c = selH[k]; if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) selH[k] = { last: price, at }; }
   prices.talagah = sel; prices.talagahHistory = selH; prices.talagahNames = selNames; prices.talagahSample = live.concat(histL).slice(0, 3).map((it) => ({ item_name: it.item_name, item_display_name: it.item_display_name, item_option: it.item_option || [] })); prices.talagahUpdatedAt = new Date().toISOString();
 } catch (e) { errors.push(String(e.message || e)); }
+// 에코스톤 — 색 · 등급 · 각성 능력에 따라 값이 달라서 매물을 옵션별로 모아요 (형식 확인용 샘플 포함) · 매물이 없으면 거래 내역의 최근 거래가
+try {
+  const optKey = (it) => (it.item_option || []).map((o) => [o.option_type, o.option_sub_type, o.option_value, o.option_value2].filter((v) => v !== undefined && v !== null && v !== '').join(' ')).join(' / ');
+  const live = (await collect('/mabinogi/v1/auction/keyword-search', { keyword: '에코스톤' }, Number(prices.echoMaxPages) || 10)).filter((it) => /에코스톤/.test(String(it.item_name || '')));
+  const ec = {}; for (const it of live) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const k = it.item_name + ' | ' + optKey(it); const c = ec[k]; if (!c) ec[k] = { min: price, count: 1 }; else { c.min = Math.min(c.min, price); c.count += 1; } }
+  const names = [...new Set(live.map((it) => it.item_name))];
+  const ecH = Object.assign({}, prices.echoHistory || {});
+  for (const nm of names) { try { for (const it of await collect('/mabinogi/v1/auction/history', { item_name: nm }, 3)) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const at = it.date_auction_buy || it.date_auction_expire || ''; const k = it.item_name + ' | ' + optKey(it); const c = ecH[k]; if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) ecH[k] = { last: price, at }; } } catch (e) { errors.push(String(e.message || e)); } }
+  prices.echo = ec; prices.echoHistory = ecH; prices.echoNames = names; prices.echoSample = live.slice(0, 3).map((it) => ({ item_name: it.item_name, item_display_name: it.item_display_name, item_option: it.item_option || [] })); prices.echoUpdatedAt = new Date().toISOString();
+} catch (e) { errors.push(String(e.message || e)); }
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);
