@@ -704,7 +704,7 @@ const MREF = charMax + dollMax > 0 ? charMax + dollMax : 3000;
 // tal · own: 재능 부분 · 고유 부분 절대 대미지, w: 재능 보너스 가중치, mul: 스킬 전체에 곱하는 계수(증발 등)
 const arcHit = (tal, own, w, mul) => { const m = mul || 1; const inW = Math.max(0, tal) * PIERCE_G * w; const pre = (inW + own) * m; const v = Math.max(0, pre * PROT_K - DEF_V); return { v: v, tal: inW * m * PROT_K, pre: pre, inW: inW * m }; };
 // 화면 표시용 스킬 배율 (보호 · 피어싱 적용 전)
-const flHit = crash + 1080 + 45 * rFl + sv('ogFl');
+const flHit = crash + 600 + 45 * rFl + sv('ogFl');
 const flame = flHit * (bun ? 1.09 * 4 : 3);
 // 매그넘샷 → 하이드로피어스 (격류: (매그넘 + 하이드로×0.15) × 7)
 const magnum = (590 + (sv('mgLv') + sv('magi')) * 10 + dErgLv * 3 + sv('ogMg')) * setMg * wMg;
@@ -725,8 +725,8 @@ const dE = ov.dErg !== undefined ? ov.dErg : dErgLv;
 const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * magMul() * wMg;
 const ev = 1.1 + 0.005 * (g('fire') + g('water'));
 const tM = 1 + (0.1 + g('fire') * 0.005) + (0.1 + g('water') * 0.005) + (0.1 + g('wind') * 0.005) + 0.1;
-// 플레임 버스트 1타 = 크래시샷(재능) + 고유 1080% · 3타 (분출: × 1.09 · 4타) · 증발 계수
-const fh = arcHit(P(crashV), P(1080 + 45 * lv.fl + sv('ogFl')), w, ev); const fn = bun ? 1.09 * 4 : 3;
+// 플레임 버스트 1타 = 크래시샷(재능) + 고유(플레임 버스트 자체 600% + 유물 레벨당 45% + 오검) · 3타 (분출: × 1.09 · 4타) · 증발 계수
+const fh = arcHit(P(crashV), P(600 + 45 * lv.fl + sv('ogFl')), w, ev); const fn = bun ? 1.09 * 4 : 3;
 // 하이드로 피어스 = 매그넘샷(재능) + 고유 (3280% + 유물 + 오검) × 1.3 · 격류: 7타 × (매그넘 + 하이드로 × 0.15)
 const arm = P((3280 + 110 * lv.hy + sv('ogHy')) * 1.3); let hy;
 if (gyeok) { const inW = P(magV) * PIERCE_G * w; const per = Math.max(0, (inW * 1.15 + arm * 0.15) * ev * PROT_K - DEF_V); hy = { v: per * 7, tal: inW * 1.15 * ev * PROT_K * 7 }; } else { const r = arcHit(P(magV), arm, w, ev); hy = { v: r.v, tal: r.tal }; }
