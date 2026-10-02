@@ -1507,7 +1507,10 @@ const sscNz = (x) => String(x || '').replace(/\s/g, ''); const SSC_SLS = (s.eqDa
 const sscPlan = {}; SLOTS.filter((sl) => sl[4] !== 'relic' && sl[4] !== 'echo').forEach((sl) => { const v = Number(s.up[sl[0] + '.item']) || 0; const o = v > 0 ? swapOf(sl, v - 1) : null; sscPlan[sl[0]] = { n: o ? o.name : String(sl[3] || ''), swapped: !!o }; });
 const sscPts = {}; const sscUnk = {}; Object.keys(sscPlan).forEach((k) => (SSC_SLS[sscPlan[k].n] || []).forEach((x) => { const v = Number(x[1]) || 0; sscPts[x[0]] = (sscPts[x[0]] || 0) + v; if (!v) { sscUnk[x[0]] = 1; } }));
 const sscSets = (k) => { const e = sscPlan[k]; if (!e) return []; return (SSC_SLS[e.n] || []).map((x) => x[0]).filter((q, i, a) => a.indexOf(q) === i).map((q) => { const lab = (SSC_SD[q] || [q])[0]; const sc = SSC_NAMES.filter((n) => sscNz(n) === sscNz(lab))[0]; return { q: q, lab: lab, sc: sc, rowLab: ((ED2 && ED2.setLabel) || {})[q] || lab }; }).filter((o) => o.sc && (o.q === 'magnum' || SET_ST[o.q] || SSC_SK[o.q]) && !actSets[o.q]); };
-const sscPrice = (sc) => Number((pAllE['세트 효과 ' + sc + ' +1 주문서'] || {}).min) || 0;
+// 시세가 아직 없으면 임시 시세 (경매장 시세가 들어오면 그 값)
+const SSC_TMP = { '최대 대미지 증가': 70000000, '크리티컬 대미지 증가': 38000000, '매그넘 샷 강화': 48000000, '스매시 강화': 17000000 };
+const sscPrice = (sc) => Number((pAllE['세트 효과 ' + sc + ' +1 주문서'] || {}).min) || SSC_TMP[sc] || 0;
+const sscTmp = (sc) => !(Number((pAllE['세트 효과 ' + sc + ' +1 주문서'] || {}).min) > 0) && !!SSC_TMP[sc];
 const sscGain = (q) => ((this._sgMemo || { add: {} }).add[q] || 0);
 { const done = {}; Object.keys(sscPlan).forEach((k) => sscSets(k).forEach((o) => { if (!s.up[k + '.sscOn.' + o.q]) return; const n = Math.max(0, Math.min(20, Number(s.up[k + '.ssc.' + o.q]) || 0)); const c = sscPrice(o.sc) * n; const sw = sscPlan[k].swapped ? chosen.filter((x) => x.key === k + '.item')[0] : null;
 if (sw) { if (n) { sw.costM = (sw.costM || 0) + Math.round(c / 10000); sw.eff = sw.costM ? sw.pct / (sw.costM / 10000) : 0; sw.to = sw.to + ' · 세트 스크롤 ' + n + '장'; } return; }
@@ -1516,7 +1519,7 @@ const sscDims = sscSets(cur[0]).map((o) => { const kOn = cur[0] + '.sscOn.' + o.
 return { label: o.rowLab, tag: '세트 효과', hasTag: true, hasChk: true, chkOn: on, chkLbl: '세트 효과 발동', onChk: (e) => { const u = Object.assign({}, s.up); if (e.target.checked) { u[kOn] = 1; } else { delete u[kOn]; delete u[kN]; } this.setState({ up: u }); },
 isNum: on, noInput: !on, numVal: n ? String(n) : '', numPh: '사용할 스크롤 개수 (발동까지 약 ' + need + '장)', onNum: (e) => { const u = Object.assign({}, s.up); const v = Math.max(0, Math.min(20, Number(String(e.target.value).replace(/[^\d]/g, '')) || 0)); if (v) { u[kN] = v; } else { delete u[kN]; } this.setState({ up: u }); },
 current: '', curStat: '꺼짐 · 세트 포인트 ' + ptsTxt, hasRule: true, rule: sw ? '바꾼 장비의 세트 · 딜 상승은 장비 교체 항목에 들어 있고 스크롤 비용만 더해요' : (g > 0 ? '발동하면 총딜 +' + g + '%' : '발동해도 딜 변화가 없어요 (더 높은 같은 효과가 이미 켜져 있음)'),
-on: on, off: !on, value: '0', opts: [], pct: on ? (Math.round(g * 10) / 10).toFixed(1) : '0', dmg: on ? Math.round(g / 100 * MXEQ) : 0, cost: on ? (pr ? (n ? goldE(pr * n) + ' · ' : '') + '장당 ' + goldE(pr) : '스크롤 시세 없음') : '—', costFg: on ? '#2A2119' : '#8C7A62',
+on: on, off: !on, value: '0', opts: [], pct: on ? (Math.round(g * 10) / 10).toFixed(1) : '0', dmg: on ? Math.round(g / 100 * MXEQ) : 0, cost: on ? (pr ? (n ? goldE(pr * n) + ' · ' : '') + '장당 ' + goldE(pr) + (sscTmp(o.sc) ? ' (임시 시세)' : '') : '스크롤 시세 없음') : '—', costFg: on ? '#2A2119' : '#8C7A62',
 border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' : '#FBF5E8', head: on ? '세트 효과 발동 · 스크롤 ' + n + '장' + (g > 0 ? '\n총딜 +' + g + '%' : '') : '', effect: '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {}, onChange: () => {} }; });
 
 
