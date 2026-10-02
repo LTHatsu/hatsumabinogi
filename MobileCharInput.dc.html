@@ -94,7 +94,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
 <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">그랜드마스터 재능</h2></div>
-<p style="margin: -4px 0 0; font-size: 12px; color: #8C7A62">보유한 재능을 모두 선택해 주세요</p>
+<p style="margin: -4px 0 0; font-size: 12px; color: #8C7A62">기본으로 모두 켜져 있어요 · 보유하지 않은 재능은 눌러서 꺼 주세요</p>
 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
 <sc-for list="{{gms}}" as="g" hint-placeholder-count="5">
 <button type="button" aria-pressed="{{g.checked}}" onClick="{{g.pick}}" style="min-height: 92px; padding: 10px 4px; border-radius: 12px; border: {{g.border}}; background: {{g.bg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #2A2119">
@@ -369,8 +369,10 @@ const G = [
 ['전투 점성술', 'M5 21L16 3.5M16 3.5c-4.5 0-9 2.2-11 6.5 3-2.2 7.2-2.6 9.8-1.4M19 12l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7z']
 ];
 const GM_CRIT = [2.5, 2, 1, 1, 1];
-const critGm = GM_CRIT.reduce((t, v, i) => t + (s.gm && s.gm[i] ? v : 0), 0);
-const gms = G.map((g, i) => Object.assign({ name: g[0], icon: g[1], crit: '크리 +' + GM_CRIT[i] + '%', critFg: s.gm && s.gm[i] ? '#1E3D2E' : '#8C7A62', pick: () => { const m = Object.assign({}, s.gm); m[i] = !m[i]; this.upd({ gm: m }); } }, this.tile(!!s.gm[i], accent)));
+// 그랜드마스터 재능은 기본으로 모두 보유 — 한 번이라도 눌러 바꾸면 5개 모두 보유 여부를 저장해요 (예전 저장값: 선택한 것만 보유)
+const gmHas = (i) => { const g = s.gm || {}; return Object.keys(g).length ? !!g[i] : true; };
+const critGm = GM_CRIT.reduce((t, v, i) => t + (gmHas(i) ? v : 0), 0);
+const gms = G.map((g, i) => Object.assign({ name: g[0], icon: g[1], crit: '크리 +' + GM_CRIT[i] + '%', critFg: gmHas(i) ? '#1E3D2E' : '#8C7A62', pick: () => { const m = {}; GM_CRIT.forEach((v, j) => { m[j] = gmHas(j); }); m[i] = !m[i]; this.upd({ gm: m }); } }, this.tile(gmHas(i), accent)));
 const PET_CD = [1, 2];
 const P = [['중형 잔디밭 (4단계)', I.lawn], ['캣타워 (4단계)', I.tower]];
 const pets = P.map((p, i) => Object.assign({ name: p[0], icon: p[1], effect: '크리티컬 대미지 +' + PET_CD[i] + '%', effFg: s.pets && s.pets[i] ? '#1E3D2E' : '#8C7A62', pick: () => { const m = Object.assign({}, s.pets); m[i] = !m[i]; this.upd({ pets: m }); } }, this.tile(!!s.pets[i], accent)));
@@ -584,7 +586,8 @@ const dustIn = (k, max) => (e) => { const raw = String(e.target.value).trim(); i
 const dust = { flare: dustF.dustFlare !== undefined ? dustF.dustFlare : dustLegacy('플레어'), blast: dustF.dustBlast !== undefined ? dustF.dustBlast : dustLegacy('블래스트'), solace: !!dustF.dustSolace,
 onFlare: dustIn('dustFlare', 100), onBlast: dustIn('dustBlast', 100), onSolace: (e) => dustSet('dustSolace', e.target.checked ? '1' : '') };
 const fv = {}; const fc = {};
-FK.forEach((k) => { fv[k] = (s.fields || {})[k] || ''; fc[k] = (e) => { const o = Object.assign({}, s.fields || {}); o[k] = e.target.value; if (k === 'gearBonus' && Number(o[k]) > BONUS_CAP) { o[k] = String(BONUS_CAP); } if (k === 'arcAwake' && o[k] !== '') { o[k] = String(Math.min(50, Math.max(1, Math.round(Number(o[k]) || 1)))); } if (k === 'arcLevel' && o[k] !== '') { o[k] = String(Math.max(0, Math.round(Number(o[k]) || 0))); } if (k === 'pierce' && o[k] !== '') { o[k] = String(Math.min(11, Math.max(0, Math.round(Number(o[k]) || 0)))); } this.upd({ fields: o }); }; });
+const FDEF = { arcLevel: '450', arcAwake: '50' }; /* 입력한 적 없으면 기본값 */
+FK.forEach((k) => { fv[k] = (s.fields || {})[k] === undefined ? FDEF[k] || '' : (s.fields || {})[k] || ''; fc[k] = (e) => { const o = Object.assign({}, s.fields || {}); o[k] = e.target.value; if (k === 'gearBonus' && Number(o[k]) > BONUS_CAP) { o[k] = String(BONUS_CAP); } if (k === 'arcAwake' && o[k] !== '') { o[k] = String(Math.min(50, Math.max(1, Math.round(Number(o[k]) || 1)))); } if (k === 'arcLevel' && o[k] !== '') { o[k] = String(Math.max(0, Math.round(Number(o[k]) || 0))); } if (k === 'pierce' && o[k] !== '') { o[k] = String(Math.min(11, Math.max(0, Math.round(Number(o[k]) || 0)))); } this.upd({ fields: o }); }; });
 if (Number(fv.gearBonus) > BONUS_CAP) { fv.gearBonus = String(BONUS_CAP); }
 if (wBonusFixed) { fv.gearBonus = String(bDef); } else if (!fv.gearBonus && wValid && bDef) { fv.gearBonus = String(bDef); }
 const chars = roster.map((c, i) => {
@@ -602,7 +605,7 @@ currentName: (roster[s.char] || {}).name || '캐릭터',
 fv: fv, fc: fc,
 bonusFixed: wBonusFixed, bonusEditable: !wBonusFixed, bonusFixedVal: wValid ? String(bDef) : '', bonusNote: wBonusFixed ? '고정값 ' + bNoteCore : (wValid ? bNoteCore + ' · 수정 가능' : '무기를 고르면 자동으로 입력돼요'),
 subOpts: subOpts, subValue: sEff, onSub: (e) => { const o = Object.assign({}, s.fields || {}); o.sub = e.target.value; const bd = totDef(wCur, o.sub); if (bd) { o.gearBonus = String(bd); } this.upd({ fields: o }); },
-rankOpts: rankOpts, rankValue: CRIT_RANK.some((r) => r[0] === (s.fields || {}).critRank) ? (s.fields || {}).critRank : '', mo: mo, mv: mv, mxTitle: MX, fcA: { main: fc[miniA], ex: fc[miniA + 'Ex'] }, dollOpts: dollOpts, dollValue: DOLL_BAGS.some((d) => d[0] === (s.fields || {}).dollBag) ? (s.fields || {}).dollBag : '', weaponOpts: weaponOpts, weaponValue: wList.indexOf(wCur) >= 0 ? wCur : '', onWeapon: (e) => { const o = Object.assign({}, s.fields || {}); o.weapon = e.target.value; if (subListOf(o.weapon).indexOf(o.sub || '') < 0) { o.sub = ''; } const bd = totDef(o.weapon, o.sub || ''); if (bd) { o.gearBonus = String(bd); } const lim = !canS8(o.weapon); this.upd(lim && s.stage > 6 ? { fields: o, stage: 6 } : { fields: o }); },
+rankOpts: rankOpts, rankValue: (s.fields || {}).critRank === undefined ? '1' : (CRIT_RANK.some((r) => r[0] === (s.fields || {}).critRank) ? (s.fields || {}).critRank : ''), mo: mo, mv: mv, mxTitle: MX, fcA: { main: fc[miniA], ex: fc[miniA + 'Ex'] }, dollOpts: dollOpts, dollValue: DOLL_BAGS.some((d) => d[0] === (s.fields || {}).dollBag) ? (s.fields || {}).dollBag : '', weaponOpts: weaponOpts, weaponValue: wList.indexOf(wCur) >= 0 ? wCur : '', onWeapon: (e) => { const o = Object.assign({}, s.fields || {}); o.weapon = e.target.value; if (subListOf(o.weapon).indexOf(o.sub || '') < 0) { o.sub = ''; } const bd = totDef(o.weapon, o.sub || ''); if (bd) { o.gearBonus = String(bd); } const lim = !canS8(o.weapon); this.upd(lim && s.stage > 6 ? { fields: o, stage: 6 } : { fields: o }); },
 rfLabel: (rfType ? 'S' : 'R') + rfStage + '강', rfEffect: rfText(rfMain, rfType, rfDark), rfDark: rfDark,
 sub2On: sub2On, notDual: !sub2On, rfPair: 'R' + rfStage + '강 + R' + rfStage2 + '강', sub2Name: sEff, reforges2: this.seg(['R 개조'], 0, 'reforge2'), stages2: this.seg(['1', '2', '3', '4', '5', '6', '7', '8'], rfStage2 - 1, 'stage2'), rf2Label: (rfType2 ? 'S' : 'R') + rfStage2 + '강', rf2Effect: rfText(rfSub, rfType2, false), rfSum: rfDeltaText(rfSumD),
 critGm: critGm + '%', critTotal: (30 + critGm + sealCr) + '%', critSeal: sealCr ? ' + 정령 봉인 해제 5%' : '',

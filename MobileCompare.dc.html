@@ -574,7 +574,7 @@ const slotDmg = mine.reduce((t, c) => t + c.dmg, 0);
 // 현재 전투 스탯 — 예시 기준값, 선택한 변경이 실시간으로 더해져요
 // 크리티컬 확률 = 기본 30% + 그랜드마스터 재능 (근접 전투 2.5, 마법 2, 격투술·인술·전투 점성술 각 1) + 정령 봉인 해제 5 + 칼리아흐의 결계 미니어처 1
 const curChar = store && store.chars[store.cur];
-const gmOwned = curChar && curChar.info && curChar.info.gm ? curChar.info.gm : {};
+const gmRaw = curChar && curChar.info && curChar.info.gm ? curChar.info.gm : {}; const gmOwned = Object.keys(gmRaw).length ? gmRaw : { 0: true, 1: true, 2: true, 3: true, 4: true }; /* 그랜드마스터 재능은 기본 모두 보유 */
 const sealOn = curChar && curChar.info && curChar.info.spirit ? !!curChar.info.spirit[1] : false;
 const critRate = 30 + [2.5, 2, 1, 1, 1].reduce((t, v, i) => t + (gmOwned[i] ? v : 0), 0) + (sealOn ? 5 : 0) + (curChar && curChar.info && curChar.info.kaliach ? 1 : 0);
 // 캐릭터 정보의 정령 · 펫 하우스 선택 반영 — 연마 크리티컬 대미지 +3%/단계, 잔디밭 +1% · 캣타워 +2%, 약점 분석 · 광폭화 재능 보너스 +2%/단계
@@ -610,12 +610,12 @@ const dollCd = ((DOLL_BAGS.find((d) => cInfo && cInfo.fields && d[0] === cInfo.f
 const isDarkMage = (cInfo && typeof cInfo.arcana === 'number' ? cInfo.arcana : 0) === 2;
 // 아르카나 각성 레벨(1~50): 1레벨당 아르카나 보너스 대미지 +0.1%, 2레벨당 최대 대미지 +1
 // 아르카나 종합 레벨: 250까지 50레벨마다 크리티컬 확률 +2%, 이후 450까지 50레벨마다 +1% (최대 +14%)
-const arcAwakeLv = Math.min(50, Math.max(0, Number(cInfo && cInfo.fields ? cInfo.fields.arcAwake : 0) || 0));
-const arcTotLv = Math.max(0, Number(cInfo && cInfo.fields ? cInfo.fields.arcLevel : 0) || 0);
+const arcAwakeIn = cInfo && cInfo.fields ? cInfo.fields.arcAwake : undefined; const arcAwakeLv = Math.min(50, Math.max(0, arcAwakeIn === undefined || arcAwakeIn === '' ? 50 : Number(arcAwakeIn) || 0)); /* 입력 없으면 각성 50레벨 */
+const arcTotIn = cInfo && cInfo.fields ? cInfo.fields.arcLevel : undefined; const arcTotLv = Math.max(0, arcTotIn === undefined || arcTotIn === '' ? 450 : Number(arcTotIn) || 0); /* 입력 없으면 종합 450레벨 */
 const arcCrit = Math.floor(Math.min(arcTotLv, 250) / 50) * 2 + Math.floor(Math.max(0, Math.min(arcTotLv, 450) - 250) / 50);
 // 크리티컬 히트 랭크별 크리티컬 대미지 (%)
 const CRIT_RANK = [['F', 50], ['E', 55], ['D', 60], ['C', 65], ['B', 70], ['A', 75], ['9', 90], ['8', 95], ['7', 100], ['6', 105], ['5', 110], ['4', 120], ['3', 130], ['2', 140], ['1', 150]];
-const rankCd = ((CRIT_RANK.find((r) => cInfo && cInfo.fields && r[0] === cInfo.fields.critRank)) || [0, null])[1];
+const critRankIn = cInfo && cInfo.fields && cInfo.fields.critRank !== undefined ? cInfo.fields.critRank : '1'; /* 입력 없으면 크리티컬 히트 1랭크 */ const rankCd = ((CRIT_RANK.find((r) => r[0] === critRankIn)) || [0, null])[1];
 // 그랜드마스터 재능 1개당 크리티컬 대미지 +2% (5개 +10%)
 const gmCd = [0, 1, 2, 3, 4].reduce((t, i) => t + (gmOwned[i] ? 2 : 0), 0);
 const bri = (gear && gear.brireh) || {};
