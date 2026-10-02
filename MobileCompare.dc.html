@@ -344,7 +344,7 @@ const EK_SUB_OK = ['소울 리버레이트 소드', '소울 리버레이트 해�
 // 엘레멘탈 나이트 쌍수(소울 리버레이트 소드 · 해머 2개) — 오른쪽(보조무기) 맥댐은 포션 · 인젝션만 받아요 (마도카 실측)
 // 일반 맥댐은 전장 · 상지 · 힘결까지 받으니, 풀버프(전장 평균 80%) 기준 오른쪽 무기 맥댐 +1 = 일반 맥댐 +1 ÷ (1+전장)(1+상지)(1+힘결) ≈ 0.35
 const isDualEK = arcIdx === 0 && EK_SUB_OK.indexOf(String(fInfo.weapon || '')) >= 0 && EK_SUB_OK.indexOf(String(fInfo.sub || '')) >= 0;
-const BUF_D0 = (fInfo.potOff ? 1 : 1.2) * (arcIdx === 0 && !fInfo.injOff ? 1.1 : 1);
+const BUF_D0 = 1.2 * (arcIdx === 0 ? 1.1 : 1); /* 포션(물공포 · 마공포 · 연금포) 기본 적용 · 인젝션은 엘레멘탈 나이트만 */
 const OFF_K = isDualEK ? 1 / ((1 + 0.8 * BUF_D0) * (1 + 0.12 * BUF_D0) * (1 + 0.15 * BUF_D0)) : 1;
 const RF_R_EK = [4, 11, 18, 26, 34, 42, 50, 60];
 const RF_S_EK = [[60, 30, 2], [70, 35, 2], [80, 40, 3], [90, 45, 3], [100, 50, 4], [110, 55, 4], [120, 60, 5], [170, 85, 7]];
@@ -696,7 +696,7 @@ const hitOut = (raw) => Math.max(0, raw * PROT_K - DEF_V);
 // 실전 버프로 커지는 최대 대미지 (마도카 실측 구조) — 일반 맥댐 × 포션(1.2) × 인젝션(1.1) × 전장 · 상지 · 힘결, 아르카나 링크 보너스는 포션 · 인젝션을 받지 않아요
 // 전장 · 상지 · 힘결은 모든 맥댐에 같이 곱해져서 딜 상승률에서는 상쇄돼요 → 계산은 버프 전 기준 단위로 하고, 링크 보너스 몫만 ÷(포션 × 인젝션)으로 줄여요
 const LINK_MX = { 0: 250, 2: 250, 3: 100, 5: 200, 6: 100, 7: 200 }[arcIdx] || 0; const fF = (cInfo && cInfo.fields) || {};
-const BUF_D = (fF.potOff ? 1 : 1.2) * (arcIdx === 0 && !fF.injOff ? 1.1 : 1);
+const BUF_D = BUF_D0;
 const realMx = (m) => (m > LINK_MX && LINK_MX ? m - LINK_MX + LINK_MX / BUF_D : m);
 const MREF = charMax + dollMax > 0 ? realMx(charMax + dollMax) : 3000;
 // tal · own: 재능 부분 · 고유 부분 절대 대미지, w: 재능 보너스 가중치, mul: 스킬 전체에 곱하는 계수(증발 등)
