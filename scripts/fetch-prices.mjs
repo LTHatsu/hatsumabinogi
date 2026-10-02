@@ -105,13 +105,15 @@ try {
 try {
   const SEL = '탈라가흐 인챈트 선택 스크롤';
   const keyOf = (it) => { const opt = (it.item_option || []).map((o) => [o.option_type, o.option_sub_type, o.option_value, o.option_value2].filter((v) => v !== undefined && v !== null && v !== '').join(' ')).join(' / '); return (it.item_display_name || it.item_name || SEL) + (opt ? ' | ' + opt : ''); };
-  const live = await collect('/mabinogi/v1/auction/list', { item_name: SEL }, 5);
+  // 아이템 이름이 정확히 일치해야 해서 키워드 '탈라가흐'로 찾고, 찾은 이름으로 거래 내역을 받아요
+  const live = (await collect('/mabinogi/v1/auction/keyword-search', { keyword: '탈라가흐' }, 5)).filter((it) => /인챈트/.test(String(it.item_name || '') + String(it.item_display_name || '')));
   const sel = {};
   for (const it of live) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const k = keyOf(it); const c = sel[k]; if (!c) sel[k] = { min: price, count: 1 }; else { c.min = Math.min(c.min, price); c.count += 1; } }
-  const histL = await collect('/mabinogi/v1/auction/history', { item_name: SEL }, 5);
+  const selNames = [...new Set(live.map((it) => it.item_name).filter(Boolean))]; if (!selNames.length) selNames.push(SEL);
+  const histL = []; for (const nm of selNames) { try { (await collect('/mabinogi/v1/auction/history', { item_name: nm }, 5)).forEach((it) => histL.push(it)); } catch (e) { errors.push(String(e.message || e)); } }
   const selH = Object.assign({}, prices.talagahHistory || {});
   for (const it of histL) { const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue; const at = it.date_auction_buy || it.date_auction_expire || ''; const k = keyOf(it); const c = selH[k]; if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) selH[k] = { last: price, at }; }
-  prices.talagah = sel; prices.talagahHistory = selH; prices.talagahSample = live.concat(histL).slice(0, 3).map((it) => ({ item_name: it.item_name, item_display_name: it.item_display_name, item_option: it.item_option || [] })); prices.talagahUpdatedAt = new Date().toISOString();
+  prices.talagah = sel; prices.talagahHistory = selH; prices.talagahNames = selNames; prices.talagahSample = live.concat(histL).slice(0, 3).map((it) => ({ item_name: it.item_name, item_display_name: it.item_display_name, item_option: it.item_option || [] })); prices.talagahUpdatedAt = new Date().toISOString();
 } catch (e) { errors.push(String(e.message || e)); }
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
