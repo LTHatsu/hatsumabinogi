@@ -164,6 +164,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <sc-if value="{{det.hwOk}}" hint-placeholder-val="{{ true }}"><label class="fl">무리아스의 성수<select class="f" value="{{det.hwType}}" onChange="{{det.onHwType}}"><option value="">효과 없음</option><option value="max">{{mxLabel}}</option><option value="cdmg">크리티컬 대미지</option></select></label>
 <sc-if value="{{det.hwMaxOn}}" hint-placeholder-val="{{ false }}"><label class="fl"><span>성수 {{mxLabel}}</span><input class="f" type="number" min="1" max="30" placeholder="1~30" value="{{det.hwMax}}" onChange="{{det.onHwMax}}" onBlur="{{det.blurHwMax}}"></label></sc-if>
 <sc-if value="{{det.hwCdOn}}" hint-placeholder-val="{{ false }}"><label class="fl">성수 크리티컬 대미지<select class="f" value="{{det.hwCd}}" onChange="{{det.onHwCd}}"><option value="">선택</option><option value="1">+1%</option><option value="2">+2%</option><option value="3">+3%</option><option value="4">+4%</option></select></label></sc-if></sc-if>
+<sc-if value="{{det.ringOn}}" hint-placeholder-val="{{ false }}"><label class="fl">삼색 보석 반지 옵션<select class="f" value="{{det.ringT}}" onChange="{{det.onRingT}}"><option value="">선택</option><option value="max">최대 대미지</option><option value="mag">마법 공격력</option><option value="alc">모든 속성 연금술 대미지</option></select></label><label class="fl"><span>옵션 수치</span><input class="f" type="number" min="1" max="7" placeholder="1~7" value="{{det.ringV}}" onChange="{{det.onRingV}}" onBlur="{{det.blurRingV}}"></label><span style="grid-column: 1 / -1; font-size: 13px; line-height: 1.5; color: #6B5A45">캐릭터 정보에 입력한 스탯에 이미 포함된 값이에요 · 세팅 시뮬레이터에서 이 반지를 다른 장비로 바꾸면 이 수치가 빠져요</span></sc-if>
 </div>
 </sc-if>
 </sc-if>
@@ -264,7 +265,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <div style="padding: 10px 12px; border-radius: 12px; border: {{x.border}}; background: {{x.bg}}; display: flex; flex-direction: column; gap: 8px">
 <div style="display: flex; justify-content: space-between; align-items: baseline"><strong style="font-size: 14px">{{x.label}}</strong><span style="font-size: 12px; color: {{x.maxFg}}">{{x.max}}</span></div>
 <div style="display: flex; flex-direction: column; gap: 8px">
-<select class="f" aria-label="{{x.label}} 오검 워드 효과" value="{{x.value}}" onChange="{{x.onEffect}}"><option value="">{{x.first}}</option><sc-for list="{{x.groups}}" as="g" hint-placeholder-count="2"><optgroup label="{{g.label}}"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></optgroup></sc-for></select>
+<div style="position: relative; min-width: 0"><input class="f" type="search" autocomplete="off" aria-label="{{x.label}} 오검 워드 효과" value="{{x.q}}" placeholder="{{x.ph}}" onChange="{{x.onQ}}" onFocus="{{x.onFocus}}" onBlur="{{x.onBlur}}" style="width: 100%; box-sizing: border-box"><sc-if value="{{x.sugOn}}" hint-placeholder-val="{{ false }}"><div role="listbox" aria-label="{{x.label}} 오검 워드 효과 목록" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px; max-height: 320px; overflow-y: auto; background: #FFFBF2; border: 1px solid #B6A27E; border-radius: 10px; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.16)"><sc-for list="{{x.sugList}}" as="o" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{o.pick}}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 14px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; font-size: 14px; color: #2A2119; cursor: pointer"><span style="min-width: 0">{{o.name}}</span><span style="flex-shrink: 0; font-size: 12px; color: #8A5A1E">{{o.grp}}</span></button></sc-for><sc-if value="{{x.sugNone}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 10px 14px; font-size: 13px; color: #6B5A45">일치하는 효과가 없어요</span></sc-if></div></sc-if></div>
 <select class="f" aria-label="{{x.label}} 레벨" value="{{x.lv}}" onChange="{{x.onLevel}}"><sc-for list="{{x.lvOpts}}" as="l" hint-placeholder-count="10"><option value="{{l.v}}">{{l.label}}</option></sc-for></select>
 </div>
 </div>
@@ -323,7 +324,7 @@ try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if 
 const RN = (x) => (typeof x !== 'string' ? x : x.replace(/소울리버레이트/g, '소울 리버레이트').replace('나이트브링어 어썰트', '나이트브링어 어설트').replace('소울 리버레이트 콜로서스(피에로) 미니어처', '소울 리버레이트 콜로서스 미니어처').replace(/^워리어 실드$/, '소울 리버레이트 워리어 실드'));
 // 세공 옵션 이름도 에린 데이터 이름으로
 const SGRN = { '크래시샷': '크래시 샷 파편 대미지', '매그넘샷': '매그넘 샷 대미지', '불 연금술 마스터리': '불 연금술 마스터리 효율', '물 연금술 마스터리': '물 연금술 마스터리 효율', '바람 연금술 마스터리': '바람 연금술 마스터리 효율', '대쉬펀치': '연속기 : 대쉬 펀치 대미지', '스크류 어퍼': '연속기 : 스크류 어퍼 대미지', '드롭킥': '연속기 : 드롭킥 대미지', '차징피스트': '연속기 : 차징 피스트 대미지', '섬머솔트': '연속기 : 섬머솔트 대미지', '파운딩': '연속기 : 파운딩 대미지', '연속기 마스터리': '연속기 마스터리 대미지' };
-v.chars.forEach((c) => { const f = c && c.info && c.info.fields; if (f) { ['weapon', 'sub'].forEach((k) => { if (f[k]) f[k] = RN(f[k]); }); } const eq = c && c.gear && c.gear.eq; if (eq) { Object.keys(eq).forEach((k) => { eq[k] = RN(eq[k]); }); } const det = c && c.gear && c.gear.det; if (det) { Object.keys(det).forEach((k) => { ((det[k] && Array.isArray(det[k].sg)) ? det[k].sg : []).forEach((q) => { if (q && SGRN[q.o]) q.o = SGRN[q.o]; }); }); } });
+v.chars.forEach((c) => { const f = c && c.info && c.info.fields; if (f) { ['weapon', 'sub'].forEach((k) => { if (f[k]) f[k] = RN(f[k]); }); } const eq = c && c.gear && c.gear.eq; if (eq) { Object.keys(eq).forEach((k) => { eq[k] = RN(eq[k]); }); } const det = c && c.gear && c.gear.det; if (det) { const RFXRN = { '희생의 응징 희생 대미지 증가': '희생의 응징 : 성찰의 흔적 적용 중 세이크리드 가드 스킬 대미지 증가', '희생의 응징 희생 차감 비율 증가': '희생의 응징 : 성찰의 흔적 적용 중 세이크리드 가드 스킬 대미지 증가', '고결한 희생 대미지 주기 증가': '고결한 서약 매초 희생 회복량 증가', '서먼 나이트메어 4단계 효과 계수 증가': '서먼 나이트메어 속성 에너지 4개 소모 추가 대미지 배율 증가', '서먼 나이트메어 4단계 디버프 효과 계수 증가': '서먼 나이트메어 속성 에너지 4개 소모 추가 대미지 배율 증가', '인터루드 슬래시 대미지 증가': '인터루드 슬래시의 4막: 질투의 화신 대미지 배율 증가', '하이드로 피어스 대미지 증가': '하이드로 피어스 최대 대미지 배율 증가', '익스플로전 런지 재사용 대기 시간 감소': '익스플로전 런지 대미지 증가', '라이트닝 체인 재사용 대기 시간 감소': '라이트닝 체인 대미지 증가' }; Object.keys(det).forEach((k) => { if (det[k] && RFXRN[det[k].rFx]) { det[k].rFx = RFXRN[det[k].rFx]; } /* 유물 효과 이름 변경 */ ((det[k] && Array.isArray(det[k].sg)) ? det[k].sg : []).forEach((q) => { if (q && SGRN[q.o]) q.o = SGRN[q.o]; }); }); } });
 return v; } } catch (e) {}
 return { cur: 0, savedAt: '', chars: [{ name: '캐릭터 A', info: null, gear: null }, { name: '캐릭터 B', info: {}, gear: { eq: {}, og: {} } }] };
 }
@@ -388,19 +389,19 @@ pick: () => this.upd({ sel: d[0], detErr: false })
 }));
 const selKey = keyOf(s.sel);
 // 장비별 수치 (시뮬레이터 상승폭 계산용 · 캐릭터 스탯에는 더하지 않음): 주무기 최대 대미지, 접두 · 접미 인챈트 최대 대미지(유동 8~12)
-// 무리아스의 유물 효과 (아르카나별 3종, 1~10레벨 · 최대 수치) — 출처: mabinogi.begchi.com
+// 무리아스의 유물 효과 (아르카나별 3종, 1~10레벨 · 최대 수치) — 출처: 경매장 매물 옵션 (NEXON Open API)
 const RELIC_FX = {
 '엘레멘탈 나이트': [['파이어 리프 어택 대미지 증가', '500%'], ['아이스 윈드밀 대미지 증가', '600%'], ['라이트닝 스매시 대미지 증가', '800%']],
-'세인트 바드': [['구원의 메아리 회복량 증가', '500'], ['정화의 고동 지속 시간 증가', '5초'], ['붕괴의 파동 지속 시간 증가', '5초']],
-'다크 메이지': [['익스플로전 런지 재사용 대기 시간 감소', '2초'], ['라이트닝 체인 재사용 대기 시간 감소', '4초'], ['스노우 스톰 지속 시간 증가', '5초']],
-// 알케믹 스팅어는 계산 시트 기준 (레벨당: 플레임 버스트 타당 +45%p · 하이드로 피어스 +110%p · 트라이 어설트 피니시 +150%p)
-'알케믹 스팅어': [['플레임 버스트 대미지 증가', '450%', 45], ['하이드로 피어스 대미지 증가', '1100%', 110], ['트라이 어설트 피니시 대미지 증가', '1500%', 150]],
-'세이크리드 가드': [['희생의 응징 희생 대미지 증가', '10%'], ['심판의 일격 대미지 증가', '600%'], ['고결한 희생 대미지 주기 증가', '2초']],
+'세인트 바드': [['구원의 메아리 회복량 증가', '10%'], ['정화의 고동 지속 시간 증가', '5초'], ['붕괴의 파동 지속 시간 증가', '5초']],
+'다크 메이지': [['익스플로전 런지 대미지 증가', '20%'], ['라이트닝 체인 대미지 증가', '30%'], ['스노우 스톰 지속 시간 증가', '5초']],
+// 알케믹 스팅어 레벨당: 플레임 버스트 타당 +45%p · 하이드로 피어스 +110%p · 트라이 어설트 피니시 +150%p
+'알케믹 스팅어': [['플레임 버스트 대미지 증가', '450%', 45], ['하이드로 피어스 최대 대미지 배율 증가', '1100%', 110], ['트라이 어설트 피니시 대미지 증가', '1500%', 150]],
+'세이크리드 가드': [['희생의 응징 : 성찰의 흔적 적용 중 세이크리드 가드 스킬 대미지 증가', '5%'], ['심판의 일격 대미지 증가', '1000%'], ['고결한 서약 매초 희생 회복량 증가', '0.5']],
 '블래스트 랜서': [['임팩트 크러시 대미지 증가', '500%'], ['오버 드라이브 폭발 공격 대미지 증가', '700%'], ['어나이얼레이션 대폭발 과열 계수 증가', '3']],
 '배리어블 거너': [['헤비 아틸러리 대미지 증가', '300%'], ['데바스테이션 캐논 대미지 증가', '400%'], ['페이탈 스코프 대미지 증가', '400%']],
-'포비든 알케미스트': [['케미컬 카니발 대미지 증가', '300%'], ['스파이럴 이럽션 대미지 증가', '200%'], ['서먼 나이트메어 4단계 효과 계수 증가', '300%']],
-'멜로딕 퍼피티어': [['다운비트 악센트 캐릭터 대미지 추가', '700%'], ['인터루드 슬래시 대미지 증가', '150%'], ['그랜드 피날레 에코 마리오네트 공격에 캐릭터 대미지 추가', '1500%']],
-'퓨리 파이터': [['익시드 : 체인 블로우 피니시 대미지 증가', '500%'], ['익시드 : 임팩트 다이브 대미지 증가', '500%'], ['익시드 : 포스 슬램 대미지 증가', '1000%']]
+'포비든 알케미스트': [['케미컬 카니발 대미지 증가', '300%'], ['스파이럴 이럽션 대미지 증가', '200%'], ['서먼 나이트메어 속성 에너지 4개 소모 추가 대미지 배율 증가', '50%']],
+'멜로딕 퍼피티어': [['인터루드 슬래시의 4막: 질투의 화신 대미지 배율 증가', '20%'], ['다운비트 악센트 캐릭터 대미지 추가', '700%'], ['그랜드 피날레 에코 마리오네트 공격에 캐릭터 대미지 추가', '1500%']],
+'퓨리 파이터': [['익시드 : 체인 블로우 피니시 대미지 증가', '300%'], ['익시드 : 임팩트 다이브 대미지 증가', '200%'], ['익시드 : 포스 슬램 대미지 증가', '1000%']]
 };
 // 토템 — 최대 대미지 토템(1~35) · 왕립 학회 주화(1~20) · 보너스 대미지 애뮬릿(1~3%) · 알반 기사단의 토템(최대 대미지 5단계 +5씩 또는 크리티컬 대미지 5단계 +1%씩 중 1개) · 신비한 에린사전(보너스 대미지 0.1~1.0%)
 const TOTEM_NUM = [['max', MX === '마법 공격력' ? '마법 공격력 토템' : (MX === '연금술 대미지' ? '모든 연금술 대미지 토템' : '최대 대미지 토템'), 1, 35, '1~35', '은']].concat(MX === '연금술 대미지' ? [] : [['coin', MX === '마법 공격력' ? '왕립 학회 주화 (마법 공격력)' : '왕립 학회 주화', 1, 20, '1~20', '는']]).concat([['amulet', '보너스 대미지 애뮬릿 (%)', 1, 3, '1~3', '은']]); /* 다크 메이지는 마법 공격력 토템 · 왕립 학회 주화(마법 공격력), 포비든 알케미스트는 모든 연금술 대미지 토템 (왕립 학회 주화 없음) */
@@ -503,8 +504,8 @@ onLv: (ev) => { if (cur) setE({ sg: [{ o: sgE.o, lv: ev.target.value, mx: mlv }]
 info: !EC ? '에코스톤 정보 불러오는 중' : (!st ? '에코스톤은 최대 3개, 색마다 1개씩 장착할 수 있어요 (30등급 기준) · 종류를 고르면 고유 능력 · 각성 능력을 입력해요' : '고유 능력 ' + st[2] + (e.inh ? ' +' + e.inh : ' (수치 입력)') + ' · 각성 능력 ' + (cur ? cur[0] + ' Lv.' + (sgE.lv || 1) + (cur[1] != null ? ' (' + val(cur, Number(sgE.lv) || 1) + ')' : '') : '없음') + (cur ? (() => { const eqLv = Object.keys(detAll).filter((k) => SL.indexOf(k) < 0).reduce((a, k) => a + ((detAll[k] || {}).sg || []).reduce((b, q) => b + (q && q.o === cur[0] ? Number(q.lv) || 0 : 0), 0), 0); const lvE = Number(sgE.lv) || 1; if (SG_GEN_RE.test(cur[0])) return ' · 일반 옵션이라 장비 세공' + (eqLv ? ' Lv.' + eqLv : '') + '과 합산돼요' + (eqLv ? ' (총 Lv.' + (eqLv + lvE) + ')' : ''); return ' · 스킬 옵션이라 장비 세공과 중첩되지 않고 높은 쪽만 적용돼요' + (eqLv ? ' (장비 세공 Lv.' + eqLv + ' → ' + (lvE > eqLv ? '에코스톤 Lv.' + lvE + ' 적용' : '장비 세공 적용') + ')' : ''); })() : '')) };
 })();
 // 에르그는 S등급 50레벨 고정 (입력 없음) · 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30
-const FIELD_RANGE = { ergLv: [1, 50], dErg: [1, 50], hwMax: [1, 30] };
-const FIELD_NAME = { pre: '접두 인챈트 수치는', suf: '접미 인챈트 수치는', ergLv: '에르그 레벨은', dErg: '어둠의 에르그 레벨은', hwMax: '성수 수치는' };
+const FIELD_RANGE = { ergLv: [1, 50], dErg: [1, 50], hwMax: [1, 30], ringV: [1, 7] };
+const FIELD_NAME = { pre: '접두 인챈트 수치는', suf: '접미 인챈트 수치는', ergLv: '에르그 레벨은', dErg: '어둠의 에르그 레벨은', hwMax: '성수 수치는', ringV: '삼색 보석 반지 옵션 수치는' };
 const encRange = (k) => FIELD_RANGE[k] || enSel[k] || [0, 0];
 const encOk = (k, v) => { const r = encRange(k); const n = Number(v); return /^-?\d+$/.test(String(v)) && n >= r[0] && n <= r[1]; };
 // 입력하는 동안은 숫자면 그대로 두고, 다른 칸으로 이동하는 순간 범위를 확인해 벗어나면 지우고 안내해요
@@ -758,6 +759,8 @@ lv: cur ? String(cur.lv) : '', lvOpts: cur ? Array.from({ length: mx }, (_, k) =
 max: cur ? '최대 Lv.' + mx : '—', maxFg: cur ? '#2A2119' : '#8C7A62',
 border: cur ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: cur ? '#F3F8F4' : '#FBF5E8',
 onEffect: (e) => { const v = e.target.value; setFx(i, v ? { e: v, lv: Math.min(cur ? cur.lv : 1, maxOf(v)) } : null); },
+// 효과 검색 — 아이템 칸처럼 이름 일부(띄어쓰기 무시)로 목록을 좁혀 골라요
+...(() => { const open = s.ogFxOpen === i && !!tpSel; const qRaw = open && s.ogFxQ !== undefined && s.ogFxQ !== null ? String(s.ogFxQ) : null; const qn = (qRaw || '').replace(/\s/g, '').toLowerCase(); const grp = (tpSel && isSpecialOg(tpSel) ? [['아르카나 스킬', mk(OG_ARC)]] : []).concat(tpSel ? [['재능 스킬', mk(OG_TAL)]] : []); const all = []; grp.forEach((g) => g[1].forEach((o) => { all.push({ v: o.v, grp: g[0] }); })); const hits = all.filter((o) => !qn || o.v.replace(/\s/g, '').toLowerCase().indexOf(qn) >= 0); const close = () => this.setState({ ogFxOpen: -1, ogFxQ: null }); const list = (cur && !qn ? [{ name: '효과 해제', grp: '', pick: (ev) => { if (ev && ev.preventDefault) ev.preventDefault(); setFx(i, null); close(); } }] : []).concat(hits.map((o) => ({ name: o.v, grp: o.grp, pick: (ev) => { if (ev && ev.preventDefault) ev.preventDefault(); setFx(i, { e: o.v, lv: Math.min(cur ? cur.lv : 1, maxOf(o.v)) }); close(); } }))); return { q: qRaw !== null ? qRaw : (cur ? cur.e : ''), ph: tpSel ? '효과 이름 일부를 입력하면 목록이 나와요 (예: 하이드로)' : '오검 종류를 먼저 골라 주세요', sugOn: open, sugNone: open && !list.length, sugList: list, onQ: (e) => this.setState({ ogFxOpen: i, ogFxQ: e.target.value }), onFocus: () => this.setState({ ogFxOpen: i, ogFxQ: '' }), onBlur: () => { setTimeout(() => { if (this.state.ogFxOpen === i) { this.setState({ ogFxOpen: -1, ogFxQ: null }); } }, 150); } }; })(),
 onLevel: (e) => { if (cur) setFx(i, { e: cur.e, lv: Number(e.target.value) }); }
 };
 });
@@ -843,7 +846,7 @@ duskInfo: (() => { const SN2 = { head: '머리', body: '의상', hands: '장갑'
 onDusk: (e) => { const v = e.target.value; const all = Object.assign({}, detAll); const o = Object.assign({}, all[selKey] || {}); if (v) { o.duskOpt = v; } else { delete o.duskOpt; } all[selKey] = o; this.upd({ det: all, saved: selKey }); },
 // 무기 세트 효과 (자동) — 주무기 아이템 이름, 없으면 캐릭터 정보의 무기 종류
 wsNote: (() => { const n = String((s.eq || {}).rhand || '') || s.charWeapon || ''; if (n.indexOf('소울 리버레이트') >= 0 && (n.indexOf('보우') >= 0 || n.indexOf('크로스보우') >= 0)) { return '소울 리버레이트 무기 세트 효과 · 크래시샷 배율 ×1.2 · 매그넘샷 배율 ×1.15 (자동 적용)'; } if (n.indexOf('나이트브링어') >= 0) { return '나이트브링어 무기 세트 효과 · 크래시샷 배율 ×1.15 (자동 적용)'; } return ''; })(),
-ergHwOn: s.sel === 'rhand' || (s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0), hwOk: s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0, hwType: dCur.hwType || '', onHwType: (e) => setDet('hwType', e.target.value), hwMaxOn: dCur.hwType === 'max', hwCdOn: dCur.hwType === 'cdmg', hwMax: dCur.hwMax || '', onHwMax: encCh('hwMax'), blurHwMax: encBlur('hwMax'), hwCd: dCur.hwCd || '', onHwCd: (e) => setDet('hwCd', e.target.value) },
+ergHwOn: s.sel === 'rhand' || (s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0), hwOk: s.sel !== 'robe' && String(s.sel).indexOf('relic') !== 0, hwType: dCur.hwType || '', onHwType: (e) => setDet('hwType', e.target.value), hwMaxOn: dCur.hwType === 'max', hwCdOn: dCur.hwType === 'cdmg', hwMax: dCur.hwMax || '', onHwMax: encCh('hwMax'), blurHwMax: encBlur('hwMax'), hwCd: dCur.hwCd || '', onHwCd: (e) => setDet('hwCd', e.target.value), ringOn: (selKey === 'acc1' || selKey === 'acc2') && String((s.eq || {})[selKey] || '').indexOf('삼색 보석 반지') >= 0, ringT: dCur.ringT || '', onRingT: (e) => setDet('ringT', e.target.value), ringV: dCur.ringV || '', onRingV: encCh('ringV'), blurRingV: encBlur('ringV') },
 onSpirit: (e) => this.upd({ exSpirit: e.target.checked }),
 onItem: (e) => { const rel = String(selKey).indexOf('relic') === 0; const v = rel && e.target.value.trim() ? '무리아스의 유물' : e.target.value; const eq = Object.assign({}, s.eq); if (v.trim()) { eq[selKey] = v; } else { delete eq[selKey]; } const known = !!(ED && ((this._edMap || {})[edSlot(selKey)] || {})[v.trim()]); this.upd(Object.assign({ eq: eq, saved: selKey, sugOpen: true }, known ? { det: detOnItem(s.det, selKey, v.trim()) } : {})); },
 onItemFocus: () => this.setState({ sugOpen: true }), onItemBlur: () => { setTimeout(() => this.setState({ sugOpen: false }), 150); },
