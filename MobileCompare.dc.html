@@ -464,7 +464,7 @@ const duskList = duskSl.map((k) => duskBy[k]).filter((q, i, a) => q && a.indexOf
 // 재능 스킬 강화 세트 효과 — 해당 재능 스킬 대미지 ×(1 + n%) · 그 재능 스킬이 들어간 아르카나 스킬의 재능 부분에도 똑같이 적용 · 다른 세트끼리는 곱해요
 const skMul = (label) => { const D = (s.eqData && s.eqData.skillSets) || {}; return [actSets, wSetMap].reduce((m, S) => { const p = Object.keys(S).reduce((x, q) => (D[q] && D[q][1] === label ? Math.max(x, D[q][2]) : x), 0); return m * (1 + p / 100); }, 1); };
 const magMul = () => (actSets.magnum ? 1.15 : 1) * (wSetMap.magnum ? 1.15 : 1);
-const pItemG = (n) => { const x = pAllE[n]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? v : 0; };
+const pItemG = (n) => { if (/삼색 보석 반지/.test(String(n))) return 0; /* 삼색 보석 반지는 옵션마다 값이 달라 시세 직접 입력 */ const x = pAllE[n]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? v : 0; };
 // 무기 보너스 대미지 = 주무기(한손 최대 56%) + 보조무기(화살 · 볼트 등 최대 56%) 합계 · 캐릭터 정보 입력값에서 보조무기 몫(마스터 기준)을 빼면 주무기 몫
 const curWBAll = Number(fInfo.gearBonus) || 0; const subWB = ((EPK && EPK.wstat && EPK.wstat[String(((gear && gear.eq) || {}).lhand || '') || fInfo.sub || '']) || [0, 0])[1] || 0; const curWB = curWBAll ? Math.max(0, curWBAll - subWB) : 0;
 // 삼색 보석 반지 고유 옵션(최대 대미지 · 마법 공격력 · 모든 속성 연금술 대미지 중 1종, 1~7) — 캐릭터 스탯에 이미 포함, 다른 장비로 바꾸면 빠져요 (아르카나 주요 스탯과 같은 옵션만)
