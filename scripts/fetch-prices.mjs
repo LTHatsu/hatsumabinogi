@@ -26,8 +26,11 @@ async function collect(path, params, maxPages = MAX_PAGES) {
   }
   return items;
 }
+// 미완성 장비(표시 이름 끝에 '(미완성)', 공정률이 남은 제작품)는 완성품보다 훨씬 싸서 시세에서 빼요
+const unfinished = (it) => /\(미완성\)/.test(String(it.item_display_name || ''));
 function summarize(list, into) {
   for (const it of list) {
+    if (unfinished(it)) continue;
     const price = Number(it.auction_price_per_unit);
     if (!(price > 0)) continue;
     // 인챈트 스크롤 등은 표시 이름에 인챈트 이름이 붙어 있어 두 이름 모두 기록해요
@@ -60,7 +63,7 @@ if (catDue && (prices.categories || []).length) {
     try {
       const list = await collect('/mabinogi/v1/auction/history', { auction_item_category: cat }, Number(prices.historyMaxPages) || 10);
       for (const it of list) {
-        const price = Number(it.auction_price_per_unit); if (!(price > 0)) continue;
+        const price = Number(it.auction_price_per_unit); if (!(price > 0) || unfinished(it)) continue;
         const at = it.date_auction_buy || it.date_auction_expire || '';
         for (const name of new Set([it.item_name, it.item_display_name].filter(Boolean))) {
           const c = fresh[name];
@@ -128,8 +131,6 @@ try {
   prices.echo = ec; prices.echoHistory = ecH; prices.echoUpdatedAt = new Date().toISOString();
   delete prices.echoNames; delete prices.echoSample;
 } catch (e) { errors.push(String(e.message || e)); }
-// 진단 — 미완성(공정률) 장비 확인용: 이름 · 표시 이름 차이, '공정' · '완성' 이 들어간 옵션 · 이름 (임시)
-try { const out = { diffName: [], opt: [], kw: [] }; for (const cat of ['중갑옷', '경갑옷', '천옷', '신발', '장갑', '모자/가발']) { for (const it of await collect('/mabinogi/v1/auction/list', { auction_item_category: cat }, 5)) { if (it.item_display_name && it.item_display_name !== it.item_name && out.diffName.length < 40) out.diffName.push(it.item_name + ' => ' + it.item_display_name); (it.item_option || []).forEach((o) => { const t = [o.option_type, o.option_sub_type, o.option_value, o.option_value2, o.option_desc].join(' | '); if (/공정|완성|제작/.test(t) && out.opt.length < 40) out.opt.push(it.item_name + ' :: ' + t.slice(0, 120)); }); } } for (const it of await collect('/mabinogi/v1/auction/keyword-search', { keyword: '미완성' }, 2)) { if (out.kw.length < 30) out.kw.push(it.item_name + ' => ' + it.item_display_name + ' :: ' + (it.item_option || []).map((o) => o.option_type + '=' + o.option_value).join(', ').slice(0, 150)); } prices.optProbe = out; } catch (e) { errors.push(String(e.message || e)); }
 prices.items = items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
 await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);
