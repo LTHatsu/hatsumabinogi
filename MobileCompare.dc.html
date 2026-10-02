@@ -279,7 +279,7 @@ try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if 
 const RN = (x) => (typeof x !== 'string' ? x : x.replace(/소울리버레이트/g, '소울 리버레이트').replace('나이트브링어 어썰트', '나이트브링어 어설트').replace('소울 리버레이트 콜로서스(피에로) 미니어처', '소울 리버레이트 콜로서스 미니어처').replace(/^워리어 실드$/, '소울 리버레이트 워리어 실드'));
 // 세공 옵션 이름도 에린 데이터 이름으로
 const SGRN = { '크래시샷': '크래시 샷 파편 대미지', '매그넘샷': '매그넘 샷 대미지', '불 연금술 마스터리': '불 연금술 마스터리 효율', '물 연금술 마스터리': '물 연금술 마스터리 효율', '바람 연금술 마스터리': '바람 연금술 마스터리 효율', '대쉬펀치': '연속기 : 대쉬 펀치 대미지', '스크류 어퍼': '연속기 : 스크류 어퍼 대미지', '드롭킥': '연속기 : 드롭킥 대미지', '차징피스트': '연속기 : 차징 피스트 대미지', '섬머솔트': '연속기 : 섬머솔트 대미지', '파운딩': '연속기 : 파운딩 대미지', '연속기 마스터리': '연속기 마스터리 대미지' };
-v.chars.forEach((c) => { const f = c && c.info && c.info.fields; if (f) { ['weapon', 'sub'].forEach((k) => { if (f[k]) f[k] = RN(f[k]); }); } const eq = c && c.gear && c.gear.eq; if (eq) { Object.keys(eq).forEach((k) => { eq[k] = RN(eq[k]); }); } const det = c && c.gear && c.gear.det; if (det) { Object.keys(det).forEach((k) => { ((det[k] && Array.isArray(det[k].sg)) ? det[k].sg : []).forEach((q) => { if (q && SGRN[q.o]) q.o = SGRN[q.o]; }); }); } });
+v.chars.forEach((c) => { const f = c && c.info && c.info.fields; if (f) { ['weapon', 'sub'].forEach((k) => { if (f[k]) f[k] = RN(f[k]); }); } const eq = c && c.gear && c.gear.eq; if (eq) { Object.keys(eq).forEach((k) => { eq[k] = RN(eq[k]); }); } const det = c && c.gear && c.gear.det; if (det) { const RFXRN = { '희생의 응징 희생 대미지 증가': '희생의 응징 희생 차감 비율 증가', '서먼 나이트메어 4단계 효과 계수 증가': '서먼 나이트메어 4단계 디버프 효과 계수 증가', '인터루드 슬래시 대미지 증가': '인터루드 슬래시의 4막: 질투의 화신 대미지 배율 증가' }; Object.keys(det).forEach((k) => { if (det[k] && RFXRN[det[k].rFx]) { det[k].rFx = RFXRN[det[k].rFx]; } /* 유물 효과 이름 변경 */ ((det[k] && Array.isArray(det[k].sg)) ? det[k].sg : []).forEach((q) => { if (q && SGRN[q.o]) q.o = SGRN[q.o]; }); }); } });
 return v; } } catch (e) {}
 return null;
 }
@@ -705,11 +705,11 @@ const MREF = charMax + dollMax > 0 ? realMx(charMax + dollMax) : 3000;
 // tal · own: 재능 부분 · 고유 부분 절대 대미지, w: 재능 보너스 가중치, mul: 스킬 전체에 곱하는 계수(증발 등)
 const arcHit = (tal, own, w, mul) => { const m = mul || 1; const inW = Math.max(0, tal) * PIERCE_G * w; const pre = (inW + own) * m; const v = Math.max(0, pre * PROT_K - DEF_V); return { v: v, tal: inW * m * PROT_K, pre: pre, inW: inW * m }; };
 // 화면 표시용 스킬 배율 (보호 · 피어싱 적용 전)
-const flHit = crash + 1080 + 45 * rFl + sv('ogFl');
+const flHit = crash + 1080 + 30 * rFl + sv('ogFl');
 const flame = flHit * (bun ? 1.09 * 4 : 3);
 // 매그넘샷 → 하이드로피어스 (격류: (매그넘 + 하이드로×0.15) × 7)
 const magnum = (590 + (sv('mgLv') + sv('magi')) * 10 + dErgLv * 3 + sv('ogMg')) * setMg * wMg;
-const hydro = magnum + (3280 + 110 * rHy + sv('ogHy')) * 1.3;
+const hydro = magnum + (3280 + 60 * rHy + sv('ogHy')) * 1.3;
 const flow = magnum + hydro * 0.15;
 // 트라이어설트 (1·2타 + 3타, 연금술 마스터리 계수 — 불 · 물 · 바람 세공 레벨당 0.5%, 흙 세공 레벨당 0.2%)
 const triM = 1 + (0.1 + sv('fire') * 0.005) + (0.1 + sv('water') * 0.005) + (0.1 + sv('wind') * 0.005) + (0.1 + sv('earth') * 0.002); /* 흙 세공은 레벨당 0.2 */
@@ -717,7 +717,7 @@ const triM = 1 + (0.1 + sv('fire') * 0.005) + (0.1 + sv('water') * 0.005) + (0.1
 const evap = 1.1 + 0.005 * (sv('fire') + sv('water'));
 // 융합 (페른 · 이다드 · 에바드) — 1 · 2타는 그대로, 피니시 배율 +4500%p (과열 · 전류 · 분진 · 냉각 · 부식 계수는 받는 대로 추가)
 let triFin = 4400 + (yung ? 4500 : 0); let triSyn = evap;
-const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
+const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 100 * rTr + sv('ogTr'))) * triM * triSyn;
 // 알케믹 스팅어 스킬별 대미지 — 위 보호 · 피어싱 · 방어 구조 · w: 재능 보너스 가중치
 const stgParts = (ov, w) => {
 const g = (k) => sv(k) + ((ov.sg || {})[k] || 0); const lv = ov.relic || { fl: rFl, hy: rHy, tr: rTr }; const MM = ov.M !== undefined ? ov.M : MREF; const P = (pct) => MM * pct / 100;
@@ -727,12 +727,12 @@ const magV = (590 + (g('mgLv') + sv('magi')) * 10 + dE * 3 + sv('ogMg')) * magMu
 const ev = 1.1 + 0.005 * (g('fire') + g('water'));
 const tM = 1 + (0.1 + g('fire') * 0.005) + (0.1 + g('water') * 0.005) + (0.1 + g('wind') * 0.005) + (0.1 + g('earth') * 0.002);
 // 플레임 버스트 1타 = 크래시샷(재능) + 고유 1080% · 3타 (분출: × 1.09 · 4타) · 증발 계수
-const fh = arcHit(P(crashV), P(1080 + 45 * lv.fl + sv('ogFl')), w, ev); const fn = bun ? 1.09 * 4 : 3;
+const fh = arcHit(P(crashV), P(1080 + 30 * lv.fl + sv('ogFl')), w, ev); const fn = bun ? 1.09 * 4 : 3;
 // 하이드로 피어스 = 매그넘샷(재능) + 고유 (3280% + 유물 + 오검) × 1.3 · 격류: 7타 × (매그넘 + 하이드로 × 0.15)
-const arm = P((3280 + 110 * lv.hy + sv('ogHy')) * 1.3); let hy;
+const arm = P((3280 + 60 * lv.hy + sv('ogHy')) * 1.3); let hy;
 if (gyeok) { const inW = P(magV) * PIERCE_G * w; const per = Math.max(0, (inW * 1.15 + arm * 0.15) * ev * PROT_K - DEF_V); hy = { v: per * 7, tal: inW * 1.15 * ev * PROT_K * 7 }; } else { const r = arcHit(P(magV), arm, w, ev); hy = { v: r.v, tal: r.tal }; }
 // 트라이 어설트 (고유만) = 1 · 2타 + 피니시 · 연금술 마스터리 계수 · 증발 계수 (불+물 조합 기준)
-const tSyn = ev; const trv = hitOut(P((1500 + sv('ogTr')) * tM * tSyn)) * 2 + hitOut(P((triFin + 150 * lv.tr + sv('ogTr')) * tM * tSyn));
+const tSyn = ev; const trv = hitOut(P((1500 + sv('ogTr')) * tM * tSyn)) * 2 + hitOut(P((triFin + 100 * lv.tr + sv('ogTr')) * tM * tSyn));
 const cnv = arcHit(0, MM * 430, w); /* 알케믹 컨버전스(각성기): 딜 43,000% 고정 */
 return { fla: { v: fh.v * fn, tal: fh.tal * fn }, hyE: hy, trv: { v: trv, tal: 0 }, mag: { v: hitOut(P(magV)), tal: 0 }, cnv: { v: cnv.v, tal: 0 } };
 };
@@ -794,7 +794,7 @@ const J = (k) => { const q = FURY_SK[k]; const soul = furySoul ? (k === 'dk' ? 1
 const MM = ov.M !== undefined ? ov.M : MREF;
 const arc = (D, I) => { const r = arcHit(MM * D / 100, MM * I / 100, w); return { v: r.v, tal: r.tal }; };
 const ultD = furyUlt ? J('up') * (3 * 1.6 + 1.5 * 2.3) : J('up') * 4.5; const ultI = furyUlt ? 2000 * 1.6 + 1500 * 2.3 : 3500;
-const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000 + ogV('익시드 : 체인 블로우 3회 공격 및 피니시 공격의 대미지 배율 증가')), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 60 + 900 + ogV('익시드 : 임팩트 다이브 대미지 배율 증가')), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500 + ogV('익시드 : 포스 슬램 대미지 배율 증가')), '게일피어스': arc(J('cf'), 1300 + ogV('게일 피어스 대미지 배율 증가')), '포스플레어': arc(J('dk') * 0.7, 650 + ogV('포스 플레어 대미지 배율 증가')), '얼티밋스트라이크': arc(ultD, ultI + ogV('얼티밋 스트라이크 2회 공격 및 피니시 공격의 대미지 배율 증가')) };
+const A = { '익시드:체인블로우': arc(J('dp'), lv.e1 * 30 + 2000 + ogV('익시드 : 체인 블로우 3회 공격 및 피니시 공격의 대미지 배율 증가')), '익시드:임팩트다이브': arc(J('ss'), lv.e2 * 20 + 900 + ogV('익시드 : 임팩트 다이브 대미지 배율 증가')), '익시드:포스슬램': arc(J('pd'), lv.e3 * 100 + 500 + ogV('익시드 : 포스 슬램 대미지 배율 증가')), '게일피어스': arc(J('cf'), 1300 + ogV('게일 피어스 대미지 배율 증가')), '포스플레어': arc(J('dk') * 0.7, 650 + ogV('포스 플레어 대미지 배율 증가')), '얼티밋스트라이크': arc(ultD, ultI + ogV('얼티밋 스트라이크 2회 공격 및 피니시 공격의 대미지 배율 증가')) };
 const one = (k) => ({ v: hitOut(MM * J(k) / 100), tal: 0 });
 const out = { '대쉬펀치': one('dp'), '스크류어퍼': one('up'), '드롭킥': one('dk'), '차징피스트': one('cf'), '섬머솔트': one('ss'), '파운딩': one('pd') };
 // 게일 피어스 조합(닌 · 알름 · 에만콜): 게일 피어스 ×1.2 · 익시드 : 포스 슬램 ×1.12 · 드롭킥 ×1.12(위 J — 드롭킥이 들어간 포스 플레어 재능 부분 포함)
@@ -1242,19 +1242,19 @@ combo: [gyeok ? '격류(하이드로 피어스 조합)' : '', bun ? '분출(플�
 info: '무기 ' + (wName || '미선택') + ' · 세공 크래시샷 ' + sv('crLv') + ' · 매그넘샷 ' + sv('mgLv') + ' (마기그래프 ' + sv('magi') + ') · 연금술 마스터리 불 ' + sv('fire') + ' / 물 ' + sv('water') + ' / 바람 ' + sv('wind') + ' · 어둠의 에르그 ' + dErgLv + ' · 유물 플레임 ' + rFl + ' / 하이드로 ' + rHy + ' / 트라이 ' + rTr + (setMg > 1 ? ' · 매그넘샷 강화 세트' : ''),
 noShare: !(shF || shH || shM || shT)
 };
-// 무리아스의 유물 효과 (아르카나별 3종, 1~10레벨 · 최대 수치) — 출처: mabinogi.begchi.com
+// 무리아스의 유물 효과 (아르카나별 3종, 1~10레벨 · 최대 수치) — 출처: mabi.labanyu.com (브리 레흐 · 무리아스의 유물)
 const RELIC_FX = {
 '엘레멘탈 나이트': [['파이어 리프 어택 대미지 증가', '500%'], ['아이스 윈드밀 대미지 증가', '600%'], ['라이트닝 스매시 대미지 증가', '800%']],
 '세인트 바드': [['구원의 메아리 회복량 증가', '500'], ['정화의 고동 지속 시간 증가', '5초'], ['붕괴의 파동 지속 시간 증가', '5초']],
 '다크 메이지': [['익스플로전 런지 재사용 대기 시간 감소', '2초'], ['라이트닝 체인 재사용 대기 시간 감소', '4초'], ['스노우 스톰 지속 시간 증가', '5초']],
-// 알케믹 스팅어는 계산 시트 기준 (레벨당: 플레임 버스트 타당 +45%p · 하이드로 피어스 +110%p · 트라이 어설트 피니시 +150%p)
-'알케믹 스팅어': [['플레임 버스트 대미지 증가', '450%', 45], ['하이드로 피어스 대미지 증가', '1100%', 110], ['트라이 어설트 피니시 대미지 증가', '1500%', 150]],
-'세이크리드 가드': [['희생의 응징 희생 대미지 증가', '10%'], ['심판의 일격 대미지 증가', '600%'], ['고결한 희생 대미지 주기 증가', '2초']],
+// 알케믹 스팅어 레벨당: 플레임 버스트 타당 +30%p · 하이드로 피어스 +60%p · 트라이 어설트 피니시 +100%p
+'알케믹 스팅어': [['플레임 버스트 대미지 증가', '300%', 30], ['하이드로 피어스 대미지 증가', '600%', 60], ['트라이 어설트 피니시 대미지 증가', '1000%', 100]],
+'세이크리드 가드': [['희생의 응징 희생 차감 비율 증가', '10%'], ['심판의 일격 대미지 증가', '600%'], ['고결한 희생 대미지 주기 증가', '2초']],
 '블래스트 랜서': [['임팩트 크러시 대미지 증가', '500%'], ['오버 드라이브 폭발 공격 대미지 증가', '700%'], ['어나이얼레이션 대폭발 과열 계수 증가', '3']],
 '배리어블 거너': [['헤비 아틸러리 대미지 증가', '300%'], ['데바스테이션 캐논 대미지 증가', '400%'], ['페이탈 스코프 대미지 증가', '400%']],
-'포비든 알케미스트': [['케미컬 카니발 대미지 증가', '300%'], ['스파이럴 이럽션 대미지 증가', '200%'], ['서먼 나이트메어 4단계 효과 계수 증가', '300%']],
-'멜로딕 퍼피티어': [['다운비트 악센트 캐릭터 대미지 추가', '700%'], ['인터루드 슬래시 대미지 증가', '150%'], ['그랜드 피날레 에코 마리오네트 공격에 캐릭터 대미지 추가', '1500%']],
-'퓨리 파이터': [['익시드 : 체인 블로우 피니시 대미지 증가', '500%'], ['익시드 : 임팩트 다이브 대미지 증가', '500%'], ['익시드 : 포스 슬램 대미지 증가', '1000%']]
+'포비든 알케미스트': [['케미컬 카니발 대미지 증가', '300%'], ['스파이럴 이럽션 대미지 증가', '200%'], ['서먼 나이트메어 4단계 디버프 효과 계수 증가', '300%']],
+'멜로딕 퍼피티어': [['인터루드 슬래시의 4막: 질투의 화신 대미지 배율 증가', '200%'], ['다운비트 악센트 캐릭터 대미지 추가', '700%'], ['그랜드 피날레 에코 마리오네트 공격에 캐릭터 대미지 추가', '1500%']],
+'퓨리 파이터': [['익시드 : 체인 블로우 피니시 대미지 증가', '300%'], ['익시드 : 임팩트 다이브 대미지 증가', '200%'], ['익시드 : 포스 슬램 대미지 증가', '1000%']]
 };
 const ARC_NAMES = ['엘레멘탈 나이트', '세인트 바드', '다크 메이지', '알케믹 스팅어', '세이크리드 가드', '블래스트 랜서', '배리어블 거너', '포비든 알케미스트', '멜로딕 퍼피티어', '퓨리 파이터'];
 const relicList = RELIC_FX[ARC_NAMES[arcIdx]] || [];
