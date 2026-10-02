@@ -138,7 +138,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <div role="status" style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #F3F8F4; border: 1px solid #CFE0D5; color: #1E3D2E"><span style="display: flex; align-items: center; gap: 8px"><strong style="font-family: 'Gowun Batang', serif; font-size: 15px">{{rfPair}}</strong></span><span style="font-size: 13px; line-height: 1.5">{{rfSum}}</span><span style="font-size: 11px; line-height: 1.5; color: #4A3D30">쌍수 장착 시 S 개조는 대미지 증가율 산출 공식이 확인되지 않아 딜 상승량을 제공하지 않으며, R 개조만 선택할 수 있어요.</span></div>
 </div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start">
-<label class="fl"><span>현재 {{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{fv.maxDmg}}" onChange="{{fc.maxDmg}}"></label><sc-if value="{{isEK}}" hint-placeholder-val="{{ false }}"><span style="grid-column: 1 / -1; font-size: 12px; line-height: 1.5; color: #6B5A45">엘레멘탈 나이트는 엘레멘탈 인젝션(최대 대미지 1.1배)을 적용해서 계산해요</span></sc-if>
+<label class="fl"><span>현재 {{mxLabel}}</span><input class="f" type="number" placeholder="숫자" value="{{fv.maxDmg}}" onChange="{{fc.maxDmg}}"></label><label class="fl"><span>피어싱</span><input class="f" type="number" min="0" max="11" placeholder="0~11 (비우면 11)" value="{{fv.pierce}}" onChange="{{fc.pierce}}"></label><span style="grid-column: 1 / -1; font-size: 12px; line-height: 1.5; color: #6B5A45">피어싱은 입력값 −2만큼 적용해요 (피어싱 1당 보스 보호 −5, 최대 −45) · 보호 194의 피해감소율과 비교해 피어싱 증폭 배율을 계산해요</span><sc-if value="{{isEK}}" hint-placeholder-val="{{ false }}"><span style="grid-column: 1 / -1; font-size: 12px; line-height: 1.5; color: #6B5A45">엘레멘탈 나이트는 엘레멘탈 인젝션(최대 대미지 1.1배)을 적용해서 계산해요</span></sc-if>
 <div class="fl"><span>무기 보너스 대미지 (%)</span><sc-if value="{{bonusEditable}}" hint-placeholder-val="{{ true }}"><input class="f" type="number" placeholder="%" max="112" aria-label="무기 보너스 대미지 (%)" value="{{fv.gearBonus}}" onChange="{{fc.gearBonus}}"></sc-if><sc-if value="{{bonusFixed}}" hint-placeholder-val="{{ false }}"><input class="f" type="number" aria-label="무기 보너스 대미지 (%)" value="{{bonusFixedVal}}" readonly style="background: #EFE5CF; color: #4A3D30; cursor: not-allowed"></sc-if><span style="font-size: 11px; color: #8C7A62">{{bonusNote}}</span></div>
 </div>
 </div>
@@ -516,7 +516,7 @@ const rfType2 = 0; const rfStage2 = Math.min((typeof s.stage2 === 'number' ? s.s
 const rfSub = rfAt(rfType2, rfStage2, false, true);
 const rfSumD = rfDelta({ cdmg: 0, max: 0, min: 0, bonus: 0, matk: 0, unknown: false }, { cdmg: rfMain.cdmg + rfSub.cdmg, max: rfMain.max + rfSub.max, min: rfMain.min + rfSub.min, bonus: rfMain.bonus + rfSub.bonus, matk: 0, unknown: rfMain.unknown || rfSub.unknown });
 const roster = this.loadStore().chars;
-const FK = ["sgDef", "sgHp", "arcLevel", "arcAwake", "totalLevel", "maxDmg", "gearBonus", "miniNormal", "miniMax", "miniMaxEx", "miniMatk", "miniMatkEx", "miniCdmg", "miniCdmgEx", "miniBonus", "miniBonusEx", "miniExtra", "dollBag", "arcRatio", "critRank"];
+const FK = ["sgDef", "sgHp", "arcLevel", "arcAwake", "totalLevel", "maxDmg", "pierce", "gearBonus", "miniNormal", "miniMax", "miniMaxEx", "miniMatk", "miniMatkEx", "miniCdmg", "miniCdmgEx", "miniBonus", "miniBonusEx", "miniExtra", "dollBag", "arcRatio", "critRank"];
 // 딜 사이클 비중 — 스킬별 딜 비중 (스킬 명 · 아르카나 스킬 여부 · 딜 비중 %) → 아르카나 스킬 비중을 자동 계산해 fields.arcRatio 에도 저장
 // 아르카나별 대표 스킬 [스킬 명(띄어쓰기 없음), 아르카나 스킬 여부]
 // 각 아르카나 마지막 스킬은 각성기 (아르카나 스킬 취급, 세공 · 기반 스킬 · 다른 배율 영향 없이 고정 배율)
@@ -584,7 +584,7 @@ const dustIn = (k, max) => (e) => { const raw = String(e.target.value).trim(); i
 const dust = { flare: dustF.dustFlare !== undefined ? dustF.dustFlare : dustLegacy('플레어'), blast: dustF.dustBlast !== undefined ? dustF.dustBlast : dustLegacy('블래스트'), solace: !!dustF.dustSolace,
 onFlare: dustIn('dustFlare', 100), onBlast: dustIn('dustBlast', 100), onSolace: (e) => dustSet('dustSolace', e.target.checked ? '1' : '') };
 const fv = {}; const fc = {};
-FK.forEach((k) => { fv[k] = (s.fields || {})[k] || ''; fc[k] = (e) => { const o = Object.assign({}, s.fields || {}); o[k] = e.target.value; if (k === 'gearBonus' && Number(o[k]) > BONUS_CAP) { o[k] = String(BONUS_CAP); } if (k === 'arcAwake' && o[k] !== '') { o[k] = String(Math.min(50, Math.max(1, Math.round(Number(o[k]) || 1)))); } if (k === 'arcLevel' && o[k] !== '') { o[k] = String(Math.max(0, Math.round(Number(o[k]) || 0))); } this.upd({ fields: o }); }; });
+FK.forEach((k) => { fv[k] = (s.fields || {})[k] || ''; fc[k] = (e) => { const o = Object.assign({}, s.fields || {}); o[k] = e.target.value; if (k === 'gearBonus' && Number(o[k]) > BONUS_CAP) { o[k] = String(BONUS_CAP); } if (k === 'arcAwake' && o[k] !== '') { o[k] = String(Math.min(50, Math.max(1, Math.round(Number(o[k]) || 1)))); } if (k === 'arcLevel' && o[k] !== '') { o[k] = String(Math.max(0, Math.round(Number(o[k]) || 0))); } if (k === 'pierce' && o[k] !== '') { o[k] = String(Math.min(11, Math.max(0, Math.round(Number(o[k]) || 0)))); } this.upd({ fields: o }); }; });
 if (Number(fv.gearBonus) > BONUS_CAP) { fv.gearBonus = String(BONUS_CAP); }
 if (wBonusFixed) { fv.gearBonus = String(bDef); } else if (!fv.gearBonus && wValid && bDef) { fv.gearBonus = String(bDef); }
 const chars = roster.map((c, i) => {
