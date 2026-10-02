@@ -104,7 +104,7 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 
 <div aria-label="장비 칸" style="width: 420px; flex-shrink: 0; background: #EFE5CF; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
-<sc-for list="{{slots}}" as="t" hint-placeholder-count="12">
+<sc-for list="{{slots}}" as="t" hint-placeholder-count="15">
 <button type="button" aria-pressed="{{t.checked}}" onClick="{{t.pick}}" style="position: relative; height: 116px; box-sizing: border-box; border-radius: 14px; border: {{t.border}}; background: {{t.bg}}; box-shadow: {{t.shadow}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; color: #2A2119">
 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="{{t.iconFg}}" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
 <span style="font-size: 13px; font-weight: 700">{{t.name}}</span>
@@ -125,12 +125,12 @@ td{padding:14px 18px;border-top:1px solid #E6D9BD;font-size:15px;vertical-align:
 </div>
 
 <div role="table" aria-label="{{slot.name}} 스펙업 단계" style="display: flex; flex-direction: column; gap: 10px">
-<div role="row" style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 170px 110px; gap: 14px; padding: 0 4px; font-size: 13px; color: #6B5A45">
+<div role="row" style="display: grid; grid-template-columns: 160px minmax(0, 1fr) 170px 110px; gap: 14px; padding: 0 4px; font-size: 13px; color: #6B5A45">
 <span role="columnheader">항목</span><span role="columnheader">목표 단계</span><span role="columnheader">변경 시 스탯 변화</span><span role="columnheader" style="text-align: right">예상 비용</span>
 </div>
 <sc-for list="{{dims}}" as="d" hint-placeholder-count="6">
-<div role="row" style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 170px 110px; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 14px; border: {{d.border}}; background: {{d.bg}}">
-<span role="cell" style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">{{d.label}}</strong><sc-if value="{{d.hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.4; color: #6B5A45">{{d.note}}</span></sc-if><sc-if value="{{d.untoggled}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: #4A3D30; cursor: pointer"><input type="checkbox" onChange="{{d.onToggle}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">특별 개조 전환</label></sc-if><sc-if value="{{d.toggled}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: #1E3D2E; font-weight: 700; cursor: pointer"><input type="checkbox" checked="" onChange="{{d.onToggle}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">특별 개조 전환</label></sc-if></span>
+<div role="row" style="display: grid; grid-template-columns: 160px minmax(0, 1fr) 170px 110px; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 14px; border: {{d.border}}; background: {{d.bg}}">
+<span role="cell" style="display: flex; flex-direction: column; gap: 3px"><sc-if value="{{d.hasTag}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; padding: 1px 8px; border-radius: 999px; background: #E3EDE6; color: #1E3D2E; font-size: 11px; font-weight: 700">{{d.tag}}</span></sc-if><strong style="font-size: 15px; line-height: 1.35; word-break: keep-all">{{d.label}}</strong><sc-if value="{{d.hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.4; color: #6B5A45">{{d.note}}</span></sc-if><sc-if value="{{d.hasRule}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; line-height: 1.4; color: #8A5E17; word-break: keep-all">{{d.rule}}</span></sc-if><sc-if value="{{d.untoggled}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: #4A3D30; cursor: pointer"><input type="checkbox" onChange="{{d.onToggle}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">특별 개조 전환</label></sc-if><sc-if value="{{d.toggled}}" hint-placeholder-val="{{ false }}"><label style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: #1E3D2E; font-weight: 700; cursor: pointer"><input type="checkbox" checked="" onChange="{{d.onToggle}}" style="width: 16px; height: 16px; margin: 0; accent-color: {{accent}}">특별 개조 전환</label></sc-if></span>
 <span role="cell"><select class="f" aria-label="{{d.label}} 목표 단계" value="{{d.value}}" onChange="{{d.onChange}}"><sc-for list="{{d.opts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></span>
 <span role="cell" style="display: flex; flex-direction: column; gap: 2px">
 <sc-if value="{{d.on}}" hint-placeholder-val="{{ true }}"><strong style="font-size: 14px; line-height: 1.4; color: #2E8B57; white-space: pre-line">{{d.head}}</strong><span style="font-size: 12px; line-height: 1.4; color: #4A3D30">{{d.effect}}</span></sc-if>
@@ -307,6 +307,7 @@ this._sync = () => { let raw = ''; try { raw = window.localStorage.getItem('hatz
 window.addEventListener('storage', this._sync); window.addEventListener('focus', this._sync); document.addEventListener('visibilitychange', this._sync); this._poll = setInterval(this._sync, 1500);
 // 인챈트 데이터 · 장비별 인챈트 가능 그룹 · 추천 인챈트 목록 (세팅 시뮬레이터 인챈트 후보)
 try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./echo-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.stones) { this.setState({ echoData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.weapon) { this.setState({ eqPicks: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./enchant-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.pre) { this.setState({ enPicks: d }); } }).catch(() => {}); } catch (e) {}
@@ -337,20 +338,26 @@ mini: 'M12 3.5a2.6 2.6 0 1 1 0 5.2a2.6 2.6 0 1 1 0-5.2zM9.2 17l.8-6.2h4l.8 6.2zM
 totem: 'M8.5 3h7v5h-7zM7 8h10v6H7zM8.5 14h7v7h-7zM10.5 5.5h.01M13.5 5.5h.01M10 11h4M4.5 10.5H7M17 10.5h2.5',
 doll: 'M5.5 8.5h13l-1.2 12H6.7zM9 8.5V7a3 3 0 0 1 6 0v1.5M9.5 13.5h.01M14.5 13.5h.01M10 16.5c1.2.9 2.8.9 4 0',
 coin: 'M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18zM12 6.3a5.7 5.7 0 1 1 0 11.4a5.7 5.7 0 1 1 0-11.4zM12 8.8l1 2.2 2.2 1-2.2 1-1 2.2-1-2.2-2.2-1 2.2-1z',
-relic: 'M12.00 4.60A7.6 7.6 0 0 0 19.27 17.20A7.6 7.6 0 0 0 4.73 17.20A7.6 7.6 0 0 0 12.00 4.60ZM16.60 13a4.6 4.6 0 1 0 -9.2 0a4.6 4.6 0 1 0 9.2 0'
+relic: 'M12.00 4.60A7.6 7.6 0 0 0 19.27 17.20A7.6 7.6 0 0 0 4.73 17.20A7.6 7.6 0 0 0 12.00 4.60ZM16.60 13a4.6 4.6 0 1 0 -9.2 0a4.6 4.6 0 1 0 9.2 0',
+echo: 'M12 3l6.5 5.5L12 21 5.5 8.5z M5.5 8.5h13M9.5 8.5L12 21l2.5-12.5'
 };
 // 게임 장비창 순서(3×3): key, 이름, 아이콘, 현재 장비, 무기 여부, 예시 배율
 const SLOTS = [
 ['acc1', '액세서리 1', I.acc, '비어 있음', false, 0.45], ['head', '머리', I.head, '[장착 모자]', false, 0.4], ['acc2', '액세서리 2', I.acc, '비어 있음', false, 0.4],
 ['rhand', '주무기', I.weapon, '[장착 무기]', true, 1], ['body', '의상', I.body, '[장착 의상]', false, 0.45], ['lhand', '보조무기', I.off, '비어 있음', true, 0.5],
 ['hands', '장갑', I.hands, '비어 있음', false, 0.45], ['feet', '신발', I.feet, '비어 있음', false, 0.3], ['robe', '로브', I.robe, '비어 있음', false, 0.35],
-['relic1', '유물 1', I.relic, '비어 있음', 'relic', 0.4], ['relic2', '유물 2', I.relic, '비어 있음', 'relic', 0.4], ['relic3', '유물 3', I.relic, '비어 있음', 'relic', 0.4]
+['relic1', '유물 1', I.relic, '비어 있음', 'relic', 0.4], ['relic2', '유물 2', I.relic, '비어 있음', 'relic', 0.4], ['relic3', '유물 3', I.relic, '비어 있음', 'relic', 0.4],
+['echo1', '에코스톤 1', I.echo, '비어 있음', 'echo', 0.3], ['echo2', '에코스톤 2', I.echo, '비어 있음', 'echo', 0.3], ['echo3', '에코스톤 3', I.echo, '비어 있음', 'echo', 0.3]
 ];
 const store = this.loadStore();
 const arcIdx = (() => { const c = store && store.chars[store.cur]; if (!c) return 0; if (c.info && typeof c.info.arcana === 'number') return c.info.arcana; return typeof c.arcana === 'number' ? c.arcana : 0; })();
 const MX = ((a) => a === 2 ? '마법 공격력' : (a === 7 ? '연금술 대미지' : '최대 대미지'))(arcIdx);
 const gear = store && store.chars[store.cur] && store.chars[store.cur].gear;
 if (gear && gear.eq) { SLOTS.forEach((sl) => { sl[3] = gear.eq[sl[0]] || '비어 있음'; }); }
+// 에코스톤 칸 이름 — 장비 · 오검에서 고른 에코스톤 · 등급 (echo-data.json)
+SLOTS.forEach((sl) => { if (sl[4] === 'echo') { const e = (((gear && gear.det) || {})[sl[0]]) || {}; const st = s.echoData && e.st ? s.echoData.stones.filter((x) => x[0] === e.st)[0] : null; sl[3] = st ? st[1] : '비어 있음'; } });
+// 유물 칸 이름은 '무리아스의 유물'로 통일 (효과를 골랐거나 이름이 있으면)
+SLOTS.forEach((sl) => { if (sl[4] === 'relic') { sl[3] = (gear && ((gear.eq || {})[sl[0]] || (((gear.det || {})[sl[0]]) || {}).rFx)) ? '무리아스의 유물' : '비어 있음'; } });
 // 캐릭터 정보에서 고른 무기 · 보조무기를 현재 장비로 표기
 const fInfo = (store && store.chars[store.cur] && store.chars[store.cur].info && store.chars[store.cur].info.fields) || {};
 SLOTS.forEach((sl) => { if (sl[0] === 'rhand' && fInfo.weapon) { sl[3] = fInfo.weapon; } if (sl[0] === 'lhand' && fInfo.sub) { sl[3] = fInfo.sub; } });
@@ -452,7 +459,7 @@ const encDim = (sl, base) => { const c = encCands(sl, base[0] === 'suf' ? 1 : 0)
 // 무기: 같은 무기 종류 중 무기 보너스 대미지(등급 마스터 최대) · 기본 최대 대미지(포비든 알케미스트는 4대 속성 연금술 대미지)가 지금보다 높은 무기 — 강화 · 개조 · 에르그 · 인챈트는 지금과 같다고 가정해요
 // 방어구 · 장신구 · 로브: 아직 켜지지 않은 딜 관련 세트 효과(크리티컬 대미지 증가 +7% · 더스크바운드 보너스 +5% · 크리티컬 +10%)가 있는 장비 — 세트 완성 기준 · 유물은 장비 교체 없음
 const EPK = s.eqPicks;
-const kindOf = (sl) => sl[4] === 'relic' ? 'relic' : (sl[4] ? 'weapon' : 'armor');
+const kindOf = (sl) => sl[4] === 'relic' ? 'relic' : (sl[4] === 'echo' ? 'echo' : (sl[4] ? 'weapon' : 'armor'));
 if (ED2 && this._edKRef !== ED2) { this._edKRef = ED2; this._edK = {}; Object.keys(ED2.slots).forEach((sk) => { const m = {}; ED2.slots[sk].forEach((x) => { m[x[0]] = (x[1] || []).join(','); }); this._edK[sk] = m; }); }
 // 켜진 세트 효과 = 장비 · 오검에서 체크한 세트 + 더스크바운드 개조 옵션(머리 · 의상 · 장갑 · 신발 4부위가 모두 더스크바운드일 때) · 같은 세트는 한 번만
 // 체크박스에서 숨긴 세트(setHide)는 예전에 체크해 둔 값이 남아 있어도 빼요 · 주무기 아이템의 세트 효과는 체크 없이 항상 켜져요
@@ -468,14 +475,16 @@ const SET_ST = { crit: ['cdmg', 7], CriticalDamageUp_3: ['cdmg', 3], dusk: ['cdm
 const MXK = arcIdx === 2 ? 'matk' : (arcIdx === 7 ? 'alch' : 'max');
 const setStat = (S) => { const o = { max: 0, cdmg: 0, bonus: S.dusk ? 5 : 0 }; Object.keys(S).forEach((q) => { const v = SET_ST[q]; if (!v) return; if (v[0] === 'cdmg') { o.cdmg = Math.max(o.cdmg, v[1]); } else if (v[0] === MXK) { o.max = Math.max(o.max, v[1]); } }); return o; };
 const statDiff = (a, b) => ({ max: b.max - a.max, cdmg: b.cdmg - a.cdmg, bonus: b.bonus - a.bonus });
-const duskCur = duskAll4 ? (duskSl.map((k) => ((((gear && gear.det) || {})[k]) || {}).duskOpt).filter(Boolean)[0] || '') : ''; if (duskCur) { actSets[duskCur] = 1; }
+// 더스크바운드 개조 옵션 — 부위마다 1개씩, 최대 4개 · 같은 옵션은 한 번만
+const duskBy = {}; duskSl.forEach((k) => { duskBy[k] = duskAll4 ? (((((gear && gear.det) || {})[k]) || {}).duskOpt || '') : ''; });
+const duskList = duskSl.map((k) => duskBy[k]).filter((q, i, a) => q && a.indexOf(q) === i); duskList.forEach((q) => { actSets[q] = 1; });
 // 재능 스킬 강화 세트 효과 — 해당 재능 스킬 대미지 ×(1 + n%) · 그 재능 스킬이 들어간 아르카나 스킬의 재능 부분에도 똑같이 적용 · 다른 세트끼리는 곱해요
 const skMul = (label) => { const D = (s.eqData && s.eqData.skillSets) || {}; return [actSets, wSetMap].reduce((m, S) => { const p = Object.keys(S).reduce((x, q) => (D[q] && D[q][1] === label ? Math.max(x, D[q][2]) : x), 0); return m * (1 + p / 100); }, 1); };
 const magMul = () => (actSets.magnum ? 1.15 : 1) * (wSetMap.magnum ? 1.15 : 1);
 const pItemG = (n) => { const x = pAllE[n]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? v : 0; };
 const curWB = Number(fInfo.gearBonus) || 0;
 const swapList = (sl) => {
-if (!EPK || !ED2 || kindOf(sl) === 'relic') return [];
+if (!EPK || !ED2 || kindOf(sl) === 'relic' || kindOf(sl) === 'echo') return [];
 const sk = sl[0] === 'acc1' || sl[0] === 'acc2' ? 'acc' : sl[0]; const km = (this._edK || {})[sk] || {}; const curN = String(sl[3] || '');
 if (kindOf(sl) === 'weapon') {
 const cs = EPK.wstat[curN]; const ck = km[curN]; if (!cs || ck === undefined) return [];
@@ -486,9 +495,9 @@ return EPK.weapon.filter((n) => n !== curN && km[n] === ck && EPK.wstat[n]).map(
 // 스킬 강화 세트(매그넘샷 · 크래시샷 · 윈드밀 등)는 스킬 계산식(아르카나 스킬 안의 재능 부분 포함)으로 구한 총딜 증가율 (sgMemo, 아래에서 계산)
 const SG = this._sgMemo || { add: {}, loss: {} }; const SLS = ED2.itemSetList || {}; const nm0 = (q) => (ED2.setLabel || {})[q] || ((ED2.setDefs || {})[q] || [q])[0];
 const elseOn = {}; Object.keys((gear && gear.det) || {}).forEach((k) => { if (k !== sl[0]) { Object.keys((gear.det[k] || {}).sets || {}).forEach((q) => { elseOn[q] = 1; }); } });
-const mySets = Object.keys((((gear && gear.det) || {})[sl[0]] || {}).sets || {}).filter((q) => SET_HIDE.indexOf(q) < 0).concat(duskCur && duskSl.indexOf(sl[0]) >= 0 ? [duskCur] : []);
+const mySets = Object.keys((((gear && gear.det) || {})[sl[0]] || {}).sets || {}).filter((q) => SET_HIDE.indexOf(q) < 0).concat(duskSl.indexOf(sl[0]) >= 0 ? duskList : []); // 더스크바운드 부위를 다른 장비로 바꾸면 4부위 조건이 깨져 개조 옵션이 모두 빠져요
 const pool = {}; EPK.armor.forEach((n) => { pool[n] = 1; }); Object.keys(SLS).forEach((n) => { if (SLS[n].some((x) => SET_HIDE.indexOf(x[0]) < 0 && (SG.add[x[0]] || 0) > 0)) { pool[n] = 1; } });
-return Object.keys(pool).filter((n) => n !== curN && km[n] !== undefined).map((n) => { const ids = (SLS[n] || []).map((x) => x[0]); const dk = n.indexOf('더스크바운드') >= 0; const lost = mySets.filter((q, i) => mySets.indexOf(q) === i && !elseOn[q] && ids.indexOf(q) < 0 && !(q === duskCur && dk)); const add = ids.filter((q) => SET_HIDE.indexOf(q) < 0 && !actSets[q] && (SG.add[q] || 0) > 0); const nx = Object.assign({}, actSets); lost.forEach((q) => { delete nx[q]; }); ids.forEach((q) => { if (SET_HIDE.indexOf(q) < 0) { nx[q] = 1; } }); const st = statDiff(setStat(actSets), setStat(nx)); let sk = 0; add.forEach((q) => { if (!SET_ST[q]) { sk += SG.add[q]; } }); lost.forEach((q) => { if (!SET_ST[q]) { sk -= SG.loss[q] || 0; } }); const u = SG.u || { max: 0, cdmg: 0, bonus: 0 }; const tot = sk + st.max * u.max + st.cdmg * u.cdmg + st.bonus * u.bonus; const t = add.map((q) => nm0(q) + ' +' + SG.add[q] + '%').concat(lost.filter((q) => SG.loss[q]).map((q) => nm0(q) + ' 해제 -' + SG.loss[q] + '%')); return { name: n, stats: st, skPct: Math.round(sk * 100) / 100, tot: tot, txt: t.join(' · ') + ' (세트 완성 시)', price: pItemG(n) }; }).filter((x) => x.tot > 0).sort((p, q) => q.tot - p.tot).slice(0, 20);
+return Object.keys(pool).filter((n) => n !== curN && km[n] !== undefined).map((n) => { const ids = (SLS[n] || []).map((x) => x[0]); const dk = n.indexOf('더스크바운드') >= 0; const lost = mySets.filter((q, i) => mySets.indexOf(q) === i && !elseOn[q] && ids.indexOf(q) < 0 && !(duskList.indexOf(q) >= 0 && dk)); const add = ids.filter((q) => SET_HIDE.indexOf(q) < 0 && !actSets[q] && (SG.add[q] || 0) > 0); const nx = Object.assign({}, actSets); lost.forEach((q) => { delete nx[q]; }); ids.forEach((q) => { if (SET_HIDE.indexOf(q) < 0) { nx[q] = 1; } }); const st = statDiff(setStat(actSets), setStat(nx)); let sk = 0; add.forEach((q) => { if (!SET_ST[q]) { sk += SG.add[q]; } }); lost.forEach((q) => { if (!SET_ST[q]) { sk -= SG.loss[q] || 0; } }); const u = SG.u || { max: 0, cdmg: 0, bonus: 0 }; const tot = sk + st.max * u.max + st.cdmg * u.cdmg + st.bonus * u.bonus; const t = add.map((q) => nm0(q) + ' +' + SG.add[q] + '%').concat(lost.filter((q) => SG.loss[q]).map((q) => nm0(q) + ' 해제 -' + SG.loss[q] + '%')); return { name: n, stats: st, skPct: Math.round(sk * 100) / 100, tot: tot, txt: t.join(' · ') + ' (세트 완성 시)', price: pItemG(n) }; }).filter((x) => x.tot > 0).sort((p, q) => q.tot - p.tot).slice(0, 20);
 };
 // 장비 교체 시세 — 기본은 경매장 최저가, 직접 입력하면(예: 15억, 1억 4천만, 150000000) 이 페이지에서는 그 값으로 계산해요 · 고른 장비가 바뀌면 입력값은 초기화
 const parseGold = (t) => { const s0 = String(t || '').replace(/[,\sGg]|골드/g, ''); if (!s0) return 0; if (/^\d+(\.\d+)?$/.test(s0)) return Number(s0); let v = 0; let rest = s0; const m1 = s0.match(/(\d+(?:\.\d+)?)억/); if (m1) { v += Number(m1[1]) * 1e8; rest = s0.slice(s0.indexOf('억') + 1); } const m2 = rest.match(/(\d+(?:\.\d+)?)천만/); const m3 = rest.match(/(\d+(?:\.\d+)?)백만/); const m4 = rest.match(/(\d+(?:\.\d+)?)만/); if (m2) { v += Number(m2[1]) * 1e7; } else if (m3) { v += Number(m3[1]) * 1e6; } else if (m4) { v += Number(m4[1]) * 1e4; } return Math.round(v); };
@@ -500,8 +509,11 @@ const swapCustom = (sl, nm) => { const q = (s.swapPrice || {})[sl[0]]; return q 
 const swapCurStat = (sl) => { if (!EPK || !ED2) return ''; const n = String(sl[3] || ''); if (kindOf(sl) === 'weapon') { const c = EPK.wstat[n]; if (!c) return ''; const w = sl[0] === 'rhand' ? (curWB || c[1]) : c[1]; return [arcIdx !== 2 ? MX + ' ' + (arcIdx === 7 ? c[2] : c[0]) : '', '무기 보너스 ' + w + '%'].filter(Boolean).join(' · '); } const SG = this._sgMemo || { add: {}, loss: {} }; const t = ((ED2.itemSetList || {})[n] || []).map((x) => x[0]).filter((q) => SET_ST[q] || SG.add[q] || SG.loss[q]).map((q) => ((ED2.setLabel || {})[q] || ((ED2.setDefs || {})[q] || [q])[0]) + ' 세트'); return t.length ? t.join(' · ') : '딜 세트 효과 없음'; };
 const swapOf = (sl, i) => { const o = swapList(sl)[i]; if (!o) return null; const cp = swapCustom(sl, o.name); const g = cp || o.price; return { newTxt: o.newTxt || o.txt, name: o.name, skPct: o.skPct || 0, pct: 0, dmg: o.stats.max || 0, costM: Math.round(g / 10000), stats: o.stats, txt: o.txt, auction: o.price, custom: cp }; };
 const stepOf = (sl, dm, i) => { const o = dm[4][i]; if (dm[5] && dm[5].enc) { return { name: o[0], pct: 0, dmg: o[2], costM: o[3], idx: i }; } const m = sl[5]; return { name: o[0], pct: +(o[1] * m).toFixed(1), dmg: Math.round(o[2] * m), costM: Math.round(o[3] * Math.max(m, 0.4) / 50) * 50 }; };
-const dimsFor0 = (sl) => sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand' || (dm[0] === 'sp' && RFC[sl[0]])) && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')).map((dm) => dm[0] === 'sp' ? RFC[sl[0]].dim : dm); // 특별 개조는 주무기 (엘레멘탈 나이트 한손 2개면 보조무기도)
-const dimsFor = (sl) => dimsFor0(sl).map((dm) => (dm[0] === 'pre' || dm[0] === 'suf' ? encDim(sl, dm) : dm)).filter(Boolean);
+// 에코스톤은 인챈트 · 장비 교체 없이 각성 능력 목표 레벨만 (아래 SG_SLOTS)
+const dimsFor0 = (sl) => sl[4] === 'echo' ? [] : sl[4] === 'relic' ? DIMS.filter((dm) => dm[0] === 'pre' || dm[0] === 'suf') : DIMS.filter((dm) => (!dm[3] || sl[0] === 'rhand' || (dm[0] === 'sp' && RFC[sl[0]])) && !((arcIdx === 3 || arcIdx === 9) && dm[0] === 'ref')).map((dm) => dm[0] === 'sp' ? RFC[sl[0]].dim : dm); // 특별 개조는 주무기 (엘레멘탈 나이트 한손 2개면 보조무기도)
+// 보조무기 화살 · 볼트(알케믹 스팅어 · 보우 · 크로스보우)는 인챈트 · 세공을 붙일 수 없어요
+const isAmmoSl = (sl) => sl[0] === 'lhand' && (/화살|볼트/.test(String(sl[3] || '')) || arcIdx === 3 || /보우/.test(String(((gear && gear.eq) || {}).rhand || '') || fInfo.weapon || ''));
+const dimsFor = (sl) => dimsFor0(sl).filter((dm) => !(isAmmoSl(sl) && (dm[0] === 'pre' || dm[0] === 'suf'))).map((dm) => (dm[0] === 'pre' || dm[0] === 'suf' ? encDim(sl, dm) : dm)).filter(Boolean);
 const chosen = [];
 SLOTS.forEach((sl) => { const v = s.up[sl[0] + '.item'] || 0; if (v > 0) { const st = swapOf(sl, v - 1); if (st) chosen.push({ swapStats: st.stats, swapSk: st.skPct, key: sl[0] + '.item', slotKey: sl[0], slot: sl[1], dim: '장비 교체', from: sl[3], to: st.name, pct: st.pct, dmg: st.dmg, costM: st.costM, eff: st.pct / (st.costM / 10000) }); } });
 // 저장된 목표 단계가 선택지 범위를 벗어나면(예: 이미 최고 단계) 현재 유지로 처리
@@ -550,7 +562,7 @@ const curSwap = s.up[cur[0] + '.item'] || 0;
 const swapName = curSwap > 0 ? swapOf(cur, curSwap - 1).name : null;
 const swapSt = curSwap > 0 ? swapOf(cur, curSwap - 1) : null;
 const swapDim = { label: '장비 교체', current: cur[3], curStat: swapCurStat(cur), value: String(curSwap), opts: [{ v: '0', label: '현재 장비 유지' }].concat(swapList(cur).map((o, i) => ({ v: String(i + 1), label: o.name + ' · ' + o.txt + (o.price ? ' · ' + goldE(o.price) : ' · 시세 없음') }))), swapStats: swapSt ? swapSt.stats : null, swapSk: swapSt ? swapSt.skPct : 0, priceNote: '장비 시세를 띄울 때 해당 장비의 최저가를 표시해요. 세부 옵션(세공, 인챈트) 작업이 완료된 아이템의 경우 아이템 시세를 직접 기입해야만 골드에 따른 딜 상승 효율을 정확히 계산할 수 있어요.', hasPrice: !!swapSt, priceOn: !!swapSt && (!!(s.priceOn || {})[cur[0] + '.item'] || ((s.swapPrice || {})[cur[0]] || {}).name === swapSt.name), onPriceOn: (e) => { const on = !!e.target.checked; const po = Object.assign({}, s.priceOn || {}); if (on) { po[cur[0] + '.item'] = 1; this.setState({ priceOn: po }); } else { delete po[cur[0] + '.item']; const sp = Object.assign({}, s.swapPrice || {}); delete sp[cur[0]]; this.setState({ priceOn: po, swapPrice: sp }); } }, priceId: 'swap-price-' + cur[0], priceVal: swapSt && ((s.swapPrice || {})[cur[0]] || {}).name === swapSt.name ? s.swapPrice[cur[0]].raw : '', pricePh: swapSt ? (swapSt.auction ? '경매장 최저가 ' + goldE(swapSt.auction) + ' · 직접 입력 (예: 15억)' : '경매장 시세 없음 · 직접 입력 (예: 15억)') : '', priceInfo: swapSt ? (swapSt.custom ? '입력한 시세 ' + goldE(swapSt.custom) + ' 기준으로 계산해요' : (swapSt.auction ? '경매장 최저가 ' + goldE(swapSt.auction) + ' 기준으로 계산 중이에요' : '시세가 없어 효율은 계산하지 않아요')) : '', onPrice: (e) => { const o = Object.assign({}, s.swapPrice || {}); const raw = fmtNum(String(e.target.value).slice(0, 24)); if (raw.trim() && swapSt) { o[cur[0]] = { name: swapSt.name, raw: raw }; } else { delete o[cur[0]]; } this.setState({ swapPrice: o }); }, on: !!swapSt, head: swapSt ? swapSt.newTxt : '', effectSw: swapSt && kindOf(cur) === 'weapon' ? '기본 수치 기준 · 강화 · 개조 · 인챈트는 지금과 같다고 가정' : '', off: !swapSt, pct: swapSt ? pctT(swapSt.pct) : '0', dmg: swapSt ? swapSt.dmg : 0, cost: swapSt ? (swapSt.costM ? won(swapSt.costM) : '시세 없음') : '—', costFg: swapSt ? '#2A2119' : '#8C7A62', border: swapSt ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: swapSt ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(cur[0] + '.item', Number(e.target.value)), effect: '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
-if (kindOf(cur) !== 'relic') { if (!swapList(cur).length) { swapDim.note = (!EPK || !ED2 ? '장비 정보 불러오는 중' : (kindOf(cur) === 'weapon' ? '이미 최상위 무기를 쓰고 있어요' : '더 올릴 수 있는 세트 효과 장비가 없어요')); } dims.unshift(swapDim); }
+if (kindOf(cur) !== 'relic' && kindOf(cur) !== 'echo') { if (!swapList(cur).length) { swapDim.note = (!EPK || !ED2 ? '장비 정보 불러오는 중' : (kindOf(cur) === 'weapon' ? '이미 최상위 무기를 쓰고 있어요' : '더 올릴 수 있는 세트 효과 장비가 없어요')); } dims.unshift(swapDim); }
 dims.forEach((d) => { if (d.head === undefined) { d.head = '▲ +' + d.pct + '%'; } });
 const mine = chosen.filter((c) => c.slotKey === cur[0]);
 const slotPct = mine.reduce((t, c) => t + c.pct, 0);
@@ -660,7 +672,12 @@ const envShares = envSkills.slice().sort((a, b) => shareOf(b.name) - shareOf(a.n
 const isStg = arcIdx === 3;
 const stg = (cInfo && cInfo.stinger) || {};
 // 세공 레벨(장비 · 오검 페이지 무기 · 방어구 세공 합계) · 마기그래프(캐릭터 정보, 기본 10) · 오검 배율(캐릭터 정보)
-const sgSum = (opt) => Object.keys((gear && gear.det) || {}).reduce((sum, k) => sum + ((gear.det[k] || {}).sg || []).reduce((a, q) => a + (q && q.o === opt ? Number(q.lv) || 0 : 0), 0), 0);
+// 에코스톤 각성 능력 ↔ 장비 세공: 스킬 이름이 붙은 옵션은 중첩되지 않고 높은 쪽만(장비 세공 합계 vs 에코스톤), 스킬 이름이 없는 일반 옵션(SG_GEN_RE)은 모두 합산
+const SG_GEN_RE = /^(최대 공격력|최소 공격력|마법 공격력|유효 사거리|대미지 ?밸런스|채집 ?속도|채집 ?확률|채집 시 1개 추가 획득 확률|크리티컬|크리티컬 대미지|방어|보호|마법 ?방어|마법 ?보호|솜씨|의지|지력|체력|행운|최대 ?마나|최대 ?생명력|최대 ?스태미나|최대 ?부상률|최소 ?부상률|캐스팅 속도|탐사 범위|(불|얼음|전기) 속성|(불|물|바람|흙) 속성 연금술 대미지|모든 연금술 대미지|.+ 세트 효과 수치|(근접|마법|원거리) 자동 방어|회피 .+|% 증가|증가|초 감소|초 증가|추가 감소)$/;
+const ECHO_SL = ['echo1', 'echo2', 'echo3'];
+// rep = { k, i, lv } — 한 칸의 세공(각성) 레벨을 바꿔 계산 · at = 레벨 → 수치 (기본은 레벨 그대로)
+const sgEff = (opt, rep, at) => { const f = at || ((x) => x); const gen = SG_GEN_RE.test(opt); let eq = 0, ec = 0; const det = (gear && gear.det) || {}; Object.keys(det).forEach((k) => { ((det[k] || {}).sg || []).forEach((q, i) => { if (!q || q.o !== opt) return; const lv = rep && rep.k === k && rep.i === i ? rep.lv : Number(q.lv) || 0; const v = f(lv); if (!gen && ECHO_SL.indexOf(k) >= 0) { ec = Math.max(ec, v); } else { eq += v; } }); }); return gen ? eq : Math.max(eq, ec); };
+const sgSum = (opt) => sgEff(opt);
 const SG_KEY = { crLv: '크래시 샷 파편 대미지', mgLv: '매그넘 샷 대미지', fire: '불 연금술 마스터리 효율', water: '물 연금술 마스터리 효율', wind: '바람 연금술 마스터리 효율' };
 // 마기그래프는 최대 10으로 고정 · 스킬별 오검 배율은 장착 오검의 레벨별 수치(OG_LV)로 계산
 // 오검 워드 효과 레벨별 수치 — 에린 데이터 오검 능력치표 · ['t' 재능 | 'a' 아르카나, Lv1, Lv2, …]
@@ -1258,18 +1275,19 @@ Object.keys(ids).forEach((q) => { const keep = Object.assign({}, actSets); const
 // 연속 공격 발동 확률 증가(1%) 세트는 총딜 +1.82%로 고정해요
 if (actSets.continuityattack_probability || wSetMap.continuityattack_probability) { if (actSets.continuityattack_probability && !wSetMap.continuityattack_probability) { loss.continuityattack_probability = 1.82; } } else { add.continuityattack_probability = 1.82; }
 const key = JSON.stringify([add, loss, u]); if (key !== this._sgKey) { this._sgKey = key; this._sgMemo = { add: add, loss: loss, u: u }; setTimeout(() => this.setState({ sgV: key }), 0); } }
-const duskGain = (id) => { if (id === duskCur) return 0; const keep = Object.assign({}, actSets); const st0 = setStat(actSets); if (duskCur && !ckSets[duskCur]) { delete actSets[duskCur]; } actSets[id] = 1; let g = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; const st1 = setStat(actSets); Object.keys(actSets).forEach((q) => { delete actSets[q]; }); Object.assign(actSets, keep); g += dealPct(statDiff(st0, st1)); return Math.round(g * 10) / 10; };
+// 부위 k의 개조 옵션을 id로 바꿨을 때 (다른 부위 옵션은 그대로)
+const duskGain = (k, id) => { if (id === duskBy[k]) return 0; const keep = Object.assign({}, actSets); const st0 = setStat(actSets); const nxt = duskSl.map((q) => (q === k ? id : duskBy[q])).filter(Boolean); duskList.forEach((q) => { if (!ckSets[q] && nxt.indexOf(q) < 0) { delete actSets[q]; } }); nxt.forEach((q) => { actSets[q] = 1; }); let g = (isSacred ? sacGain({}) : isFury ? furyGain({}) : stgGain({})) * 100; const st1 = setStat(actSets); Object.keys(actSets).forEach((q) => { delete actSets[q]; }); Object.assign(actSets, keep); g += dealPct(statDiff(st0, st1)); return Math.round(g * 10) / 10; };
 const DUSK_OPTS = (s.eqData && s.eqData.duskOpts) || [];
 const duskName = (id) => { const q = DUSK_OPTS.filter((x) => x[0] === id)[0]; return q ? q[1] : '개조 옵션 없음'; };
 // 세팅 시뮬레이터에서 장비 교체로 4부위가 모두 더스크바운드가 되면(교체 목표 기준) 개조 옵션도 고를 수 있어요
 const duskPlanName = (k) => { const sl = SLOTS.filter((x) => x[0] === k)[0]; const v = sl ? Number(s.up[k + '.item']) || 0 : 0; const o = v > 0 ? swapOf(sl, v - 1) : null; return o ? o.name : String(((gear && gear.eq) || {})[k] || ''); };
 const duskPlan4 = duskSl.every((k) => duskPlanName(k).indexOf('더스크바운드') >= 0);
-if (duskPlan4 && DUSK_OPTS.length) {
-const dv = Number(s.up['x.dusk']) || 0; const dsel = dv > 0 ? DUSK_OPTS[dv - 1] : null;
-extras.push({ name: duskAll4 ? '더스크바운드 개조 옵션' : '더스크바운드 개조 옵션 (교체 후 4부위)', icon: I.body, value: dsel && dsel[0] !== duskCur ? String(dv) : '0', border: dsel && dsel[0] !== duskCur ? '1.5px solid ' + accent : '1px solid #D9C8A6', onChange: (e) => setUp('x.dusk', Number(e.target.value)),
-opts: [{ v: '0', label: duskName(duskCur) + ' — 현재' }].concat(DUSK_OPTS.map((q, i) => ({ q: q, i: i })).filter((o) => o.q[0] !== duskCur).map((o) => { const g = duskGain(o.q[0]); return { v: String(o.i + 1), label: o.q[1] + (ckSets[o.q[0]] ? ' · 이미 다른 장비 세트로 적용 중' : (g > 0 ? ' · +' + g + '%' : (g < 0 ? ' · ' + g + '% (현재 옵션보다 낮음)' : ' · 딜 변화 없음'))) }; })) });
-if (dsel && dsel[0] !== duskCur) { const g = duskGain(dsel[0]); chosen.push({ key: 'x.dusk', slotKey: 'x.dusk', slot: '부가 장비', dim: '더스크바운드 개조 옵션', from: duskName(duskCur), to: dsel[1], pct: g, dmg: Math.round(g / 100 * MXEQ), costM: 0, eff: 0, group: '부가 장비', names: '더스크바운드', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); }
-}
+if (duskPlan4 && DUSK_OPTS.length) { const SN2 = { head: '머리', body: '의상', hands: '장갑', feet: '신발' }; duskSl.forEach((k) => {
+const key = 'x.dusk.' + k; const cur = duskBy[k]; const dv = Number(s.up[key]) || 0; const dsel = dv > 0 ? DUSK_OPTS[dv - 1] : null; const chg = !!dsel && dsel[0] !== cur;
+extras.push({ name: '더스크바운드 개조 옵션 · ' + SN2[k] + (duskAll4 ? '' : ' (교체 후)'), icon: I.body, value: chg ? String(dv) : '0', border: chg ? '1.5px solid ' + accent : '1px solid #D9C8A6', onChange: (e) => setUp(key, Number(e.target.value)),
+opts: [{ v: '0', label: duskName(cur) + ' — 현재' }].concat(DUSK_OPTS.map((q, i) => ({ q: q, i: i })).filter((o) => o.q[0] !== cur).map((o) => { const g = duskGain(k, o.q[0]); return { v: String(o.i + 1), label: o.q[1] + (ckSets[o.q[0]] ? ' · 이미 다른 장비 세트로 적용 중' : (duskList.indexOf(o.q[0]) >= 0 ? ' · 이미 다른 부위에서 적용 중' : (g > 0 ? ' · +' + g + '%' : (g < 0 ? ' · ' + g + '% (현재 옵션보다 낮음)' : ' · 딜 변화 없음')))) }; })) });
+if (chg) { const g = duskGain(k, dsel[0]); chosen.push({ key: key, slotKey: key, slot: '부가 장비', dim: '더스크바운드 개조 옵션 · ' + SN2[k], from: duskName(cur), to: dsel[1], pct: g, dmg: Math.round(g / 100 * MXEQ), costM: 0, eff: 0, group: '부가 장비', names: '더스크바운드', stats: { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); }
+}); }
 // ── 세이크리드 가드: 방어력 · 생명력 변화 (현재 값은 장비에서 얻는 수치까지 포함된 캐릭터 정보 입력값 · 변화량만 입력, 음수 가능) ──
 const dhS = s.dh || {};
 const dhV = { def: Number(dhS.def) || 0, hp: Number(dhS.hp) || 0 };
@@ -1294,18 +1312,19 @@ border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' :
 head: on ? (calc ? '▲ ' + fmt(st) : '▲ Lv.' + lv + ' → Lv.' + tg) : '', effect: on ? (calc ? '딜 사이클 비중 기준 예상치' : '이 효과는 스킬 계산식 준비 중이에요') : '', tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} }]); })();
 const stgHasShare = isFury || !!(shF || shH || shM || shT);
 const SG_OPT_KEY = {}; Object.keys(SG_KEY).forEach((k) => { SG_OPT_KEY[SG_KEY[k]] = k; });
-const SG_SLOTS = ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'acc1', 'acc2'];
+const SG_SLOTS = ['rhand', 'lhand', 'head', 'body', 'hands', 'feet', 'acc1', 'acc2', 'echo1', 'echo2', 'echo3']; // 에코스톤 각성 능력은 세공과 같은 방식(같은 이름 세공 레벨)으로
 const slotName = (k) => (SLOTS.filter((sl) => sl[0] === k)[0] || [k, k])[1];
 const pctTxt = (g) => '총딜 +' + (Math.round(g * 10000) / 100) + '% · ' + MX + ' +' + Math.round(g * (BASE_STATS.max || 0));
 // 목표 레벨 후보 (현재 +1 ~ 최대) — [키, 이름, 현재, 최대, 이득 함수]
 // 세공 옵션의 스탯 효과 (모든 아르카나) — 에린 데이터 세공 옵션의 레벨당 수치로 계산: 크리티컬 · 크리티컬 대미지 · 최대 대미지(마스터리 등) · 마법 공격력 · 연금술 대미지
 // 마스터리 최대 대미지 같은 무기 종류 한정 옵션은 지금 무기에 맞는 옵션을 골랐다고 보고 계산해요 · 스킬 전용 옵션은 아르카나 계산식이 있을 때만 계산
 const sgGen = (name) => { if (!ED2) return null; const o = (ED2.opts || []).filter((x) => x[0] === name)[0]; if (!o) return null; const per = Number(o[7]) || 0; const init = Number(o[6]) || per; let stat = ''; if (/크리티컬 대미지$/.test(name)) stat = 'cdmg'; else if (name === '크리티컬' || / 크리티컬$/.test(name)) stat = 'crate'; else if (/최대 대미지$/.test(name) && (name.indexOf('마리오네트') < 0 || arcIdx === 8)) stat = MX === '최대 대미지' ? 'max' : ''; else if (name === '마법 공격력') stat = MX === '마법 공격력' ? 'max' : ''; else if (/연금술 대미지$/.test(name)) stat = MX === '연금술 대미지' ? 'max' : ''; if (!stat) return null; const at = (lv) => (lv > 0 ? init + per * (lv - 1) : 0); return { stat: stat, unit: stat === 'max' ? '' : '%', at: at, per: per }; };
-const stgTargets = (k) => { const d = (((gear && gear.det) || {})[k]) || {}; const out = []; (Array.isArray(d.sg) ? d.sg : []).forEach((q, i) => { if (!q || !q.o) return; const lv = Number(q.lv) || 0; const key = (isStg || isFury) ? SG_OPT_KEY[q.o] : null; const mx = Number(q.mx) || (key === 'f_cm' ? 13 : 25); if (key) { out.push([k + '.sg' + i, '세공 · ' + q.o, lv, mx, (n) => skGain({ sg: { [key]: n - lv } })]); return; } const g = sgGen(q.o); const stOf = (n) => { const st = { max: 0, crate: 0, cdmg: 0, bonus: 0 }; if (g) { st[g.stat] = +(g.at(n) - g.at(lv)).toFixed(1); } return st; }; out.push([k + '.sg' + i, '세공 · ' + q.o, lv, mx, (n) => (g ? dealPct(stOf(n)) / 100 : 0), true, g, stOf]); }); if (k === 'rhand' && (isStg || isFury)) out.push([k + '.derg', '어둠의 에르그', dErgLv, 50, (n) => skGain({ dErg: n })]); return out; };
+const stgTargets = (k) => { const d = (((gear && gear.det) || {})[k]) || {}; const out = []; (Array.isArray(d.sg) ? d.sg : []).forEach((q, i) => { if (!q || !q.o) return; const lv = Number(q.lv) || 0; const key = (isStg || isFury) ? SG_OPT_KEY[q.o] : null; const mx = Number(q.mx) || (key === 'f_cm' ? 13 : 25); if (key) { out.push([k + '.sg' + i, (k.indexOf('echo') === 0 ? '각성 능력 · ' : '세공 · ') + q.o, lv, mx, (n) => skGain({ sg: { [key]: sgEff(q.o, { k: k, i: i, lv: n }) - sgEff(q.o) } })]); return; } const g = sgGen(q.o); const stOf = (n) => { const st = { max: 0, crate: 0, cdmg: 0, bonus: 0 }; if (g) { st[g.stat] = +(sgEff(q.o, { k: k, i: i, lv: n }, g.at) - sgEff(q.o, null, g.at)).toFixed(1); } return st; }; out.push([k + '.sg' + i, (k.indexOf('echo') === 0 ? '각성 능력 · ' : '세공 · ') + q.o, lv, mx, (n) => (g ? dealPct(stOf(n)) / 100 : 0), true, g, stOf]); }); if (k === 'rhand' && (isStg || isFury)) out.push([k + '.derg', '어둠의 에르그', dErgLv, 50, (n) => skGain({ dErg: n })]); return out; };
 SG_SLOTS.forEach((k) => stgTargets(k).forEach((t) => { const tg = Number(s.up[t[0]]) || 0; if (tg > t[2] && tg <= t[3]) { const gn = t[4](tg); if (t[5] && !t[6]) return; chosen.push({ key: t[0], slotKey: k, slot: slotName(k), dim: t[1], from: 'Lv.' + t[2], to: 'Lv.' + tg, pct: Math.round(gn * 1000) / 10, dmg: t[5] ? (t[7](tg).max || 0) : Math.round(gn * (BASE_STATS.max || 0)), costM: 0, eff: 0, group: '장착 장비', names: t[1], stats: t[5] ? t[7](tg) : { max: 0, crate: 0, cdmg: 0, bonus: 0 } }); } }));
 const stgDims = (() => { if (SG_SLOTS.indexOf(cur[0]) < 0) return []; const ts = stgTargets(cur[0]); const blank = { pct: '0', dmg: 0, tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
 const rows = ts.map((t) => { const tg = Number(s.up[t[0]]) || 0; const on = tg > t[2] && tg <= t[3]; const gn = on ? t[4](tg) : 0; const one = t[2] < t[3] ? t[4](t[2] + 1) : 0;
-return Object.assign({}, blank, { label: t[1], current: 'Lv.' + t[2], note: t[5] ? (t[6] ? '레벨당 ' + ({ max: MX, crate: '크리티컬', cdmg: '크리티컬 대미지' }[t[6].stat]) + ' +' + t[6].per + t[6].unit : '이 옵션은 아직 딜 계산식이 없어요') : (stgHasShare && t[2] < t[3] ? '+1당 총딜 +' + (Math.round(one * 10000) / 100) + '%' : ''), value: String(on ? tg : 0),
+const tm = /^(각성 능력|세공) · (.+)$/.exec(t[1]) || []; const ecR = tm[1] === '각성 능력' && !SG_GEN_RE.test(tm[2]);
+return Object.assign({}, blank, { label: tm[2] || t[1], tag: tm[1] || '', hasTag: !!tm[1], rule: ecR ? '세공과 중첩 없이 높은 쪽만' : '', hasRule: ecR, current: 'Lv.' + t[2], note: t[5] ? (t[6] ? '레벨당 ' + ({ max: MX, crate: '크리티컬', cdmg: '크리티컬 대미지' }[t[6].stat]) + ' +' + t[6].per + t[6].unit : '이 옵션은 아직 딜 계산식이 없어요') : (stgHasShare && t[2] < t[3] ? '+1당 총딜 +' + (Math.round(one * 10000) / 100) + '%' : ''), value: String(on ? tg : 0),
 opts: [{ v: '0', label: t[2] >= t[3] ? '최대 레벨' : '현재 유지' }].concat(Array.from({ length: Math.max(0, t[3] - t[2]) }, (_, i) => { const n = t[2] + i + 1; return { v: String(n), label: 'Lv.' + n + (t[5] ? (t[6] ? ' · ' + ({ max: MX, crate: '크리티컬', cdmg: '크리티컬 대미지' }[t[6].stat]) + ' +' + (+(t[6].at(n) - t[6].at(t[2])).toFixed(1)) + t[6].unit : '') : (stgHasShare ? ' · ' + pctTxt(t[4](n)) : '')) }; })),
 on: on, off: !on, pct: on ? (Math.round(gn * 1000) / 10).toFixed(1) : '0', dmg: on ? Math.round(gn * (BASE_STATS.max || 0)) : 0, cost: on ? '가격 미정' : '—', costFg: on ? '#2A2119' : '#8C7A62',
 border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(t[0], Number(e.target.value)),
