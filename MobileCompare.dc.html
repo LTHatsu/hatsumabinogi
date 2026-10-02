@@ -712,8 +712,8 @@ const flow = magnum + hydro * 0.15;
 const triM = 1 + (0.1 + sv('fire') * 0.005) + (0.1 + sv('water') * 0.005) + (0.1 + sv('wind') * 0.005) + 0.1;
 // 증발 (플레임버스트 · 하이드로피어스 · 트라이어설트) 계수 — 불 · 물 연금술 마스터리로만 오름
 const evap = 1.1 + 0.005 * (sv('fire') + sv('water'));
-// 융합 (페른 · 이다드 · 에바드) — 1 · 2타는 그대로, 피니시 배율 +4500%p · 알케믹 시너지 중 증발 계수를 곱해요 (과열 · 전류 · 분진 · 냉각 · 부식 계수는 받는 대로 추가)
-let triFin = 4400 + (yung ? 4500 : 0); let triSyn = yung ? evap : 1;
+// 융합 (페른 · 이다드 · 에바드) — 1 · 2타는 그대로, 피니시 배율 +4500%p (과열 · 전류 · 분진 · 냉각 · 부식 계수는 받는 대로 추가)
+let triFin = 4400 + (yung ? 4500 : 0); let triSyn = evap;
 const tri = ((1500 + sv('ogTr')) * 2 + (triFin + 150 * rTr + sv('ogTr'))) * triM * triSyn;
 // 알케믹 스팅어 스킬별 대미지 — 위 보호 · 피어싱 · 방어 구조 · w: 재능 보너스 가중치
 const stgParts = (ov, w) => {
@@ -728,8 +728,8 @@ const fh = arcHit(P(crashV), P(1080 + 45 * lv.fl + sv('ogFl')), w, ev); const fn
 // 하이드로 피어스 = 매그넘샷(재능) + 고유 (3280% + 유물 + 오검) × 1.3 · 격류: 7타 × (매그넘 + 하이드로 × 0.15)
 const arm = P((3280 + 110 * lv.hy + sv('ogHy')) * 1.3); let hy;
 if (gyeok) { const inW = P(magV) * PIERCE_G * w; const per = Math.max(0, (inW * 1.15 + arm * 0.15) * ev * PROT_K - DEF_V); hy = { v: per * 7, tal: inW * 1.15 * ev * PROT_K * 7 }; } else { const r = arcHit(P(magV), arm, w, ev); hy = { v: r.v, tal: r.tal }; }
-// 트라이 어설트 (고유만) = 1 · 2타 + 피니시 · 연금술 마스터리 계수 · 융합이면 증발 계수
-const tSyn = yung ? ev : 1; const trv = hitOut(P((1500 + sv('ogTr')) * tM * tSyn)) * 2 + hitOut(P((triFin + 150 * lv.tr + sv('ogTr')) * tM * tSyn));
+// 트라이 어설트 (고유만) = 1 · 2타 + 피니시 · 연금술 마스터리 계수 · 증발 계수 (불+물 조합 기준)
+const tSyn = ev; const trv = hitOut(P((1500 + sv('ogTr')) * tM * tSyn)) * 2 + hitOut(P((triFin + 150 * lv.tr + sv('ogTr')) * tM * tSyn));
 const cnv = arcHit(0, MM * 430, w); /* 알케믹 컨버전스(각성기): 딜 43,000% 고정 */
 return { fla: { v: fh.v * fn, tal: fh.tal * fn }, hyE: hy, trv: { v: trv, tal: 0 }, mag: { v: hitOut(P(magV)), tal: 0 }, cnv: { v: cnv.v, tal: 0 } };
 };
