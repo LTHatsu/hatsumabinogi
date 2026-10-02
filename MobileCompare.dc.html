@@ -462,9 +462,11 @@ const pierceF = (p) => 1 - protRed(194 - 5 * Math.max(0, Math.min(11, Math.max(0
 const piercePct = (dp) => (dp ? (pierceF(PIERCE_IN + dp) / pierceF(PIERCE_IN) - 1) * 100 : 0);
 const pierceOfItem = (n) => Number(((s.eqPicks && s.eqPicks.pierce) || {})[String(n || '')]) || 0;
 const pierceOfEnc = (i) => { if (i === undefined || !EN || !EN.list[i]) return 0; const m = String(EN.list[i][3] || '').match(/피어싱 레벨 (\d+)(?: ?~ ?(\d+))? 증가/); return m ? Number(m[2] || m[1]) : 0; };
-// 피어싱이 11을 넘으면(이미 11인데 드롭 벨 · 헤일로 등을 더 끼면) 넘는 만큼 무기의 피어싱 개조를 같은 단계의 다른 개조로 바꿔 주요 스탯을 올린다고 봐요 (equip-picks.json pierceConv · 지금 무기가 피어싱 개조를 쓰고 있다고 가정)
+// 피어싱이 11을 넘으면(이미 11인데 드롭 벨 · 헤일로 등을 더 끼면) 넘는 만큼 무기의 피어싱 개조를 같은 단계의 다른 개조로 바꿔 주요 스탯을 올린다고 봐요 (equip-picks.json pierceConv · 장비 · 오검에서 체크한 피어싱 개조만)
 const PCONV = (s.eqPicks && s.eqPicks.pierceConv) || {}; const pcW = PCONV[String(((gear && gear.eq) || {}).rhand || fInfo.weapon || '')] || null; const pcOk = !!pcW && (pcW.stat === 'matk' ? arcIdx === 2 : arcIdx !== 2 && arcIdx !== 7);
-const pierceConvOf = (dp) => { if (!pcOk || !(dp > 0)) return 0; const ov = Math.max(0, Math.min(dp, PIERCE_IN + dp - 11)); return pcW.gains.slice(0, ov).reduce((x, v) => x + v, 0); };
+// 장비 · 오검에서 체크한 피어싱 개조만 바꿀 수 있어요 (체크하지 않으면 변환 없음)
+const pcPm = ((((gear && gear.det) || {}).rhand) || {}).pmod || {}; const pcGains = pcW ? pcW.mods.filter((q) => pcPm[q[0]]).map((q) => q[2]).sort((x, y) => y - x) : [];
+const pierceConvOf = (dp) => { if (!pcOk || !(dp > 0)) return 0; const ov = Math.max(0, Math.min(dp, PIERCE_IN + dp - 11)); return pcGains.slice(0, ov).reduce((x, v) => x + v, 0); };
 const RING_K = arcIdx === 2 ? 'mag' : (arcIdx === 7 ? 'alc' : 'max');
 const ringLoss = (k, n) => { const d = ((gear && gear.det) || {})[k] || {}; const cur = String(((gear && gear.eq) || {})[k] || ''); if ((k !== 'acc1' && k !== 'acc2') || cur.indexOf('삼색 보석 반지') < 0 || String(n).indexOf('삼색 보석 반지') >= 0 || d.ringT !== RING_K) return 0; return Math.min(7, Math.max(0, Number(d.ringV) || 0)); };
 const swapList = (sl) => {
