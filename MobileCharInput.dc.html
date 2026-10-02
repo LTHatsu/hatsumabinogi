@@ -194,7 +194,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
 <h2 style="margin: 0; font-family: 'Gowun Batang', serif; font-size: 21px">딜 사이클 비중</h2>
-<p style="margin: -4px 0 0; font-size: 12px; line-height: 1.6; letter-spacing: -0.3px; color: #6B5A45">연습 모드 기준 스킬별 딜 비중 (연속 공격 · 스타더스트 제외)</p>
+<p style="margin: -4px 0 0; font-size: 12px; line-height: 1.6; letter-spacing: -0.3px; color: #6B5A45">연습 모드 기준 스킬별 딜 비중 (연속 공격 · 스타더스트 제외)</p><sc-if value="{{presetBox.has}}" hint-placeholder-val="{{ false }}"><label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4A3D30"><span>딜 비중 프리셋</span><span style="font-size: 12px; line-height: 1.5; color: #8A5E17">보편적인 딜 사이클 비중이에요. 개인 편차가 존재하여 정확한 정보를 제공하지 않아요.</span><select class="f" aria-label="딜 비중 프리셋" value="{{presetBox.value}}" onChange="{{presetBox.onPick}}"><sc-for list="{{presetBox.opts}}" as="o" hint-placeholder-count="2"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label></sc-if>
 <sc-for list="{{skillBox.rows}}" as="k" hint-placeholder-count="2"><div style="padding: 10px; border-radius: 12px; background: #FBF5E8; border: 1px solid #E6D8BC; display: flex; flex-direction: column; gap: 8px"><div style="display: flex; gap: 8px; align-items: center"><span style="flex-shrink: 0; font-size: 12px; color: #6B5A45">{{k.no}}</span><select class="f" aria-label="{{k.label}} 스킬 명" value="{{k.name}}" onChange="{{k.onName}}" style="flex-grow: 1; min-width: 0"><sc-for list="{{k.opts}}" as="o" hint-placeholder-count="6"><option value="{{o.v}}">{{o.label}}</option></sc-for></select><button type="button" onClick="{{k.remove}}" aria-label="{{k.label}} 삭제" style="flex-shrink: 0; height: 44px; padding: 0 12px; border-radius: 10px; border: 1.5px solid #B6A27E; background: transparent; color: #2A2119; font-size: 13px">삭제</button></div><div style="display: flex; gap: 8px; align-items: center"><span style="flex-shrink: 0; display: flex; align-items: center; min-height: 44px; font-size: 13px; color: #4A3D30">딜 비중</span><input class="f" type="text" inputmode="decimal" aria-label="{{k.label}} 딜 비중 (%)" placeholder="딜 비중 (%)" value="{{k.share}}" onChange="{{k.onShare}}" onBlur="{{k.onShareBlur}}" style="flex-grow: 1; min-width: 0"></div></div></sc-for>
 <sc-if value="{{skillBox.empty}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #8C7A62">추가한 스킬이 없어요 · 스킬 추가를 눌러 입력해 보세요</span></sc-if>
 <strong role="status" style="font-size: 13px; color: {{skillBox.sumFg}}">{{skillBox.sum}}</strong><span style="margin-top: -8px; font-size: 12px; line-height: 1.5; letter-spacing: -0.3px; color: #6B5A45">합계가 100%가 아니어도 괜찮아요.<br>100%가 되도록 보정해 전투 스탯 계산에 활용돼요.</span>
@@ -224,6 +224,8 @@ this.DEF = { fields: {}, arcana: 0, gm: {}, reforge: 1, stage: 4, reforge2: 1, s
 const st = this.loadStore();
 const cur = st.chars[st.cur] ? st.cur : 0;
 this.state = Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false });
+// 딜 사이클 비중 프리셋 (share-presets.json — 아르카나별 보편 딜 비중)
+try { fetch('./share-presets.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d) this.setState({ presets: d }); }).catch(() => {}); } catch (e) {}
 }
 loadStore() {
 try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { // 아이템 이름을 경매장 · 아이템 정보 이름으로 맞춰요 (예전 저장값 변환)
@@ -537,12 +539,16 @@ const DUST_KEYS = [['dustFlare', '플레어'], ['dustBlast', '블래스트']];
 const dustMigrate = (f) => { DUST_KEYS.forEach((d) => { if (f[d[0]] === undefined && dustLegacy(d[1])) { f[d[0]] = dustLegacy(d[1]); } }); return f; };
 const skills = allSkills.filter((k) => !isDust(k.name));
 const skShare = (k) => Number(k.share) || 0;
-const setSkills = (arr) => { const tot = arr.reduce((a, k) => a + skShare(k), 0); const arcS = arr.filter((k) => k.arc).reduce((a, k) => a + skShare(k), 0); const f = dustMigrate(Object.assign({}, s.fields)); if (tot) { f.arcRatio = String(Math.round(arcS / tot * 1000) / 10); } else { delete f.arcRatio; } this.upd({ skills: arr, fields: f }); };
+const setSkills = (arr, preset, dustP) => { const tot = arr.reduce((a, k) => a + skShare(k), 0); const arcS = arr.filter((k) => k.arc).reduce((a, k) => a + skShare(k), 0); const f = dustMigrate(Object.assign({}, s.fields)); if (tot) { f.arcRatio = String(Math.round(arcS / tot * 1000) / 10); } else { delete f.arcRatio; } if (preset) { f.sharePreset = preset; } else { delete f.sharePreset; } if (dustP) { ['dustFlare', 'dustBlast'].forEach((k) => { if (dustP[k] !== undefined) { if (Number(dustP[k])) { f[k] = String(dustP[k]); } else { f[k] = ''; } } }); } /* 프리셋의 스타더스트(플레어 · 블래스트) 비중도 함께 */ /* 직접 고치면 프리셋 표시는 지워요 */ this.upd({ skills: arr, fields: f }); };
 const skSet = (i, p) => setSkills(skills.map((k, j) => (j === i ? Object.assign({}, k, p) : k)));
 // 딜 비중을 입력하고 칸을 벗어나면 비중이 높은 스킬부터 위로 정렬해요 (비중이 같으면 넣은 순서, 비중이 없는 칸은 아래)
 const skSort = () => { const idx = skills.map((k, j) => j); idx.sort((a, b) => (skShare(skills[b]) - skShare(skills[a])) || (a - b)); if (idx.some((v, j) => v !== j)) { setSkills(idx.map((j) => skills[j])); } };
 const skTot = Math.round(skills.reduce((a, k) => a + skShare(k), 0) * 10) / 10;
 const skArc = Math.round(skills.filter((k) => k.arc).reduce((a, k) => a + skShare(k), 0) * 10) / 10;
+// 딜 사이클 비중 프리셋 — 고르면 스킬별 비중을 그 값으로 채워요 (직접 고칠 수 있어요)
+const PRE = ((s.presets || {})[String(s.arcana)]) || [];
+const presetBox = { has: PRE.length > 0, value: '', opts: [{ v: '', label: (s.fields || {}).sharePreset ? '적용 중: ' + s.fields.sharePreset : '프리셋 선택 (보편 딜 비중)' }].concat(PRE.map((p, i) => ({ v: String(i + 1), label: p[0] }))), cur: (s.fields || {}).sharePreset || '', hasCur: !!(s.fields || {}).sharePreset,
+onPick: (e) => { const p = PRE[Number(e.target.value) - 1]; if (!p) return; setSkills(p[1].map((q) => { const hit = skillPoolAll.filter((x) => x[0] === q[0])[0]; return { name: q[0], arc: hit ? !!hit[1] : false, share: String(q[1]) }; }), p[0], p[2] || null); } };
 const skillBox = {
 rows: skills.map((k, i) => ({ no: String(i + 1), name: k.name || '', arc: !!k.arc, share: k.share || '', label: '스킬 ' + (i + 1),
 opts: [{ v: '', label: skillPool.length ? '스킬 선택' : '아르카나를 먼저 선택해 주세요' }].concat(skillPool.filter((q) => q[0] === k.name || !skills.some((o, j) => j !== i && o.name === q[0])).map((q) => ({ v: q[0], label: q[0] }))).concat(k.name && !skillPool.some((q) => q[0] === k.name) ? [{ v: k.name, label: k.name }] : []),
@@ -595,7 +601,7 @@ rankOpts: rankOpts, rankValue: CRIT_RANK.some((r) => r[0] === (s.fields || {}).c
 rfLabel: (rfType ? 'S' : 'R') + rfStage + '강', rfEffect: rfText(rfMain, rfType, rfDark), rfDark: rfDark,
 sub2On: sub2On, notDual: !sub2On, rfPair: 'R' + rfStage + '강 + R' + rfStage2 + '강', sub2Name: sEff, reforges2: this.seg(['R 개조'], 0, 'reforge2'), stages2: this.seg(['1', '2', '3', '4', '5', '6', '7', '8'], rfStage2 - 1, 'stage2'), rf2Label: (rfType2 ? 'S' : 'R') + rfStage2 + '강', rf2Effect: rfText(rfSub, rfType2, false), rfSum: rfDeltaText(rfSumD),
 critGm: critGm + '%', critTotal: (30 + critGm + sealCr) + '%', critSeal: sealCr ? ' + 정령 봉인 해제 5%' : '',
-/* 엘레멘탈 나이트는 엘레멘탈 인젝션 적용 안내 (포션 1.2배는 모든 아르카나 기본 적용) */ isEK: s.arcana === 0, skillBox: skillBox, dust: dust, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, isSacred: s.arcana === 4, petSum: '크리티컬 대미지 +' + petCd + '%',
+/* 엘레멘탈 나이트는 엘레멘탈 인젝션 적용 안내 (포션 1.2배는 모든 아르카나 기본 적용) */ isEK: s.arcana === 0, skillBox: skillBox, presetBox: presetBox, dust: dust, stingerBox: stingerBox, spiritSum: spiritSum, kaliachOpts: kaliachOpts, radekaOpts: radekaOpts, radekaRows: radekaRows, hasRadeka: radekaRows.length > 0, isStinger: s.arcana === 3, isSacred: s.arcana === 4, petSum: '크리티컬 대미지 +' + petCd + '%',
 menuOpen: !!s.menuOpen, menuExp: s.menuOpen ? 'true' : 'false', toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
 bkOpen: !!s.bkOpen, bkText: s.bkText || '', bkMsg: s.bkMsg || '', hasBkMsg: !!s.bkMsg, bkOut: s.bkOut || '', hasBkOut: !!s.bkOut, onBkOutFocus: (e) => { try { e.target.select(); } catch (er) {} }, onBkOutClose: () => this.setState({ bkOut: '', bkMsg: '' }), onExport: () => this.exportData(), onBkToggle: () => this.setState({ bkOpen: !s.bkOpen, bkMsg: '', bkOut: '' }), onBkText: (e) => this.setState({ bkText: e.target.value }), onBkApply: () => this.importData(this.state.bkText), onBkFile: (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => this.importData(r.result); r.readAsText(f); e.target.value = ''; },
 canAdd: roster.length < 3, isFull: roster.length >= 3, addChar: () => this.addChar(),
