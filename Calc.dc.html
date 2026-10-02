@@ -115,6 +115,15 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </button>
 </sc-for>
 </div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{row5}}" as="s" hint-placeholder-count="3">
+<button type="button" aria-pressed="{{s.checked}}" onClick="{{s.pick}}" style="height: 124px; box-sizing: border-box; border-radius: 14px; border: {{s.border}}; background: {{s.bg}}; box-shadow: {{s.shadow}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; color: #2A2119">
+<svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="{{s.iconFg}}" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{s.icon}}"></path></svg>
+<span style="font-size: 13px; font-weight: 700">{{s.name}}</span>
+<span style="font-size: 12px; line-height: 1.3; color: {{s.itemFg}}; text-align: center">{{s.item}}</span>
+</button>
+</sc-for>
+</div>
 </div>
 
 <form aria-label="{{sel.name}} 장비 지정" style="flex-grow: 1; display: flex; flex-direction: column; gap: 18px">
@@ -129,6 +138,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </sc-if>
 </div>
 
+<sc-if value="{{sel.notEcho}}" hint-placeholder-val="{{ true }}">
 <div class="fl" style="position: relative"><span>장비 아이템</span><input class="f" type="search" autocomplete="off" value="{{sel.itemValue}}" onChange="{{onItem}}" onFocus="{{onItemFocus}}" onBlur="{{onItemBlur}}" placeholder="아이템 이름을 입력하면 목록이 나와요 (예: 소울 리버레이트)">
 <sc-if value="{{sug.on}}" hint-placeholder-val="{{ false }}"><div role="listbox" aria-label="장비 아이템 목록" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px; max-height: 320px; overflow-y: auto; background: #FFFBF2; border: 1px solid #B6A27E; border-radius: 10px; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.16)">
 <sc-for list="{{sug.list}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 14px; border: 0; border-bottom: 1px solid #EFE5CF; background: transparent; text-align: left; font-size: 15px; color: #2A2119; cursor: pointer"><span style="min-width: 0">{{x.name}}</span><span style="flex-shrink: 0; font-size: 13px; color: #8A5A1E">{{x.price}}</span></button></sc-for>
@@ -168,6 +178,15 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 <sc-if value="{{det.hwCdOn}}" hint-placeholder-val="{{ false }}"><label class="fl">성수 크리티컬 대미지<select class="f" value="{{det.hwCd}}" onChange="{{det.onHwCd}}"><option value="">선택</option><option value="1">+1%</option><option value="2">+2%</option><option value="3">+3%</option><option value="4">+4%</option></select></label></sc-if></sc-if>
 </div>
 </sc-if>
+</sc-if>
+<sc-if value="{{sel.isEcho}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 14px"><label class="fl">에코스톤<select class="f" aria-label="에코스톤 종류" value="{{echo.stone}}" onChange="{{echo.onStone}}"><option value="">에코스톤 선택</option><sc-for list="{{echo.stoneOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label><label class="fl">등급<select class="f" aria-label="에코스톤 등급" value="{{echo.grade}}" onChange="{{echo.onGrade}}"><sc-for list="{{echo.gradeOpts}}" as="o" hint-placeholder-count="30"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label></div>
+<sc-if value="{{echo.on}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 14px">
+<label class="fl"><span>고유 능력 · {{echo.statLabel}}</span><input class="f" type="text" inputmode="numeric" aria-label="고유 능력 수치" placeholder="{{echo.inhPh}}" value="{{echo.inh}}" onChange="{{echo.onInh}}"></label>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 14px"><div class="fl" style="position: relative; justify-content: flex-start"><span>각성 능력</span><input class="f" type="search" autocomplete="off" aria-label="각성 능력 검색" placeholder="{{echo.qPh}}" value="{{echo.qVal}}" onChange="{{echo.onQ}}" onFocus="{{echo.onQFocus}}" onBlur="{{echo.onQBlur}}"><sc-if value="{{echo.sugOn}}" hint-placeholder-val="{{ false }}"><div role="listbox" aria-label="각성 능력 목록" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 4px; max-height: 300px; overflow-y: auto; background: #FFFBF2; border: 1px solid #B6A27E; border-radius: 10px; box-shadow: 0 10px 24px rgba(42, 33, 25, 0.16)"><sc-for list="{{echo.sug}}" as="x" hint-placeholder-count="5"><button type="button" role="option" onMouseDown="{{x.pick}}" style="display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 9px 14px; border: 0; border-bottom: 1px solid #EFE5CF; background: {{x.bg}}; text-align: left; cursor: pointer"><span style="font-size: 15px; color: #2A2119">{{x.label}}</span><span style="font-size: 12px; color: #6B5A45">{{x.sub}}</span></button></sc-for><sc-if value="{{echo.sugNone}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 10px 14px; font-size: 13px; color: #6B5A45">맞는 각성 능력이 없어요</span></sc-if></div></sc-if></div><label class="fl">각성 레벨<select class="f" aria-label="각성 레벨" value="{{echo.lv}}" onChange="{{echo.onLv}}"><sc-for list="{{echo.lvOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label></div>
+</div></sc-if>
+<span style="font-size: 13px; line-height: 1.5; color: #4A3D30">{{echo.info}}</span>
+</div></sc-if>
 <sc-if value="{{det.err}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 13px; color: #9A3B2E">{{det.errMsg}}</span></sc-if>
 
 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px">
@@ -315,6 +334,8 @@ try { fetch('./enchant-picks.json').then((r) => (r.ok ? r.json() : null)).then((
 // 무리아스의 유물 전용 인챈트 (에린 데이터에 없어 직접 등록 · 접두 · 접미 모두 주요 옵션(최대 대미지 · 마법 공격력 · 연금술 대미지) 16 고정, 접미는 아르카나 보너스 대미지 +1%) — [이름, 접두 0/접미 1, 대상 아르카나] · dm 다크 메이지, fa 포비든 알케미스트, mx 최대 대미지 아르카나 (선물 · 순수한은 세인트 바드 유물 전용이라 제외)
 const RELIC_ENCH = [['기억의', 0, 'dm'], ['편린', 1, 'dm'], ['잠식된', 0, 'fa'], ['자아', 1, 'fa'], ['쌓여가는', 0, 'mx'], ['신뢰하는', 0, 'mx'], ['후회', 1, 'mx'], ['관리자', 1, 'mx']];
 try { fetch('./enchant-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.list) { d.list = d.list.concat(RELIC_ENCH.map((q) => [q[0], q[1], '', '', [], [], [], 0, '', q[2]])); this.setState({ enData: d }); } }).catch(() => {}); } catch (e) {}
+// 에코스톤 (에린 데이터 echo — 레드 · 블루 · 옐로 · 실버 · 블랙, 등급별 고유 능력 범위 · 각성 능력)
+try { fetch('./echo-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.stones) { this.setState({ echoData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this._edMap = null; this._edG = null; this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
 // 다른 페이지(캐릭터 정보 등)에서 바꾼 내용을 바로 반영 — 저장소 변경 · 페이지 포커스 시 다시 읽어요
 this._sync = () => this.syncStore();
@@ -355,13 +376,18 @@ off: 'M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z',
 hands: 'M6 21v-7l-2.2-4a1.6 1.6 0 0 1 2.8-1.6L8.5 11V4.3a1.6 1.6 0 0 1 3.2 0V10V3.2a1.6 1.6 0 0 1 3.2 0V10V5.3a1.6 1.6 0 0 1 3.2 0V15c0 3.5-2.8 6-6 6z',
 feet: 'M7 3h6v10l6.5 3a2 2 0 0 1 1 1.8V21H4v-6l3-2z',
 robe: 'M12 3c-4.5 0-7 3.5-7 7.5V21h14V10.5C19 6.5 16.5 3 12 3zM8.5 11c1.5 2.5 5.5 2.5 7 0M12 14v7',
-relic: 'M12.00 4.60A7.6 7.6 0 0 0 19.27 17.20A7.6 7.6 0 0 0 4.73 17.20A7.6 7.6 0 0 0 12.00 4.60ZM16.60 13a4.6 4.6 0 1 0 -9.2 0a4.6 4.6 0 1 0 9.2 0'
+relic: 'M12.00 4.60A7.6 7.6 0 0 0 19.27 17.20A7.6 7.6 0 0 0 4.73 17.20A7.6 7.6 0 0 0 12.00 4.60ZM16.60 13a4.6 4.6 0 1 0 -9.2 0a4.6 4.6 0 1 0 9.2 0',
+echo: 'M12 3l6.5 5.5L12 21 5.5 8.5z M5.5 8.5h13M9.5 8.5L12 21l2.5-12.5' 
 };
+// 에코스톤 칸 이름 — 고른 에코스톤 · 등급
+const EC = s.echoData;
+const echoLabel = (k) => { const e = (s.det || {})[k] || {}; const st = EC && e.st ? EC.stones.filter((x) => x[0] === e.st)[0] : null; return st ? st[1] + ' · ' + (Number(e.g) || 1) + '등급' : ''; };
 const S = [
 [['acc1', '액세서리 1', I.acc], ['head', '머리', I.head], ['acc2', '액세서리 2', I.acc]],
 [['rhand', '주무기', I.weapon, true], ['body', '의상', I.body], ['lhand', '보조무기', I.off, true]],
 [['hands', '장갑', I.hands], ['feet', '신발', I.feet], ['robe', '로브', I.robe]],
-[['relic1', '유물 1', I.relic], ['relic2', '유물 2', I.relic], ['relic3', '유물 3', I.relic]]
+[['relic1', '유물 1', I.relic], ['relic2', '유물 2', I.relic], ['relic3', '유물 3', I.relic]],
+[['echo1', '에코스톤 1', I.echo], ['echo2', '에코스톤 2', I.echo], ['echo3', '에코스톤 3', I.echo]]
 ];
 const keyOf = (k) => k;
 let count = 0;
@@ -369,7 +395,7 @@ let selInfo = null;
 const rows = S.map((row) => row.map((d) => {
 const key = keyOf(d[0], d[3]);
 // 유물 칸은 이름을 자동으로 '무리아스의 유물' (효과를 고르거나 이름을 넣으면)
-const item = String(d[0]).indexOf('relic') === 0 ? (s.eq[key] || ((s.det || {})[key] || {}).rFx ? '무리아스의 유물' : '') : s.eq[key];
+const item = String(d[0]).indexOf('echo') === 0 ? echoLabel(key) : String(d[0]).indexOf('relic') === 0 ? (s.eq[key] || ((s.det || {})[key] || {}).rFx ? '무리아스의 유물' : '') : s.eq[key];
 if (item) count += 1;
 const on = s.sel === d[0];
 const info = { name: d[1], icon: d[2], isWeapon: !!d[3], item: item };
@@ -475,6 +501,31 @@ qVal: qv, qPh: !ED ? '세공 정보 불러오는 중' : (sgList.length ? '옵션
 onQ: (e) => { const v = e.target.value; this.setState({ sgOpen: selKey + i, sgQ: Object.assign({}, s.sgQ, { [selKey + i]: v }) }); const ex = avail.filter((x) => sgNorm(x.name) === sgNorm(v))[0]; if (ex && ex.name !== q.o) { pickOpt(ex.name); } },
 onQFocus: () => this.setState({ sgOpen: selKey + i, sgQ: Object.assign({}, s.sgQ, { [selKey + i]: '' }) }), onQBlur: () => { setTimeout(() => { if (this.state.sgOpen === selKey + i) this.setState({ sgOpen: null }); }, 150); },
  label: '세공 옵션 ' + (i + 1), value: q.o || '', lv: q.lv || '', opts: [{ v: '', label: !ED ? '세공 정보 불러오는 중' : (sgList.length ? '옵션 선택' : (isWeaponSlot && !sgItem ? '무기를 먼저 골라 주세요' : '이 장비에는 세공 옵션이 없어요')) }].concat(q.o && !sgFind(q.o) ? [{ v: q.o, label: q.o + ' (이 장비에 없는 옵션)' }] : []).concat(sgList.filter((x) => x.name === q.o || !sgArr.some((z, k) => k !== i && z && z.o === x.name)).map((x) => ({ v: x.name, label: x.name }))), onOpt: (e) => setSg(i, { o: e.target.value, lv: e.target.value ? String(Math.min(sgMax(e.target.value), Number(q.lv) || 1)) : '', mx: e.target.value ? sgMax(e.target.value) : '' }), onLv: (e) => { const raw = String(e.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setSg(i, { lv: raw === '' ? '' : String(Math.min(sgMax(q.o), Math.max(1, Number(raw)))) }); } else { e.target.value = q.lv || ''; } }, lvOff: !q.o, ph: sgPh(q.o) }; });
+// ── 에코스톤 (최대 3개 · 색이 겹치지 않게) — 고유 능력(등급별 범위 안의 수치)과 각성 능력 1개(세공과 같은 능력 · 등급에 따라 최대 레벨)
+// 각성 능력은 sg 형식으로 저장해서, 세공 옵션과 이름이 같으면(매그넘 샷 대미지 등) 세팅 시뮬레이터 계산에 세공 레벨로 더해져요
+const echoP = (() => { const SL = ['echo1', 'echo2', 'echo3']; const isE = SL.indexOf(selKey) >= 0; const e = isE ? (detAll[selKey] || {}) : {}; const st = EC && e.st ? EC.stones.filter((x) => x[0] === e.st)[0] : null; const g = Math.min(30, Math.max(1, Number(e.g) || 1)); const used = SL.filter((k) => k !== selKey).map((k) => (detAll[k] || {}).st).filter(Boolean);
+const setE = (patch) => { const all = Object.assign({}, detAll); const o = Object.assign({}, e, patch); Object.keys(o).forEach((k) => { if (o[k] === '' || o[k] == null) delete o[k]; }); if (Object.keys(o).length) { all[selKey] = o; } else { delete all[selKey]; } this.upd({ det: all, saved: selKey }); };
+const sgE = (e.sg || [])[0] || {}; const abs = st ? st[4].map((id) => EC.ab[id]).filter(Boolean) : []; const cur = abs.filter((a) => a[0] === sgE.o)[0]; const mlv = cur ? (cur[4][g - 1] || 0) : 0;
+const unit = (a) => String(a[3] || '').replace(/\s*증가$/, '').trim(); const val = (a, lv) => (a[1] == null ? '' : '+' + (Math.round((a[1] + (lv - 1) * a[2]) * 100) / 100) + unit(a));
+const norm = (x) => String(x || '').replace(/\s/g, '').toLowerCase(); const open = s.ecOpen === selKey; const qv = open ? String(s.ecQ || '') : (sgE.o || '');
+const can = abs.filter((a) => (a[4][g - 1] || 0) > 0); const hit = can.filter((a) => !open || !qv || norm(a[0]).indexOf(norm(qv)) >= 0);
+const pickA = (name) => { const a = abs.filter((x) => x[0] === name)[0]; const ml = a ? a[4][g - 1] || 0 : 0; setE({ sg: name && ml ? [{ o: name, lv: String(Math.min(ml, Number(sgE.lv) || 1)), mx: ml }] : '' }); this.setState({ ecOpen: null }); };
+const rng = st ? st[3][g - 1] : null;
+return { on: !!st, stone: e.st || '', grade: String(g),
+stoneOpts: (EC ? EC.stones : []).filter((x) => used.indexOf(x[0]) < 0).map((x) => ({ v: x[0], label: x[1] + ' (' + x[2] + ')' })),
+gradeOpts: Array.from({ length: 30 }, (_, k) => ({ v: String(k + 1), label: (k + 1) + '등급' })),
+onStone: (ev) => setE({ st: ev.target.value, sg: '', inh: '' }),
+onGrade: (ev) => { const ng = Number(ev.target.value) || 1; const ml = cur ? cur[4][ng - 1] || 0 : 0; setE({ g: String(ng), sg: sgE.o && ml ? [{ o: sgE.o, lv: String(Math.min(ml, Number(sgE.lv) || 1)), mx: ml }] : '' }); },
+statLabel: st ? st[2] : '', inh: e.inh || '', inhPh: rng ? (rng[0] === rng[1] ? String(rng[0]) : rng[0] + '~' + rng[1]) + ' (' + g + '등급 범위)' : '',
+onInh: (ev) => { const raw = String(ev.target.value).trim(); if (raw === '' || /^\d+$/.test(raw)) { setE({ inh: raw }); } else { ev.target.value = e.inh || ''; } },
+qVal: qv, qPh: '각성 능력 검색 (예: 매그넘)', sugOn: open && can.length > 0, sugNone: open && hit.length === 0,
+sug: (sgE.o ? [{ label: '선택 지우기', sub: '', bg: '#F5EDDC', pick: (ev) => { if (ev && ev.preventDefault) ev.preventDefault(); pickA(''); } }] : []).concat(hit.slice(0, 60).map((a) => ({ label: a[0], sub: '최대 Lv.' + a[4][g - 1] + (a[1] != null ? ' · Lv.' + a[4][g - 1] + ' ' + val(a, a[4][g - 1]) : ''), bg: a[0] === sgE.o ? '#E3EDE6' : 'transparent', pick: (ev) => { if (ev && ev.preventDefault) ev.preventDefault(); pickA(a[0]); } }))),
+onQ: (ev) => { const v = ev.target.value; this.setState({ ecOpen: selKey, ecQ: v }); const ex = can.filter((a) => norm(a[0]) === norm(v))[0]; if (ex && ex[0] !== sgE.o) { pickA(ex[0]); } },
+onQFocus: () => this.setState({ ecOpen: selKey, ecQ: '' }), onQBlur: () => { setTimeout(() => { if (this.state.ecOpen === selKey) this.setState({ ecOpen: null }); }, 150); },
+lv: sgE.lv || '', lvOpts: cur && mlv ? Array.from({ length: mlv }, (_, k) => ({ v: String(k + 1), label: 'Lv.' + (k + 1) + (cur[1] != null ? ' (' + val(cur, k + 1) + ')' : '') })) : [{ v: '', label: '—' }],
+onLv: (ev) => { if (cur) setE({ sg: [{ o: sgE.o, lv: ev.target.value, mx: mlv }] }); },
+info: !EC ? '에코스톤 정보 불러오는 중' : (!st ? '에코스톤은 최대 3개, 색마다 1개씩 장착할 수 있어요 · 종류와 등급을 고르면 고유 능력 · 각성 능력을 입력해요' : '고유 능력 ' + st[2] + (e.inh ? ' +' + e.inh : ' (수치 입력)') + ' · 각성 능력 ' + (cur ? cur[0] + ' Lv.' + (sgE.lv || 1) + (cur[1] != null ? ' (' + val(cur, Number(sgE.lv) || 1) + ')' : '') : '없음') + ' · 각성 능력이 세공 옵션과 같으면 세팅 시뮬레이터에서 세공 레벨로 함께 계산돼요') };
+})();
 // 에르그는 S등급 50레벨 고정 (입력 없음) · 어둠의 에르그 레벨 1~50, 무리아스의 성수 최대 대미지 1~30
 const FIELD_RANGE = { ergLv: [1, 50], dErg: [1, 50], hwMax: [1, 30] };
 const FIELD_NAME = { pre: '접두 인챈트 수치는', suf: '접미 인챈트 수치는', ergLv: '에르그 레벨은', dErg: '어둠의 에르그 레벨은', hwMax: '성수 수치는' };
@@ -793,9 +844,9 @@ ogPoints: ogPos.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '),
 ogCount: Array.from(new Set(Object.keys(og).concat(Object.keys(ogw)))).length,
 combo: combo,
 goalLabel: this.props.goal ?? '화력',
-row1: rows[0], row2: rows[1], row3: rows[2], row4: rows[3],
+row1: rows[0], row2: rows[1], row3: rows[2], row4: rows[3], row5: rows[4], echo: echoP,
 equippedCount: count,
-sel: { isRelic: String(s.sel).indexOf('relic') === 0, notRelic: String(s.sel).indexOf('relic') !== 0, listId: (s.sel === 'acc1' || s.sel === 'acc2') ? 'acc-items' : '', halo: (s.sel === 'acc1' || s.sel === 'acc2') && String(selInfo.item || '').indexOf('불완전한 공상의 왕관 헤일로') >= 0, name: selInfo.name, icon: selInfo.icon, isWeapon: selInfo.isWeapon, title: title, itemValue: selInfo.item || '', status: selInfo.item ? '장착 중 · ' + selInfo.item : '비어 있음 · 항목을 채우면 자동으로 저장돼요' },
+sel: { isEcho: String(s.sel).indexOf('echo') === 0, notEcho: String(s.sel).indexOf('echo') !== 0, isRelic: String(s.sel).indexOf('relic') === 0, notRelic: String(s.sel).indexOf('relic') !== 0, listId: (s.sel === 'acc1' || s.sel === 'acc2') ? 'acc-items' : '', halo: (s.sel === 'acc1' || s.sel === 'acc2') && String(selInfo.item || '').indexOf('불완전한 공상의 왕관 헤일로') >= 0, name: selInfo.name, icon: selInfo.icon, isWeapon: selInfo.isWeapon, title: title, itemValue: selInfo.item || '', status: selInfo.item ? '장착 중 · ' + selInfo.item : '비어 있음 · 항목을 채우면 자동으로 저장돼요' },
 savedHere: s.saved === selKey,
 det: { enc: enRows, isMain: s.sel === 'rhand', wmax: dCur.wmax || '', pre: dCur.pre || '', suf: dCur.suf || '', err: !!s.detErr, errMsg: s.detErr ? (FIELD_NAME[s.detErr] || '입력값은') + ' ' + encRange(s.detErr)[0] + '~' + encRange(s.detErr)[1] + ' 사이만 입력할 수 있어요' : '', onW: (e) => { const raw = String(e.target.value).trim(); setDet('wmax', raw === '' ? '' : String(Math.max(0, Math.round(Number(raw) || 0)))); }, onPre: encCh('pre'), onSuf: encCh('suf'), blurPre: encBlur('pre'), blurSuf: encBlur('suf'),
 ergGrade: dCur.ergGrade || '', onErgGrade: (e) => setDet('ergGrade', e.target.value), ergLv: dCur.ergLv || '', onErgLv: encCh('ergLv'), blurErgLv: encBlur('ergLv'),
