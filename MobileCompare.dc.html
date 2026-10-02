@@ -841,7 +841,11 @@ const STG_K = { '플레임버스트': 'fla', '하이드로피어스': 'hyE', '�
 const stgBaseS = isStg ? stgParts({}, wS) : null; const furyBaseS = isFury ? furyEval({}, wS) : null;
 const sacScale = (st) => { const M0 = BASE_STATS.max || 0; if (!M0) return st.max; if (!(isSacred || isStg || isFury)) return realMx(st.max) * M0 / realMx(M0); /* 링크 보너스 몫은 버프를 덜 받아서 맥댐 +1의 효과가 조금 더 커요 */ if (isStg || isFury) { let a = 0, t = 0; if (isStg) { const n = stgParts({ M: realMx(st.max) }, wS); envSkills.forEach((k) => { const key = STG_K[String(k.name).replace(/\s/g, '')]; const sh = shareOf(k.name); if (!key || !sh || !stgBaseS[key].v) return; a += sh * n[key].v / stgBaseS[key].v; t += sh; }); } else { const n = furyEval({ M: realMx(st.max) }, wS); Object.keys(furyBaseS).forEach((k) => { const sh = furyShare(k); if (!sh || !furyBaseS[k].v) return; a += sh * n[k].v / furyBaseS[k].v; t += sh; }); } return M0 * (a + Math.max(0, 1 - t) * realMx(st.max) / realMx(M0)); } const n = sacEval({ M: st.max, D: sacDef + (st.def || 0), H: sacHp + (st.hp || 0) }, (1 + BASE_STATS.talent / 100) * (1 + BASE_STATS.talent2 / 100)); let a = 0, t = 0; Object.keys(sacBaseW).forEach((k) => { const sh = sacShare(k); if (!sh || !sacBaseW[k].v) return; a += sh * n[k].v / sacBaseW[k].v; t += sh; }); return M0 * (a + Math.max(0, 1 - t) * st.max / M0); };
 // 총딜 증가율 → 최대 대미지 환산 (세이크리드 가드는 최대 대미지 비례 비율로 나눠요)
-const dealOf = (st) => sacScale(st) * (1 + Math.min(st.crate, 100) / 100 * st.cdmg / 100) * bonusFactor(st);
+/* 아르카나 각성 스킬은 크리티컬 확정 — 각성기 비중만큼은 크리티컬 확률과 무관하게 크리티컬 대미지가 그대로 적용 */
+const AWK_SKILLS = ['엘레멘탈카타클리즘', '알케믹컨버전스', '참회', '캐스케이드버스트', '아머먼트살보', '커튼콜', '퓨리어스드라이브', '도르카임펄스', '마그눔오푸스', '성광의협주곡'];
+const awkShare = Math.min(1, envSkills.reduce((t, k) => t + (AWK_SKILLS.includes(String(k.name).replace(/\s/g, '')) ? shareOf(k.name) : 0), 0));
+const critF = (cr, cd) => { const c = Math.min(Math.max(cr, 0), 100) / 100; return (1 - awkShare) * (1 + c * cd / 100) + awkShare * (1 + cd / 100); };
+const dealOf = (st) => sacScale(st) * critF(st.crate, st.cdmg) * bonusFactor(st);
 // 최대 대미지 환산 기준 — 최대 대미지 +10일 때의 총딜 증가율로 '총딜 1%가 최대 대미지 몇에 해당하는지' 구해요 (모든 아르카나 같은 방식)
 const MXEQ = (() => { const M0 = BASE_STATS.max || 0; if (!M0) return 0; const b = dealOf(BASE_STATS); const n = dealOf(Object.assign({}, BASE_STATS, { max: M0 + 10 })); return n > b ? 10 * b / (n - b) : M0; })();
 const dealPct = (d) => { const m0 = BASE_STATS.max || 1000; const b = dealOf(Object.assign({}, BASE_STATS, { max: m0 })); const n = dealOf({ max: m0 + (d.max || 0), crate: BASE_STATS.crate + (d.crate || 0), cdmg: BASE_STATS.cdmg + (d.cdmg || 0), bonus: BASE_STATS.bonus + (d.bonus || 0), talent: BASE_STATS.talent + (d.talent || 0), arcana: BASE_STATS.arcana + (d.arcana || 0), wbonus: BASE_STATS.wbonus + (d.wbonus || 0), def: d.def || 0, hp: d.hp || 0 }); return Math.round((n / b - 1) * 1000) / 10; };
@@ -1361,7 +1365,7 @@ return (hasSg ? [] : [Object.assign({}, blank, { label: '세공', current: '미�
 // ── 크리티컬 효율 (모든 아르카나) — 평균 대미지 배율 A = 1 − 크리확률 + 크리배율 × 크리확률 (크리배율 = 100% + 크리티컬 대미지)
 // 크리티컬 대미지 +Δ → 평균 증가율 = 크리확률 ÷ A × Δ · 크리티컬 확률 +Δ → 크리티컬 대미지 ÷ A × Δ (둘 다 바뀌면 A'/A − 1)
 // 최대 대미지 환산 = 현재 최대 대미지 × 평균 증가율
-const avgMul = (cr, cd) => { const c = Math.min(Math.max(cr, 0), 100) / 100; return 1 - c + (1 + cd / 100) * c; };
+const avgMul = critF;
 const critGain = (st) => (avgMul(BASE_STATS.crate + (st.crate || 0), BASE_STATS.cdmg + (st.cdmg || 0)) * bonusFactor({ bonus: BASE_STATS.bonus + (st.bonus || 0), talent: BASE_STATS.talent + (st.talent || 0), arcana: BASE_STATS.arcana + (st.arcana || 0), wbonus: BASE_STATS.wbonus + (st.wbonus || 0) })) / (avgMul(BASE_STATS.crate, BASE_STATS.cdmg) * bonusFactor(BASE_STATS)) - 1;
 const critMx = (st) => (BASE_STATS.max || 0) * critGain(st);
 // 보너스 대미지 변화도 같은 방식으로 최대 대미지 환산
