@@ -1,6 +1,6 @@
 {
   "source": "NEXON Open API · 마비노기 경매장",
-  "updatedAt": "2026-10-02T12:23:39.131Z",
+  "updatedAt": "2026-10-02T12:42:23.636Z",
   "watch": [
     "샛바람 용병단 세트 인형 가방 상자",
     "샛바람 용병단 프리미엄 세트 인형 가방 상자",
@@ -74,39 +74,67 @@
       "count": 5
     },
     "8단계 붉은 개조석": {
-      "min": 802970000,
+      "min": 802950000,
       "count": 8
     },
     "8단계 푸른 개조석": {
-      "min": 758000000,
+      "min": 757999999,
       "count": 12
     },
     "보호의 6단계 붉은 개조석": {
       "min": 299900,
-      "count": 22
+      "count": 21
     },
     "보호의 6단계 푸른 개조석": {
-      "min": 310000,
-      "count": 21
+      "min": 300000,
+      "count": 22
     },
     "보호의 7단계 붉은 개조석": {
-      "min": 1608000,
-      "count": 21
+      "min": 1600000,
+      "count": 24
     },
     "보호의 7단계 푸른 개조석": {
       "min": 2500000,
       "count": 7
     },
     "6단계 붉은 개조석": {
-      "min": 300,
-      "count": 22
+      "min": 290,
+      "count": 25
     },
     "6단계 푸른 개조석": {
-      "min": 50,
-      "count": 58
+      "min": 10,
+      "count": 63
+    },
+    "프리렌 인형 가방 상자": {
+      "min": 1500000,
+      "count": 10
+    },
+    "피에릭 인형 가방 상자": {
+      "min": 890000,
+      "count": 6
+    },
+    "재빠른 다람쥐 인형 가방 상자": {
+      "min": 4990000,
+      "count": 1
+    },
+    "키리아 인형 가방 상자": {
+      "min": 2250000,
+      "count": 9
+    },
+    "브렌다&&피에릭 프리미엄 세트 인형 가방 상자": {
+      "min": 1600000,
+      "count": 8
+    },
+    "에아렌 인형 가방 상자": {
+      "min": 550000,
+      "count": 1
+    },
+    "아이네&&델가 세트 인형 가방 상자": {
+      "min": 31000000,
+      "count": 6
     },
     "아이네 인형 가방 상자": {
-      "min": 4900000,
+      "min": 4800000,
       "count": 15
     },
     "로나 잔망루피 인형 가방 상자": {
@@ -201,10 +229,6 @@
       "min": 500000,
       "count": 2
     },
-    "피에릭 인형 가방 상자": {
-      "min": 900000,
-      "count": 6
-    },
     "모르피드리아나스 인형 가방 상자": {
       "min": 899790,
       "count": 3
@@ -281,17 +305,9 @@
       "min": 14880000,
       "count": 12
     },
-    "프리렌 인형 가방 상자": {
-      "min": 1500000,
-      "count": 9
-    },
     "톨비쉬 인형 가방 상자": {
       "min": 499990,
       "count": 2
-    },
-    "키리아 인형 가방 상자": {
-      "min": 2299990,
-      "count": 9
     },
     "톨비쉬&&아벨린&&알터 프리미엄 세트 인형 가방 상자": {
       "min": 2499990,
@@ -557,10 +573,6 @@
       "min": 36000000,
       "count": 4
     },
-    "브렌다&&피에릭 프리미엄 세트 인형 가방 상자": {
-      "min": 1600000,
-      "count": 7
-    },
     "모리안 인형 가방 상자": {
       "min": 889990,
       "count": 5
@@ -699,10 +711,6 @@
     },
     "포인셰&&키리아 세트 인형 가방 상자": {
       "min": 6700000,
-      "count": 6
-    },
-    "아이네&&델가 세트 인형 가방 상자": {
-      "min": 31000000,
       "count": 6
     },
     "케흘렌 인형 가방 상자": {
@@ -917,7 +925,72 @@
   "keywords": [
     "인형 가방"
   ],
-  "errors": [],
+  "errors": [
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/list: 요청 제한으로 실패했어요",
+    "/mabinogi/v1/auction/history: 요청 제한으로 실패했어요"
+  ],
   "categoryEveryHours": 6,
   "categoryMaxPages": 20,
   "categories": [
