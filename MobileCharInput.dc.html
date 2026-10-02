@@ -223,7 +223,7 @@ super(props);
 this.DEF = { fields: {}, arcana: 0, gm: {}, reforge: 1, stage: 4, reforge2: 1, stage2: 4, spirit: [0, 0, 0, 0, 0], pets: {}, goal: 0, kaliach: 0, radeka: 0, breath: 0, might: 0, skills: [], stinger: {} };
 const st = this.loadStore();
 const cur = st.chars[st.cur] ? st.cur : 0;
-this.state = Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false });
+this.state = Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, charId: (st.chars[cur] || {}).id || '', savedAt: st.savedAt || '', confirmDel: false });
 // 딜 사이클 비중 프리셋 (share-presets.json — 아르카나별 보편 딜 비중)
 try { fetch('./share-presets.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d) this.setState({ presets: d }); }).catch(() => {}); } catch (e) {}
 }
@@ -233,18 +233,23 @@ const RN = (x) => (typeof x !== 'string' ? x : x.replace(/소울리버레이트/
 // 세공 옵션 이름도 에린 데이터 이름으로
 const SGRN = { '크래시샷': '크래시 샷 파편 대미지', '매그넘샷': '매그넘 샷 대미지', '불 연금술 마스터리': '불 연금술 마스터리 효율', '물 연금술 마스터리': '물 연금술 마스터리 효율', '바람 연금술 마스터리': '바람 연금술 마스터리 효율', '대쉬펀치': '연속기 : 대쉬 펀치 대미지', '스크류 어퍼': '연속기 : 스크류 어퍼 대미지', '드롭킥': '연속기 : 드롭킥 대미지', '차징피스트': '연속기 : 차징 피스트 대미지', '섬머솔트': '연속기 : 섬머솔트 대미지', '파운딩': '연속기 : 파운딩 대미지', '연속기 마스터리': '연속기 마스터리 대미지' };
 v.chars.forEach((c) => { const f = c && c.info && c.info.fields; if (f) { ['weapon', 'sub'].forEach((k) => { if (f[k]) f[k] = RN(f[k]); }); } const eq = c && c.gear && c.gear.eq; if (eq) { Object.keys(eq).forEach((k) => { eq[k] = RN(eq[k]); }); } const det = c && c.gear && c.gear.det; if (det) { Object.keys(det).forEach((k) => { ((det[k] && Array.isArray(det[k].sg)) ? det[k].sg : []).forEach((q) => { if (q && SGRN[q.o]) q.o = SGRN[q.o]; }); }); } });
+let added = false; v.chars.forEach((c) => { if (c && !c.id) { c.id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); added = true; } }); if (added) { this.saveStore(v); } /* 캐릭터 고유 id — 다른 탭에서 캐릭터를 지우거나 순서가 바뀌어도 엉뚱한 캐릭터에 저장하지 않게 */
 return v; } } catch (e) {}
-return { cur: 0, savedAt: '', chars: [{ name: '캐릭터 A', info: null, gear: null }, { name: '캐릭터 B', info: {}, gear: { eq: {}, og: {} } }] };
+return { cur: 0, savedAt: '', chars: [{ id: 'cA', name: '캐릭터 A', info: null, gear: null }, { id: 'cB', name: '캐릭터 B', info: {}, gear: { eq: {}, og: {} } }] };
 }
 saveStore(v) { try { window.localStorage.setItem('hatz-mabinogi-v1', JSON.stringify(v)); } catch (e) {} }
 nowLabel() { const d = new Date(); const p = (n) => (n < 10 ? '0' : '') + n; return p(d.getHours()) + ':' + p(d.getMinutes()); }
 arcName(i) { return ['엘레멘탈 나이트', '세인트 바드', '다크 메이지', '알케믹 스팅어', '세이크리드 가드', '블래스트 랜서', '배리어블 거너', '포비든 알케미스트', '멜로딕 퍼피티어', '퓨리 파이터'][i] || '아르카나 미선택'; }
 // 저장된 딜 사이클 비중도 불러올 때 비중 높은 순으로 정렬 (같으면 넣은 순서, 비중 없는 칸은 아래)
 infoOf(c) { if (!c || c.info === null) return {}; if (!c.info || !Object.keys(c.info).length) return { arcana: -1 }; const info = Object.assign({}, c.info); if (Array.isArray(info.skills)) { const sh = (k) => Number(k && k.share) || 0; info.skills = info.skills.map((k, j) => [k, j]).sort((a, b) => (sh(b[0]) - sh(a[0])) || (a[1] - b[1])).map((q) => q[0]); } return info; }
+idxOf(st) { const id = this.state.charId; if (!id) return st.chars[this.state.char] ? this.state.char : -1; return st.chars.findIndex((c) => c && c.id === id); }
+resync(st) { const cur = st.chars[st.cur] ? st.cur : 0; this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, charId: (st.chars[cur] || {}).id || '', savedAt: st.savedAt || '', confirmDel: false, nameDraft: null, nameMsg: '다른 창에서 캐릭터가 바뀌어 다시 불러왔어요' })); }
 upd(patch) {
 const next = Object.assign({}, this.state, patch);
 const st = this.loadStore();
-const c = st.chars[next.char];
+const ci = this.idxOf(st); if (ci < 0) { this.resync(st); return; } /* 다른 창에서 지운 캐릭터면 저장하지 않고 다시 불러와요 */
+next.char = ci; patch = Object.assign({}, patch, { char: ci });
+const c = st.chars[ci];
 if (c) {
 const info = {}; Object.keys(this.DEF).forEach((k) => { info[k] = next[k]; });
 // 고른 무기 · 보조무기는 장비 · 오검의 주무기 · 보조무기 칸에도 자동으로 장착해요 (다른 아이템이 있던 칸이면 그 칸의 세부 입력은 초기화)
@@ -279,10 +284,10 @@ const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 if (v && Array.isArray(v.chars)) { v.chars = v.chars.filter(isObj).slice(0, 3).map((c) => { const o = Object.assign({}, c); if (typeof o.name !== 'string' || !o.name.trim()) o.name = '캐릭터'; if (isObj(o.info)) { const i = Object.assign({}, o.info); ['gm', 'pets', 'fields', 'stinger'].forEach((k) => { if (i[k] !== undefined && !isObj(i[k])) delete i[k]; }); if (i.spirit !== undefined && !Array.isArray(i.spirit)) delete i.spirit; if (i.skills !== undefined) { i.skills = Array.isArray(i.skills) ? i.skills.filter(isObj) : []; } o.info = i; } else { o.info = null; } if (!isObj(o.gear)) { o.gear = null; } else { const g = Object.assign({}, o.gear); ['eq', 'og', 'ogw', 'det'].forEach((k) => { if (g[k] !== undefined && !isObj(g[k])) delete g[k]; }); o.gear = g; } return o; }); }
 if (!v || !Array.isArray(v.chars) || !v.chars.length) { this.setState({ bkMsg: '올바른 캐릭터 정보가 아니에요 · 내보내기로 받은 내용을 그대로 넣어 주세요' }); return; }
 v.cur = Number.isInteger(v.cur) && v.chars[v.cur] ? v.cur : 0; this.saveStore(v); const st = this.loadStore(); const cur = st.chars[st.cur] ? st.cur : 0;
-this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, savedAt: st.savedAt || '', confirmDel: false, nameDraft: null, nameMsg: '', bkOpen: false, bkText: '', bkOut: '', bkMsg: '캐릭터 ' + st.chars.length + '개 정보를 불러왔어요' }));
+this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[cur]), { char: cur, charId: (st.chars[cur] || {}).id || '', savedAt: st.savedAt || '', confirmDel: false, nameDraft: null, nameMsg: '', bkOpen: false, bkText: '', bkOut: '', bkMsg: '캐릭터 ' + st.chars.length + '개 정보를 불러왔어요' }));
 }
 saveName() {
-const st = this.loadStore(); const c = st.chars[this.state.char]; if (!c) return;
+const st = this.loadStore(); const ci = this.idxOf(st); if (ci < 0) { this.resync(st); return; } const c = st.chars[ci]; if (!c) return;
 const v = String(this.state.nameDraft == null ? c.name : this.state.nameDraft).trim().slice(0, 12);
 if (!v) { this.setState({ nameDraft: null, nameMsg: '이름을 입력해 주세요' }); return; }
 c.name = v; st.savedAt = this.nowLabel(); this.saveStore(st);
@@ -291,20 +296,20 @@ this.setState({ nameDraft: null, nameMsg: '이름을 저장했어요', savedAt: 
 pickChar(i) {
 const st = this.loadStore(); if (!st.chars[i]) return;
 st.cur = i; this.saveStore(st);
-this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[i]), { char: i, confirmDel: false, nameDraft: null, nameMsg: '' }));
+this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[i]), { char: i, charId: st.chars[i].id || '', confirmDel: false, nameDraft: null, nameMsg: '' }));
 }
 addChar() {
 const st = this.loadStore(); if (st.chars.length >= 3) return;
 const used = st.chars.map((c) => c.name);
 const name = ['캐릭터 A', '캐릭터 B', '캐릭터 C'].filter((n) => used.indexOf(n) < 0)[0] || ('캐릭터 ' + (st.chars.length + 1));
-st.chars.push({ name: name, info: {}, gear: { eq: {}, og: {} } }); st.cur = st.chars.length - 1; st.savedAt = this.nowLabel(); this.saveStore(st);
-this.setState(Object.assign({}, this.DEF, { arcana: -1, char: st.cur, savedAt: st.savedAt, confirmDel: false, nameDraft: null, nameMsg: '새 캐릭터를 만들었어요 · 이름을 바꿔 저장해 보세요' }));
+const nid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); st.chars.push({ id: nid, name: name, info: {}, gear: { eq: {}, og: {} } }); st.cur = st.chars.length - 1; st.savedAt = this.nowLabel(); this.saveStore(st);
+this.setState(Object.assign({}, this.DEF, { arcana: -1, char: st.cur, charId: nid, savedAt: st.savedAt, confirmDel: false, nameDraft: null, nameMsg: '새 캐릭터를 만들었어요 · 이름을 바꿔 저장해 보세요' }));
 }
 delChar() {
 const st = this.loadStore(); if (st.chars.length <= 1) return;
 if (!this.state.confirmDel) { this.setState({ confirmDel: true }); return; }
-st.chars.splice(this.state.char, 1); st.cur = Math.max(0, this.state.char - 1); st.savedAt = this.nowLabel(); this.saveStore(st);
-this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[st.cur]), { char: st.cur, savedAt: st.savedAt, confirmDel: false, nameDraft: null, nameMsg: '' }));
+const di = this.idxOf(st); if (di < 0) { this.resync(st); return; } st.chars.splice(di, 1); st.cur = Math.max(0, di - 1); st.savedAt = this.nowLabel(); this.saveStore(st);
+this.setState(Object.assign({}, this.DEF, this.infoOf(st.chars[st.cur]), { char: st.cur, charId: st.chars[st.cur].id || '', savedAt: st.savedAt, confirmDel: false, nameDraft: null, nameMsg: '' }));
 }
 
 seg(list, cur, key) {
