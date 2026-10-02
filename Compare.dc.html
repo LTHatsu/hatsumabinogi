@@ -381,10 +381,10 @@ const RF_SDM = [[90, 2], [105, 3], [125, 4], [155, 5], [190, 6], [230, 7], [270,
 const EK_ONE_HAND = ['페러시우스 템퍼드 소드', '나이트브링어 어설트', '소울 리버레이트 소드', '소울 리버레이트 해머'];
 const EK_SUB_OK = ['소울 리버레이트 소드', '소울 리버레이트 해머'];
 // 엘레멘탈 나이트 쌍수(소울 리버레이트 소드 · 해머 2개) — 오른쪽(보조무기) 맥댐은 포션 · 인젝션만 받아요 (마도카 실측)
-// 일반 맥댐은 전장 · 상지 · 힘결까지 받으니, 풀버프(전장 60%) 기준 오른쪽 무기 맥댐 +1 = 일반 맥댐 +1 ÷ (1+전장)(1+상지)(1+힘결) ≈ 0.4
+// 일반 맥댐은 전장 · 상지 · 힘결까지 받으니, 풀버프(전장 평균 80%) 기준 오른쪽 무기 맥댐 +1 = 일반 맥댐 +1 ÷ (1+전장)(1+상지)(1+힘결) ≈ 0.35
 const isDualEK = arcIdx === 0 && EK_SUB_OK.indexOf(String(fInfo.weapon || '')) >= 0 && EK_SUB_OK.indexOf(String(fInfo.sub || '')) >= 0;
 const BUF_D0 = (fInfo.potOff ? 1 : 1.2) * (arcIdx === 0 && !fInfo.injOff ? 1.1 : 1);
-const OFF_K = isDualEK ? 1 / ((1 + 0.6 * BUF_D0) * (1 + 0.12 * BUF_D0) * (1 + 0.15 * BUF_D0)) : 1;
+const OFF_K = isDualEK ? 1 / ((1 + 0.8 * BUF_D0) * (1 + 0.12 * BUF_D0) * (1 + 0.15 * BUF_D0)) : 1;
 const RF_R_EK = [4, 11, 18, 26, 34, 42, 50, 60];
 const RF_S_EK = [[60, 30, 2], [70, 35, 2], [80, 40, 3], [90, 45, 3], [100, 50, 4], [110, 55, 4], [120, 60, 5], [170, 85, 7]];
 const rfAt = (type, stage, dark, ek) => {
@@ -1365,7 +1365,7 @@ cost: '—', costFg: '#8C7A62', border: wOn ? '1.5px solid ' + accent : '1px sol
 const stgDims = (() => { if (SG_SLOTS.indexOf(cur[0]) < 0) return []; const ts = stgTargets(cur[0]); const blank = { pct: '0', dmg: 0, tEffect: '', hasToggle: false, toggled: false, untoggled: false, tPct: '0', onToggle: () => {} };
 const rows = ts.map((t) => { const tg = Number(s.up[t[0]]) || 0; const on = tg > t[2] && tg <= t[3]; const gn = on ? t[4](tg) : 0; const one = t[2] < t[3] ? t[4](t[2] + 1) : 0;
 const tm = /^(각성 능력|세공) · (.+)$/.exec(t[1]) || []; const ecR = tm[1] === '각성 능력' && !SG_GEN_RE.test(tm[2]);
-return Object.assign({}, blank, { label: tm[2] || t[1], tag: tm[1] || '', hasTag: !!tm[1], rule: ecR ? '세공과 중첩 없이 높은 쪽만' : (cur[0] === 'lhand' && isDualEK ? '쌍수 오른쪽 무기 — 일반 맥댐의 ' + Math.round(OFF_K * 100) + '%로 계산' : ''), hasRule: ecR || (cur[0] === 'lhand' && isDualEK), current: 'Lv.' + t[2], note: t[5] ? (t[6] ? '레벨당 ' + ({ max: MX, crate: '크리티컬', cdmg: '크리티컬 대미지' }[t[6].stat]) + ' +' + t[6].per + t[6].unit : '이 옵션은 아직 딜 계산식이 없어요') : (stgHasShare && t[2] < t[3] ? '+1당 총딜 +' + (Math.round(one * 10000) / 100) + '%' : ''), value: String(on ? tg : 0),
+return Object.assign({}, blank, { label: tm[2] || t[1], tag: tm[1] || '', hasTag: !!tm[1], rule: ecR ? '세공과 중첩 없이 높은 쪽만' : (cur[0] === 'lhand' && isDualEK ? '쌍수 엘레멘탈 나이트의 경우에만 전장 수치를 80%로 계산해서 오른손 무기의 최대 대미지 효율을 계산해요 (일반 맥댐의 ' + Math.round(OFF_K * 100) + '%)' : ''), hasRule: ecR || (cur[0] === 'lhand' && isDualEK), current: 'Lv.' + t[2], note: t[5] ? (t[6] ? '레벨당 ' + ({ max: MX, crate: '크리티컬', cdmg: '크리티컬 대미지' }[t[6].stat]) + ' +' + t[6].per + t[6].unit : '이 옵션은 아직 딜 계산식이 없어요') : (stgHasShare && t[2] < t[3] ? '+1당 총딜 +' + (Math.round(one * 10000) / 100) + '%' : ''), value: String(on ? tg : 0),
 opts: [{ v: '0', label: t[2] >= t[3] ? '최대 레벨' : '현재 유지' }].concat(Array.from({ length: Math.max(0, t[3] - t[2]) }, (_, i) => { const n = t[2] + i + 1; return { v: String(n), label: 'Lv.' + n + (t[5] ? (t[6] ? ' · ' + ({ max: MX, crate: '크리티컬', cdmg: '크리티컬 대미지' }[t[6].stat]) + ' +' + (+(t[6].at(n) - t[6].at(t[2])).toFixed(1)) + t[6].unit : '') : (stgHasShare ? ' · ' + pctTxt(t[4](n)) : '')) }; })),
 on: on, off: !on, pct: on ? (Math.round(gn * 1000) / 10).toFixed(1) : '0', dmg: on ? Math.round(gn * (BASE_STATS.max || 0)) : 0, cost: on ? '가격 미정' : '—', costFg: on ? '#2A2119' : '#8C7A62',
 border: on ? '1.5px solid ' + accent : '1px solid #E6D9BD', bg: on ? '#F3F8F4' : '#FBF5E8', onChange: (e) => setUp(t[0], Number(e.target.value)),
