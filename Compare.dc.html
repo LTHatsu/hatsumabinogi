@@ -484,7 +484,8 @@ const duskList = duskSl.map((k) => duskBy[k]).filter((q, i, a) => q && a.indexOf
 const skMul = (label) => { const D = (s.eqData && s.eqData.skillSets) || {}; return [actSets, wSetMap].reduce((m, S) => { const p = Object.keys(S).reduce((x, q) => (D[q] && D[q][1] === label ? Math.max(x, D[q][2]) : x), 0); return m * (1 + p / 100); }, 1); };
 const magMul = () => (actSets.magnum ? 1.15 : 1) * (wSetMap.magnum ? 1.15 : 1);
 const pItemG = (n) => { const x = pAllE[n]; const v = Number(x && typeof x === 'object' ? x.min : x); return v > 0 ? v : 0; };
-const curWB = Number(fInfo.gearBonus) || 0;
+// 무기 보너스 대미지 = 주무기(한손 최대 56%) + 보조무기(화살 · 볼트 등 최대 56%) 합계 · 캐릭터 정보 입력값에서 보조무기 몫(마스터 기준)을 빼면 주무기 몫
+const curWBAll = Number(fInfo.gearBonus) || 0; const subWB = ((EPK && EPK.wstat && EPK.wstat[String(((gear && gear.eq) || {}).lhand || '') || fInfo.sub || '']) || [0, 0])[1] || 0; const curWB = curWBAll ? Math.max(0, curWBAll - subWB) : 0;
 const swapList = (sl) => {
 if (!EPK || !ED2 || kindOf(sl) === 'relic' || kindOf(sl) === 'echo') return [];
 const sk = sl[0] === 'acc1' || sl[0] === 'acc2' ? 'acc' : sl[0]; const km = (this._edK || {})[sk] || {}; const curN = String(sl[3] || '');
