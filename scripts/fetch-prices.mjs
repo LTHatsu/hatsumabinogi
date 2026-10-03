@@ -93,6 +93,17 @@ prices.categoryItems = catItems;
 await writeFile(CACHE, JSON.stringify(cache) + '\n');
 let histItems = prices.historyItems || {};
 if (Object.keys(histFresh).length) { histItems = Object.assign({}, histItems, histFresh); prices.historyUpdatedAt = new Date().toISOString(); }
+// 매물이 드문 아이템(historyWatch · 정확한 이름)은 거래 내역으로 최근 거래가를 받아 둬요 — 매물이 없으면 화면에서 최근 거래가를 써요
+for (const name of prices.historyWatch || []) {
+  try {
+    for (const it of await collect('/mabinogi/v1/auction/history', { item_name: name }, 2)) {
+      const price = Number(it.auction_price_per_unit); if (!(price > 0) || unfinished(it)) continue;
+      const at = it.date_auction_buy || it.date_auction_expire || '';
+      const c = histItems[name];
+      if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) histItems[name] = { last: price, at };
+    }
+  } catch (e) { errors.push(String(e.message || e)); }
+}
 prices.historyItems = histItems;
 // 무리아스의 유물 — 이름이 모두 같아서 유물 효과(옵션) · 수치별 최저가를 따로 모아요 · relicSample은 옵션 형식 확인용
 try {
