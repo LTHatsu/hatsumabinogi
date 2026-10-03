@@ -917,7 +917,7 @@ const isForb = arcIdx === 7;
 Object.assign(SG_KEY, { a_wc: '워터 캐논 최대 대미지', a_fl: '플레이머 최대 대미지', a_hb: '히트 버스터 최대 대미지', a_rc: '레인 캐스팅 워터캐논 대미지', a_fd: '플레이머 지속 시간' });
 const forbEval = (ov, w) => {
 const g = (k) => sv('a_' + k) + ((ov.sg || {})['a_' + k] || 0);
-const lv = ov.relic || furyRelicWith('', 0); const MM = ov.M !== undefined ? ov.M : MREF;
+const lv = ov.relic || furyRelicWith('', 0); const MM = (ov.M !== undefined ? ov.M : MREF) * 1.03; /* 엘레멘탈 인퓨전: 불·물·바람·흙 연금술 대미지 3% 증가 (300초 · 재사용 5초 상시 유지) */
 const h = (tal, own, m) => arcHit(MM * tal, MM * own, w, m);
 const gE = (k) => sv(k) + ((ov.sg || {})[k] || 0);
 const effW = 1 + 0.15 + 0.1 + 0.3 + 0.005 * gE('water'); const effF = 1 + 0.15 + 0.1 + 0.3 + 0.005 * gE('fire'); const effE = 1 + 0.15 + 0.1 + 0.3 + 0.002 * gE('earth');
