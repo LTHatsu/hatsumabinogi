@@ -318,7 +318,7 @@ try { fetch('./echo-data.json').then((r) => (r.ok ? r.json() : null)).then((d) =
 try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.slots) { this.setState({ eqData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.weapon) { this.setState({ eqPicks: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./enchant-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.pre) { this.setState({ enPicks: d }); } }).catch(() => {}); } catch (e) {}
-try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./prices.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
 }
 loadStore() {
 try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { // 아이템 이름을 경매장 · 아이템 정보 이름으로 맞춰요 (예전 저장값 변환)
