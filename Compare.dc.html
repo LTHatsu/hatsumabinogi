@@ -929,9 +929,10 @@ const sacEval = (ov, w) => {
 const M = (ov.M !== undefined ? ov.M : MREF) || 1; const jl = ov.judge !== undefined ? ov.judge : sacJudgeLvWith('', 0); const Dv = ov.D !== undefined ? ov.D : sacDef; const Hv = ov.H !== undefined ? ov.H : sacHp;
 const T = (c, base) => M * (base + (base === SAC_DASH ? ogV('돌진 대미지 배율 증가') : ogV('윈드밀 대미지 배율 증가')) / 100) * SAC_BASH * c * skMul(base === SAC_DASH ? '돌진' : '윈드밀');
 const sk = (tal, mI, dI, hI) => { const r = arcHit(tal, M * mI + Dv * dI + Hv * hI, w); return { v: r.v, tal: r.tal, mx: r.pre > 0 ? r.v * (r.inW + M * mI) / r.pre : 0 }; };
-// 광휘의 단죄 오검 '2단계부터 단계당 대미지 배율 증가' — k = 오검 수치 × 2 ÷ 100, 고유 계수 45 · 27 · 4.5에 15 · 9 · 1.5 × k를 더해요 (마도카 '오검 옵션 효율 계산 및 추천 우선순위 (단죄 오검 기준)')
-const kDan = ogV('광휘의 단죄 2단계부터 단계당 대미지 배율 증가') * 2 / 100;
-return { '광휘의단죄': sk(T(1.75, SAC_WM), 45 + 15 * kDan, 27 + 9 * kDan, 4.5 + 1.5 * kDan), '심판의일격': sk(T(2, SAC_WM), 35 + jl + ogV('심판의 일격 대미지 배율 증가') / 100, 20, 5), '철벽강타': sk(T(1.5, SAC_WM), 12 + ogV('철벽 강타 대미지 배율 증가') / 100, 6, 1), '격돌': sk(T(1.5, SAC_DASH), 8 + ogV('격돌 대미지 배율 증가') / 100, 6, 0.5), '성역전개': sk(0, 3 + ogV('성역 전개 대미지 배율 증가') / 100, 1.5, 0.2), '희생의응징': sk(0, 60, 40, 15), '참회': sk(0, 350, 100, 40), '윈드밀': (() => { const v = hitOut(M * (SAC_WM + ogV('윈드밀 대미지 배율 증가') / 100) * SAC_BASH * skMul('윈드밀')); return { v: v, tal: 0, mx: v }; })() };
+// 광휘의 단죄 (에린 데이터 최신 · 2026 세이크리드 가드 개선): 단계마다 윈드밀 175% + 기본 1500% + 방어력 900% + 최대 생명력 150%, 2단계부터 단계당 배율 +50% (윈드밀 제외)
+// 1 ~ 3단계 한 바퀴 합계 = 윈드밀 175% × 3 + (1500% · 900% · 150%) × (3 + 3 × 단계당 증가) · 오검 '2단계부터 단계당 대미지 배율 증가'는 단계당 증가 50%에 더해요
+const sDan = 0.5 + ogV('광휘의 단죄 2단계부터 단계당 대미지 배율 증가') / 100; const nDan = 3 + 3 * sDan;
+return { '광휘의단죄': sk(T(1.75 * 3, SAC_WM), 15 * nDan, 9 * nDan, 1.5 * nDan), '심판의일격': sk(T(2, SAC_WM), 35 + jl + ogV('심판의 일격 대미지 배율 증가') / 100, 20, 5), '철벽강타': sk(T(1.5, SAC_WM), 12 + ogV('철벽 강타 대미지 배율 증가') / 100, 6, 1), '격돌': sk(T(1.5, SAC_DASH), 8 + ogV('격돌 대미지 배율 증가') / 100, 6, 0.5), '성역전개': sk(0, 3 + ogV('성역 전개 대미지 배율 증가') / 100, 1.5, 0.2), '희생의응징': sk(0, 60, 40, 15), '참회': sk(0, 350, 100, 40), '윈드밀': (() => { const v = hitOut(M * (SAC_WM + ogV('윈드밀 대미지 배율 증가') / 100) * SAC_BASH * skMul('윈드밀')); return { v: v, tal: 0, mx: v }; })() };
 };
 const sacRaw = isSacred ? sacEval({}, 1) : {};
 // 딜 사이클 비중을 입력하지 않았으면 실측 글의 비중(단죄 44 · 심판 15 · 응징 15.1 · 격돌 8.1 · 철강 7.5 · 성역 6.3 · 윈드밀 3)을 써요
