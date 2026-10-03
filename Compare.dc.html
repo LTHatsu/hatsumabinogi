@@ -856,7 +856,7 @@ const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3:
 // 재능 스킬 강화 세트 효과 (장비·오검에서 체크) — 해당 재능 스킬 대미지 ×(1 + n%) · 같은 세트는 한 번만, 다른 세트끼리는 곱해요
 // ── 블래스트 랜서 스킬 계산식 (디시 모리안 갤 '블랜 스킬 대미지 계산식 정리 v260308' 기준 · 스킬 최대 랭크 · 링크 최대) ──
 // 평타 대미지 = 최대 대미지 × 보너스(바깥에서 계산) · 블랜 스킬 주목표 보너스 35% · 어나이 주목표 보너스 20%
-// 블랜 스킬 전용 랜차 = 평타 × (295% + 랜차댐 세공) × (2 + 주목 세공) × (14 + (4 + 마상 거리 세공) × 1.4) ÷ 14 × (1.2 + 마상댐 세공) × (1 + 랜차 최종댐: 무기 고유 + 랜차 오검) × 무기 세트 효과
+// 블랜 스킬 전용 랜차 = 평타 × (295% + 랜차댐 세공) × (2 + 주목 세공) × (14 + (4 + 마상 거리 세공) × 1.4) ÷ 14 × (1.2 + 마상댐 세공) × (1 + 랜차 최종댐: 무기 고유 + 랜차 오검)
 // 오버 드라이브: 찌르기 = 평타 × 500% × 1.35 · 폭발 = (랜차 + 평타 × 옵드 유물) × 1.35
 // 어나이얼레이션(과열 100): 찌르기 = 평타 × 1000% × 1.55 · 폭발 = (랜차 + 평타 × 5 × (0.3 × 마나셸/100 + 6 + 어나이 유물)) × 1.55
 // 스파이럴 볼텍스: (평타 × (3000% + 오검) + 클로저 대미지) × 1.35 · 클로저 = 평타 × (400% + 클로져 세공 레벨당 4% + 클로져 오검) — 클로저는 재능 몫 (블로그 '스파이럴 볼텍스 스킬 정보' 2025.3.3 · 주 목표 링크 35%)
@@ -871,15 +871,13 @@ const isLance = arcIdx === 5;
 Object.assign(SG_KEY, { l_lc: '랜스 차지 차지 대미지', l_ft: '랜스 차지 주 목표물 대미지', l_md: '랜스 차지 마상 돌진 대미지', l_ds: '랜스 차지 마상 돌진 추가 돌진 거리', l_cl: '클로져 대미지 배율', l_cb: '크로스 버스터 대미지 배율' });
 const LANCE_MANA = 100;
 // 무기 고유 '랜스 차지 최종 대미지' (에린 데이터 고정 효과): 소울 리버레이트 랜스 50% · 나이트브링어 스피어헤드 35% · 페러시우스 · 퍼거시우스 게일 랜스 20% · 켈틱 잉곳 · 디바인 스몰 랜스 15%
-// 무기 세트 효과 (무기 하나로 10포인트 · 에린 데이터): 나이트브링어 '랜스 차지 강화' 20% + '랜스 차지 마상 돌진 강화' ×1.15 · 페러시우스 · 퍼거시우스 · 켈틱 잉곳 · 디바인 스몰 '랜스 차지 강화' 15% · 소울 리버레이트 없음
-// 고정 효과(+ 랜차 오검)와 세트 효과는 서로 곱해요 · furyWN(계산에 쓰는 무기)을 따라가서 무기를 바꾸면 차이도 반영돼요
+// 무기 세트 효과('랜스 차지 강화' · '마상 돌진 강화')는 고정 효과와 같은 효과라 따로 곱하지 않아요 (나이트브링어 20 + 15 = 35 · 켈틱 · 디바인 15 = 15) · furyWN(계산에 쓰는 무기)을 따라가서 무기를 바꾸면 차이도 반영돼요
 const lanceFinalOf = (n) => (/소울 리버레이트 랜스/.test(n) ? 0.5 : (/나이트브링어 스피어헤드/.test(n) ? 0.35 : (/[페퍼][러거]시우스 게일 랜스/.test(n) ? 0.2 : (/켈틱 잉곳 랜스|디바인 스몰 랜스/.test(n) ? 0.15 : 0))));
-const lanceSetOf = (n) => (/나이트브링어 스피어헤드/.test(n) ? 1.2 * 1.15 : (/[페퍼][러거]시우스 게일 랜스|켈틱 잉곳 랜스|디바인 스몰 랜스/.test(n) ? 1.15 : 1));
 const lanceEval = (ov, w) => {
 const g = (k) => sv('l_' + k) + ((ov.sg || {})['l_' + k] || 0);
 const lv = ov.relic || furyRelicWith('', 0); const MM = ov.M !== undefined ? ov.M : MREF;
 const ds = g('ds') > 0 ? (100 + 20 * (g('ds') - 1)) / 100 : 0;
-const lc = (295 + 4 * g('lc')) / 100 * (2 + 0.025 * g('ft')) * (14 + (4 + ds) * 1.4) / 14 * (1.2 + 0.03 * g('md')) * (1 + lanceFinalOf(furyWN) + ogV('랜스 차지 차지 대미지 배율 증가') / 100) * lanceSetOf(furyWN);
+const lc = (295 + 4 * g('lc')) / 100 * (2 + 0.025 * g('ft')) * (14 + (4 + ds) * 1.4) / 14 * (1.2 + 0.03 * g('md')) * (1 + lanceFinalOf(furyWN) + ogV('랜스 차지 차지 대미지 배율 증가') / 100);
 const h = (tal, own, m) => arcHit(MM * tal, MM * own, w, m);
 /* 옵드 · 어나이 오검 배율은 폭발 대미지에 더해요 */
 const odS = h(0, 5, 1.35); const odB = h(lc, (lv.l1 || 0) * 0.7 + ogV('오버 드라이브 대미지 배율 증가') / 100, 1.35);
@@ -1397,8 +1395,8 @@ const furyGain = (ov) => { if (!isFury) return 0; const n = furyEval(ov, wT); re
 
 // 퓨리 파이터 무기 교체 — 무기 고유 효과(연속마 배율: 소울 리버레이트 너클 0.8 · 나이트브링어 0.7 · 페러시우스 0.65, 소울 너클 드롭킥 ×1.15 · 파운딩 ×1.8)가 바뀐 만큼 총딜 증가율(%)을 더해요
 const furyWeaponGain = (n) => { if (!isFury || !n || n === furyWN) return 0; const k0 = furyWN; furyWN = n; const g = furyGain({}); furyWN = k0; return g * 100; };
-const furyWeaponTxt = (n) => { if (isLance) { const a = lanceFinalOf(furyWN); const b = lanceFinalOf(n); const t = []; if (a !== b) { t.push('랜스 차지 최종 대미지 무기 효과 ' + Math.round(a * 100) + '% → ' + Math.round(b * 100) + '%'); } const sa = lanceSetOf(furyWN); const sb = lanceSetOf(n); if (sa !== sb) { t.push('랜스 차지 세트 효과 ×' + sa.toFixed(2) + ' → ×' + sb.toFixed(2)); } return t.join(' · '); } const a = furyWeaponComboOf(furyWN); const b = furyWeaponComboOf(n); const t = []; if (a !== b) { t.push('연속마 배율 무기 효과 ' + a + ' → ' + b); } if (furySoulOf(n) !== furySoulOf(furyWN)) { t.push(furySoulOf(n) ? '드롭킥 ×1.15 · 파운딩 ×1.8' : '드롭킥 ×1.15 · 파운딩 ×1.8 해제'); } return t.join(' · '); };
-if (isFury && EPK) { const m = {}; EPK.weapon.forEach((n) => { if (isLance ? (lanceFinalOf(n) !== lanceFinalOf(furyWN) || lanceSetOf(n) !== lanceSetOf(furyWN)) : /너클/.test(n)) { const g = furyWeaponGain(n); if (g) { m[n] = Math.round(g * 100) / 100; } } }); const mk = JSON.stringify(m); if (mk !== this._fwKey) { this._fwKey = mk; this._fwMemo = m; setTimeout(() => this.setState({ fwV: mk }), 0); } }
+const furyWeaponTxt = (n) => { if (isLance) { const a = lanceFinalOf(furyWN); const b = lanceFinalOf(n); const t = []; if (a !== b) { t.push('랜스 차지 최종 대미지 무기 효과 ' + Math.round(a * 100) + '% → ' + Math.round(b * 100) + '%'); } return t.join(' · '); } const a = furyWeaponComboOf(furyWN); const b = furyWeaponComboOf(n); const t = []; if (a !== b) { t.push('연속마 배율 무기 효과 ' + a + ' → ' + b); } if (furySoulOf(n) !== furySoulOf(furyWN)) { t.push(furySoulOf(n) ? '드롭킥 ×1.15 · 파운딩 ×1.8' : '드롭킥 ×1.15 · 파운딩 ×1.8 해제'); } return t.join(' · '); };
+if (isFury && EPK) { const m = {}; EPK.weapon.forEach((n) => { if (isLance ? lanceFinalOf(n) !== lanceFinalOf(furyWN) : /너클/.test(n)) { const g = furyWeaponGain(n); if (g) { m[n] = Math.round(g * 100) / 100; } } }); const mk = JSON.stringify(m); if (mk !== this._fwKey) { this._fwKey = mk; this._fwMemo = m; setTimeout(() => this.setState({ fwV: mk }), 0); } }
 if (isFury) { chosen.forEach((c) => { if (c.key !== 'rhand.item' || c.fwDone) return; const fg = furyWeaponGain(c.to); c.fwDone = true; if (!fg) return; c.swapSk = (c.swapSk || 0) + fg; c.pct = Math.round((c.pct + fg) * 100) / 100; c.eff = c.costM ? c.pct / (c.costM / 10000) : 0; }); const sd = cur[0] === 'rhand' && swapSt ? swapDim : null; if (sd) { const fg = furyWeaponGain(swapSt.name); if (fg) { sd.pct = String(Math.round((Number(sd.pct) + fg) * 100) / 100); } } }
 const sacBase = isSacred ? sacEval({}, wT) : {};
 const sacGain = (ov) => { if (!isSacred) return 0; const n = sacEval(ov, wT); return Object.keys(n).reduce((t, k) => t + sacShare(k) * (sacBase[k].v ? n[k].v / sacBase[k].v - 1 : 0), 0); };
