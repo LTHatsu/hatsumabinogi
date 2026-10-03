@@ -884,9 +884,11 @@ const h = (tal, own, m) => arcHit(MM * tal, MM * own, w, m);
 const gE = (k) => sv(k) + ((ov.sg || {})[k] || 0);
 const effW = 1 + 0.15 + 0.1 + 0.3 + 0.005 * gE('water'); const effF = 1 + 0.15 + 0.1 + 0.3 + 0.005 * gE('fire'); const effE = 1 + 0.15 + 0.1 + 0.3 + 0.002 * gE('earth');
 const effA = 1 + 0.15 + 0.1 + 0.3 + (0.005 * (gE('fire') + gE('water') + gE('wind')) + 0.002 * gE('earth')) / 4; /* 4속성 평균 효율 (마그눔 오푸스) */
-const wc5 = (0.607 + 0.3 + 0.006 * g('wc') + ogV('워터 캐논 최대 대미지 배율 증가') / 100) * 5 * 1.25 * effW * skMul('워터 캐논') * (1 + 0.2 + 0.05 * g('rc'));
-const fl5 = (0.335 + 0.3 + 0.003 * g('fl') + ogV('플레이머 최대 대미지 배율 증가') / 100) * 5 * effF * skMul('플레이머');
-const hb = (1.305 + 0.3 + 0.01 * g('hb') + 1 + ogV('히트 버스터 최대 대미지 배율 증가') / 100) * effF * 1.25 * 4; /* 무기(실린더) 에르그 S50 ×4 가정 — 캐릭터 정보에 무기 에르그 레벨 입력칸이 없어요 (dErg는 어둠의 에르그라 쓰지 않아요) */
+/* 속성별 연금술 대미지 오검: 연금술 대미지는 4속성 평균(MM) 하나로 다루므로, 속성 오검의 평균과의 차이만큼 해당 속성 재능 스킬(워터 캐논 물 · 플레이머 · 히트 버스터 불)에 따로 더해요 — 아르카나 고유 몫은 4속성 평균 그대로 */
+const ogEl = (k) => ogV(k + ' 속성 연금술 대미지 증가'); const ogAvg = (ogEl('불') + ogEl('물') + ogEl('흙') + ogEl('바람')) / 4; const kEl = (k) => 1 + (ogEl(k) - ogAvg) * 1.03 / (MM || 1); const kW = kEl('물'); const kF = kEl('불');
+const wc5 = (0.607 + 0.3 + 0.006 * g('wc') + ogV('워터 캐논 최대 대미지 배율 증가') / 100) * 5 * 1.25 * effW * skMul('워터 캐논') * (1 + 0.2 + 0.05 * g('rc')) * kW;
+const fl5 = (0.335 + 0.3 + 0.003 * g('fl') + ogV('플레이머 최대 대미지 배율 증가') / 100) * 5 * effF * skMul('플레이머') * kF;
+const hb = (1.305 + 0.3 + 0.01 * g('hb') + 1 + ogV('히트 버스터 최대 대미지 배율 증가') / 100) * effF * 1.25 * 4 * kF; /* 무기(실린더) 에르그 S50 ×4 가정 — 캐릭터 정보에 무기 에르그 레벨 입력칸이 없어요 (dErg는 어둠의 에르그라 쓰지 않아요) */
 const HERB = 0.15; const elemE = (per, n) => (forbChe ? Math.min(per * n * 2.4, per * 4.8) : per * n);
 const eSn = elemE(0.05, 4) + ogV('서먼 나이트메어 (흙 연금술 효과) 스킬 최종 대미지 배율 증가') / 100; const eSe = elemE(0.2, 4) + ogV('스파이럴 이럽션 (물 연금술 효과) 스킬 최종 대미지 배율 증가') / 100;
 const flHits = 5 + Math.ceil(Math.max(0, g('fd')) / 5); /* 플레이머 지속 시간 세공: 레벨 구간별 추가 타수 */
