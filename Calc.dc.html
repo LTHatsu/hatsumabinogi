@@ -304,7 +304,7 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 
 <div style="display: flex; flex-direction: column; gap: 14px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px"><h2 style="margin: 0; padding-left: 8px; font-family: 'Gowun Batang', serif; font-size: 30px">효율 한눈에 보기</h2><span style="font-size: 14px; color: #6B5A45">{{effNote}}</span></div>
-<p style="margin: 0; padding-left: 8px; font-size: 14px; line-height: 1.6; color: #6B5A45">입력한 캐릭터 정보와 장비 · 오검 기준으로, 항목을 하나씩 +1 올렸을 때의 예상 딜 상승률과 {{mxLabel}} 환산 수치예요. 세팅 시뮬레이터와 같은 계산식이고, 입력을 바꾸면 자동으로 다시 계산해요.</p>
+<p style="margin: 0; padding-left: 8px; font-size: 14px; line-height: 1.6; color: #6B5A45">입력한 캐릭터 정보와 장비 · 오검 기준으로, 항목을 하나씩 +1 올렸을 때의 예상 딜 상승률과 {{mxLabel}} 환산 수치예요. 세팅 시뮬레이터와 같은 계산식이고, 입력을 바꾸면 자동으로 다시 계산해요.</p><div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border-radius: 12px; background: #F5EDDC; border: 1px dashed #B6A27E; margin-left: 8px"><span style="font-size: 13px; line-height: 1.6; color: #4A3D30">계산 전제 — 밸런스 100%(항상 최대 대미지) · 크리티컬 히트 시 항상 최대 대미지 · 전장 80% · 각성기는 크리티컬 확정 · 대상은 레넨의 미이르 목인(디버프 후 보호 194 · 방어 772) · 캐릭터 정보에 입력한 피어싱 · 딜 사이클 비중 기준</span><span style="font-size: 13px; line-height: 1.6; color: #8A5E17">게임의 대미지 계산식은 공개되지 않아, 실측과 커뮤니티 자료로 추정한 계산식을 써요. 실제 수치와 다를 수 있으니 참고용으로 봐 주세요.</span></div>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start">
 <sc-for list="{{effGroups}}" as="g" hint-placeholder-count="4">
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 20px; padding: 20px 24px; display: flex; flex-direction: column; gap: 10px">
