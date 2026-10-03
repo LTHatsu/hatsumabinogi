@@ -135,7 +135,9 @@ try {
 delete prices.ring; delete prices.ringHistory; delete prices.ringSample; delete prices.ringUpdatedAt;
 // 요청 제한 등으로 일부만 받았을 때는 이번에 못 받은 아이템의 지난 시세를 그대로 둬요 (빈 값으로 덮어쓰지 않게)
 prices.items = errors.length ? Object.assign({}, prices.items || {}, items) : items; prices.updatedAt = new Date().toISOString(); prices.errors = errors;
-await writeFile(FILE, JSON.stringify(prices, null, 2) + '\n');
+// 형식 확인용 샘플은 페이지에서 쓰지 않아서 빼고, 사용자가 받는 용량을 줄이려고 공백 없이 저장해요
+delete prices.relicSample; delete prices.talagahSample; delete prices.talagahProbe;
+await writeFile(FILE, JSON.stringify(prices) + '\n');
 console.log(`아이템 ${Object.keys(items).length}개 갱신 · 오류 ${errors.length}건`);
 errors.forEach((e) => console.log('  -', e));
 if (!Object.keys(items).length && errors.length) process.exit(1);

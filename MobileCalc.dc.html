@@ -279,9 +279,9 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </form>
 </section>
 
-<section aria-label="효율 한눈에 보기" style="padding: 0 16px 24px; display: flex; flex-direction: column; gap: 12px">
+<section aria-label="효율 한눈에 보기" data-effsec="1" style="padding: 0 16px 24px; display: flex; flex-direction: column; gap: 12px">
 <h2 style="margin: 0; padding-left: 4px; font-family: 'Gowun Batang', serif; font-size: 22px">효율 한눈에 보기</h2>
-<p style="margin: 0; padding-left: 4px; font-size: 13px; line-height: 1.6; color: #6B5A45">항목을 하나씩 +1 올렸을 때의 예상 딜 상승률과 {{mxLabel}} 환산 수치예요. 세팅 시뮬레이터와 같은 계산식이고, 입력을 바꾸면 자동으로 다시 계산해요.</p>
+<p style="margin: 0; padding-left: 4px; font-size: 13px; line-height: 1.6; color: #6B5A45">항목을 하나씩 +1 올렸을 때의 예상 딜 상승률과 {{mxLabel}} 환산 수치예요. 세팅 시뮬레이터와 같은 계산식이고, 입력을 바꾸면 자동으로 다시 계산해요.</p><div role="note" aria-label="계산 전제" style="display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 14px; background: #FBF5E8; border: 1px solid #D9C8A6; margin: 0 4px"><strong style="font-size: 13px; color: #2A2119">계산 전제</strong><ul style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr; gap: 4px 20px"><li style="display: flex; gap: 6px; align-items: baseline; font-size: 12px; line-height: 1.5; color: #4A3D30"><span aria-hidden="true" style="color: #2F5A45; font-weight: 700">·</span><span>밸런스 100% — 항상 최대 대미지로 계산</span></li><li style="display: flex; gap: 6px; align-items: baseline; font-size: 12px; line-height: 1.5; color: #4A3D30"><span aria-hidden="true" style="color: #2F5A45; font-weight: 700">·</span><span>크리티컬 히트 시 항상 최대 대미지</span></li><li style="display: flex; gap: 6px; align-items: baseline; font-size: 12px; line-height: 1.5; color: #4A3D30"><span aria-hidden="true" style="color: #2F5A45; font-weight: 700">·</span><span>각성기는 크리티컬 확정</span></li><li style="display: flex; gap: 6px; align-items: baseline; font-size: 12px; line-height: 1.5; color: #4A3D30"><span aria-hidden="true" style="color: #2F5A45; font-weight: 700">·</span><span>대상: 레넨의 미이르 목인 (디버프 후 보호 194 · 방어 772)</span></li><li style="display: flex; gap: 6px; align-items: baseline; font-size: 12px; line-height: 1.5; color: #4A3D30"><span aria-hidden="true" style="color: #2F5A45; font-weight: 700">·</span><span>피어싱: 캐릭터 정보에 입력한 수치</span></li><li style="display: flex; gap: 6px; align-items: baseline; font-size: 12px; line-height: 1.5; color: #4A3D30"><span aria-hidden="true" style="color: #2F5A45; font-weight: 700">·</span><span>스킬 비중: 캐릭터 정보의 딜 사이클 비중</span></li></ul><div style="display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; background: #F6E7C8"><span aria-hidden="true" style="flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; background: #8A5E17; color: #FFFBF2; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">!</span><span style="font-size: 12px; line-height: 1.55; color: #6B4A12">게임의 대미지 계산식은 공개되지 않아, 실측과 커뮤니티 자료로 추정한 계산식을 써요. 실제 수치와 다를 수 있으니 참고용으로 봐 주세요.</span></div></div>
 <span style="padding-left: 4px; font-size: 12px; color: #8C7A62">{{effNote}}</span>
 <sc-for list="{{effGroups}}" as="g" hint-placeholder-count="4">
 <div style="background: #FFFBF2; border: 1px solid #D9C8A6; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
@@ -295,7 +295,6 @@ button{font-family:'Gowun Dodum',sans-serif;cursor:pointer}
 </sc-for>
 </div>
 </sc-for>
-<iframe src="Compare.dc.html?embed=eff" title="효율 계산" aria-hidden="true" tabindex="-1" style="position: absolute; left: -10000px; top: 0; width: 1440px; height: 900px; border: 0; visibility: hidden; pointer-events: none"></iframe>
 </section>
 
 <a href="MobileCompare.dc.html" style="margin: 0 16px 28px; text-decoration: none; color: #FBF5E8; background: {{accent}}; border-radius: 16px; padding: 18px; display: flex; justify-content: space-between; align-items: center; min-height: 44px">
@@ -326,8 +325,10 @@ componentDidMount() {
 // 효율 한눈에 보기 — 숨겨 띄운 세팅 시뮬레이터(Compare.dc.html?embed=eff)가 계산한 효율 요약을 받아요
 this._effMsg = (e) => { const d = e && e.data; if (!d || d.type !== 'hatz-eff') return; const fr = document.querySelector('iframe[src^="Compare.dc.html?embed=eff"]'); if (fr && e.source !== fr.contentWindow) return; this.setState(d.error ? { effErr: d.error } : { eff: d.data, effErr: '' }); };
 window.addEventListener('message', this._effMsg);
+// 숨은 시뮬레이터는 효율 섹션이 화면 근처에 왔을 때만 띄워요 (첫 로딩 때 데이터를 두 번 받지 않게)
+{ const on = () => { if (this._effIO) { this._effIO.disconnect(); this._effIO = null; } if (this._effFr) return; const fr = document.createElement('iframe'); fr.src = 'Compare.dc.html?embed=eff'; fr.title = '효율 계산'; fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1; fr.style.cssText = 'position: absolute; left: -10000px; top: 0; width: 1440px; height: 900px; border: 0; visibility: hidden; pointer-events: none'; document.body.appendChild(fr); this._effFr = fr; }; const sec = document.querySelector('[data-effsec]'); if (sec && typeof IntersectionObserver === 'function') { this._effIO = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) on(); }, { rootMargin: '800px 0px' }); this._effIO.observe(sec); } else on(); }
 // 장비 목록 · 세공 데이터 (에린 데이터 기준, equip-data.json)
-try { fetch('./prices.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
+try { fetch('./prices.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && typeof d === 'object') { this.setState({ prices: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./title-data.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.p) { this.setState({ tiData: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./equip-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.weapon) { this.setState({ eqPicks: d }); } }).catch(() => {}); } catch (e) {}
 try { fetch('./enchant-picks.json').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && d.pre) { this.setState({ enPicks: d }); } }).catch(() => {}); } catch (e) {}
@@ -341,7 +342,7 @@ try { fetch('./equip-data.json').then((r) => (r.ok ? r.json() : null)).then((d) 
 this._sync = () => this.syncStore();
 window.addEventListener('storage', this._sync); window.addEventListener('focus', this._sync); document.addEventListener('visibilitychange', this._sync); this._poll = setInterval(this._sync, 1500);
 }
-componentWillUnmount() { window.removeEventListener('message', this._effMsg); clearInterval(this._poll); window.removeEventListener('storage', this._sync); window.removeEventListener('focus', this._sync); document.removeEventListener('visibilitychange', this._sync); }
+componentWillUnmount() { window.removeEventListener('message', this._effMsg); if (this._effIO) this._effIO.disconnect(); if (this._effFr) { this._effFr.remove(); this._effFr = null; } clearInterval(this._poll); window.removeEventListener('storage', this._sync); window.removeEventListener('focus', this._sync); document.removeEventListener('visibilitychange', this._sync); }
 
 loadStore() {
 try { const v = JSON.parse(window.localStorage.getItem('hatz-mabinogi-v1')); if (v && Array.isArray(v.chars) && v.chars.length) { // 아이템 이름을 경매장 · 아이템 정보 이름으로 맞춰요 (예전 저장값 변환)
