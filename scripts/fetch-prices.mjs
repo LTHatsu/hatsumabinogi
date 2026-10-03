@@ -47,7 +47,7 @@ for (const name of prices.watch || []) { try { summarize(await collect('/mabinog
 for (const keyword of prices.keywords || []) { try { summarize(await collect('/mabinogi/v1/auction/keyword-search', { keyword }), items); } catch (e) { errors.push(String(e.message || e)); } }
 // 카테고리 전체(인챈트 스크롤 · 장비) — 호출량이 많아 categoryEveryHours 시간마다만 새로 받고, 그 사이에는 지난 값을 유지해요
 const every = Number(prices.categoryEveryHours) || 6;
-const catDue = !prices.categoryUpdatedAt || Date.now() - Date.parse(prices.categoryUpdatedAt) >= every * 3600 * 1000 - 10 * 60 * 1000;
+const catDue = !prices.categoryUpdatedAt || Date.now() - Date.parse(prices.categoryUpdatedAt) >= every * 3600 * 1000 - 30 * 60 * 1000;
 let catItems = prices.categoryItems || {};
 if (catDue && (prices.categories || []).length) {
   const fresh = {};
