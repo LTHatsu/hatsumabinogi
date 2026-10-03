@@ -4,6 +4,8 @@
 .claude
 scripts
 node_modules
+package.json
+package-lock.json
 .wrangler
 README.md
 .nojekyll
