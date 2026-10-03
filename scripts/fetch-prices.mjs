@@ -5,15 +5,19 @@ const FILE = new URL('../prices.json', import.meta.url);
 const MAX_PAGES = 5, DELAY_MS = 250;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 if (!KEY) { console.error('NEXON_API_KEY 환경 변수가 없어요.'); process.exit(1); }
+// 일일 한도가 다 차면(요청 제한이 연달아 나면) 남은 호출은 보내지 않고 바로 실패 처리해요
+let limitHits = 0; const LIMIT_STOP = 3;
 async function call(path, params) {
+  if (limitHits >= LIMIT_STOP) throw new Error(`${path}: 요청 제한으로 실패했어요 (한도 소진 · 호출 생략)`);
   const url = new URL(API + path);
   Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
   for (let a = 0; a < 3; a++) {
     const res = await fetch(url, { headers: { 'x-nxopen-api-key': KEY, accept: 'application/json' } });
     if (res.status === 429) { await sleep(1000 * (a + 1)); continue; }
     if (!res.ok) throw new Error(`${path} ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    return res.json();
+    limitHits = 0; return res.json();
   }
+  limitHits += 1;
   throw new Error(`${path}: 요청 제한으로 실패했어요`);
 }
 async function collect(path, params, maxPages = MAX_PAGES) {
@@ -45,35 +49,50 @@ const prices = JSON.parse(await readFile(FILE, 'utf8'));
 const items = {}; const errors = [];
 for (const name of prices.watch || []) { try { summarize(await collect('/mabinogi/v1/auction/list', { item_name: name }), items); } catch (e) { errors.push(String(e.message || e)); } }
 for (const keyword of prices.keywords || []) { try { summarize(await collect('/mabinogi/v1/auction/keyword-search', { keyword }), items); } catch (e) { errors.push(String(e.message || e)); } }
-// 카테고리 전체(인챈트 스크롤 · 장비) — 호출량이 많아 categoryEveryHours 시간마다만 새로 받고, 그 사이에는 지난 값을 유지해요
-const every = Number(prices.categoryEveryHours) || 6;
-const catDue = !prices.categoryUpdatedAt || Date.now() - Date.parse(prices.categoryUpdatedAt) >= every * 3600 * 1000 - 30 * 60 * 1000;
-let catItems = prices.categoryItems || {};
-if (catDue && (prices.categories || []).length) {
-  const fresh = {};
-  for (const cat of prices.categories) { try { summarize(await collect('/mabinogi/v1/auction/list', { auction_item_category: cat }, Number(prices.categoryMaxPages) || 20), fresh); } catch (e) { errors.push(String(e.message || e)); } }
-  if (Object.keys(fresh).length) { catItems = fresh; prices.categoryUpdatedAt = new Date().toISOString(); }
+// 카테고리 전체(인챈트 스크롤 · 장비) — 호출량이 많아서 실행마다 가장 오래된 카테고리 몇 개만(categoryPerRun) 새로 받아요
+// 카테고리별 결과는 scripts/category-cache.json에 따로 두고(사이트에는 올리지 않음), 합친 결과만 prices.categoryItems로 써요
+const CACHE = new URL('./category-cache.json', import.meta.url);
+let cache = {}; try { cache = JSON.parse(await readFile(CACHE, 'utf8')); } catch (e) {}
+const cats = prices.categories || [];
+// 처음에는 지난 합본을 '_legacy'로 두고, 모든 카테고리를 한 번씩 받으면 지워요
+if (!Object.keys(cache).length && prices.categoryItems && Object.keys(prices.categoryItems).length) cache._legacy = { at: prices.categoryUpdatedAt || '', items: prices.categoryItems };
+const perRun = Number(prices.categoryPerRun) || Math.ceil(cats.length / 4);
+const ageOf = (c) => (cache[c] && Date.parse(cache[c].at)) || 0;
+const due = cats.slice().sort((x, y) => ageOf(x) - ageOf(y)).slice(0, perRun);
+const histFresh = {};
+for (const cat of due) {
+  try {
+    const fresh = summarize(await collect('/mabinogi/v1/auction/list', { auction_item_category: cat }, Number(prices.categoryMaxPages) || 10), {});
+    cache[cat] = { at: new Date().toISOString(), items: fresh }; prices.categoryUpdatedAt = cache[cat].at;
+  } catch (e) { errors.push(String(e.message || e)); }
+  // 거래 내역 — 지금 매물이 없는 아이템은 최근 거래가로 보여주려고 같은 카테고리의 거래 내역도 받아요 · 이름별로 가장 최근 거래 1건(가격 · 시각)
+  try {
+    const list = await collect('/mabinogi/v1/auction/history', { auction_item_category: cat }, Number(prices.historyMaxPages) || 5);
+    for (const it of list) {
+      const price = Number(it.auction_price_per_unit); if (!(price > 0) || unfinished(it)) continue;
+      const at = it.date_auction_buy || it.date_auction_expire || '';
+      for (const name of new Set([it.item_name, it.item_display_name].filter(Boolean))) {
+        const c = histFresh[name];
+        if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) histFresh[name] = { last: price, at };
+      }
+    }
+  } catch (e) { errors.push(String(e.message || e)); }
+}
+for (const k of Object.keys(cache)) if (k !== '_legacy' && !cats.includes(k)) delete cache[k];
+if (cats.every((c) => cache[c])) delete cache._legacy;
+// 합본: 같은 이름이 여러 카테고리에 있으면 최저가는 가장 낮은 값, 매물 수는 합계
+const catItems = {};
+for (const k of ['_legacy'].concat(cats)) {
+  const part = cache[k] && cache[k].items; if (!part) continue;
+  for (const [name, v] of Object.entries(part)) {
+    if (k === '_legacy' && cats.some((c) => cache[c] && cache[c].items[name])) continue;
+    const c = catItems[name]; if (!c) catItems[name] = { min: v.min, count: v.count }; else { c.min = Math.min(c.min, v.min); c.count += v.count; }
+  }
 }
 prices.categoryItems = catItems;
-// 거래 내역 — 지금 매물이 없는 아이템은 최근 거래가로 보여주려고 카테고리별 거래 내역(/auction/history)도 같은 주기로 받아요 · 이름별로 가장 최근 거래 1건(가격 · 시각)
+await writeFile(CACHE, JSON.stringify(cache) + '\n');
 let histItems = prices.historyItems || {};
-if (catDue && (prices.categories || []).length) {
-  const fresh = {};
-  for (const cat of prices.categories) {
-    try {
-      const list = await collect('/mabinogi/v1/auction/history', { auction_item_category: cat }, Number(prices.historyMaxPages) || 10);
-      for (const it of list) {
-        const price = Number(it.auction_price_per_unit); if (!(price > 0) || unfinished(it)) continue;
-        const at = it.date_auction_buy || it.date_auction_expire || '';
-        for (const name of new Set([it.item_name, it.item_display_name].filter(Boolean))) {
-          const c = fresh[name];
-          if (!c || (at && (!c.at || Date.parse(at) > Date.parse(c.at)))) fresh[name] = { last: price, at };
-        }
-      }
-    } catch (e) { errors.push(String(e.message || e)); }
-  }
-  if (Object.keys(fresh).length) { histItems = Object.assign({}, histItems, fresh); prices.historyUpdatedAt = new Date().toISOString(); }
-}
+if (Object.keys(histFresh).length) { histItems = Object.assign({}, histItems, histFresh); prices.historyUpdatedAt = new Date().toISOString(); }
 prices.historyItems = histItems;
 // 무리아스의 유물 — 이름이 모두 같아서 유물 효과(옵션) · 수치별 최저가를 따로 모아요 · relicSample은 옵션 형식 확인용
 try {
