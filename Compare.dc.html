@@ -856,8 +856,12 @@ let lanceDet = ['베헤', '에다드', '에바드'].every((x) => stgOgw.indexOf(
 let lanceHeat = ['리스', '루스', '알름'].every((x) => stgOgw.indexOf(x) >= 0);
 // 포비든 알케미스트 체화(페른 · 루스 · 온): 원소 효과 ×2.4 증폭, 상한은 원소 결정 1개 효과 ×4.8
 let forbChe = ['페른', '루스', '온'].every((x) => stgOgw.indexOf(x) >= 0);
+// 응축(살 · 알름 · 에바드, 9점): 스파이럴 이럽션을 모아 쓰는 대신 1차지 기준 기본 대미지 120% — 쿨 1번당 효율이 가장 좋은 1차지 기준 ×1.2
+// 폭화(리스 · 콜 · 우르, 9점): 후속 폭발은 에너지와 관계없이 1회 · 후속 폭발 배율 30% + 150% · 디버프 8초 동안 초당 4속성 평균 20% (= 160%)
+let forbCond = ['살', '알름', '에바드'].every((x) => stgOgw.indexOf(x) >= 0);
+let forbBlast = ['리스', '콜', '우르'].every((x) => stgOgw.indexOf(x) >= 0);
 // 장착 오검 목록으로 오검 조합(격류 · 분출 · 융합 · 게일 · 얼티밋)을 다시 정해요 — 세팅 시뮬레이터 오검 변경 계산 때 잠깐 바꿨다가 되돌려요
-const setCombos = (list) => { const has = (need) => need.every((x) => list.indexOf(x) >= 0); gyeok = has(['살', '다르', '에다드']); bun = has(['닌', '케르트', '에만콜']); yung = has(['페른', '이다드', '에바드']); triFin = 4400 + (yung ? 4500 : 0); triSyn = yung ? evap : 1; furyGale = has(['닌', '알름', '에만콜']); furyUlt = !furyGale && has(['페른', '케르트', '일란드']); lanceGust = has(['닌', '다르', '페헤']); lanceDet = has(['베헤', '에다드', '에바드']); lanceHeat = has(['리스', '루스', '알름']); forbChe = has(['페른', '루스', '온']); };
+const setCombos = (list) => { const has = (need) => need.every((x) => list.indexOf(x) >= 0); gyeok = has(['살', '다르', '에다드']); bun = has(['닌', '케르트', '에만콜']); yung = has(['페른', '이다드', '에바드']); triFin = 4400 + (yung ? 4500 : 0); triSyn = yung ? evap : 1; furyGale = has(['닌', '알름', '에만콜']); furyUlt = !furyGale && has(['페른', '케르트', '일란드']); lanceGust = has(['닌', '다르', '페헤']); lanceDet = has(['베헤', '에다드', '에바드']); lanceHeat = has(['리스', '루스', '알름']); forbChe = has(['페른', '루스', '온']); forbCond = has(['살', '알름', '에바드']); forbBlast = has(['리스', '콜', '우르']); };
 const FURY_RELIC = { '익시드 : 체인 블로우 피니시 대미지 증가': 'e1', '익시드 : 임팩트 다이브 대미지 증가': 'e2', '익시드 : 포스 슬램 대미지 증가': 'e3', '오버 드라이브 폭발 공격 대미지 증가': 'l1', '어나이얼레이션 대폭발 과열 계수 증가': 'l2', '임팩트 크러시 대미지 증가': 'l3', '케미컬 카니발 대미지 증가': 'a1', '스파이럴 이럽션 대미지 증가': 'a2', '서먼 나이트메어 속성 에너지 4개 소모 추가 대미지 배율 증가': 'a3' };
 const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3: 0, l1: 0, l2: 0, l3: 0, a1: 0, a2: 0, a3: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = FURY_RELIC[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
 // 스킬별 대미지 (딜 사이클 비중 키 = 띄어쓰기 없는 이름) — w: 재능 부분 가중치 (재능 보너스 대미지)
@@ -924,9 +928,9 @@ const hb = (1.305 + 0.01 * g('hb') + 1 + ogV('히트 버스터 최대 대미지 
 const HERB = 0.15; const elemE = (per, n) => (forbChe ? Math.min(per * n * 2.4, per * 4.8) : per * n);
 const eSn = elemE(0.05, 4) + ogV('서먼 나이트메어 (흙 연금술 효과) 스킬 최종 대미지 배율 증가') / 100; const eSe = elemE(0.2, 4) + ogV('스파이럴 이럽션 (물 연금술 효과) 스킬 최종 대미지 배율 증가') / 100;
 const sn = h(fl5, (12.6 + (lv.a3 || 0) * 0.05) * effE, (1 + eSn * (1 + HERB * effE)) * (5 + 0.2 * g('fd')));
-const ccN = 4; /* 후속 폭발 횟수 — 실전 3구 소모 기준 4회 (4구면 5회) */
-const cc = h(hb * (1 + 0.3 * ccN), (9 * (1 + 0.3 * ccN) + (lv.a1 || 0) * 0.3 * (2 + 0.3 * ccN)) * effF, 1 + ogV('케미컬 카니발 (불 연금술 효과) 주 목표물에게 주는 최종 대미지 배율 증가') / 100);
-const se = h(wc5, (10.8 + (lv.a2 || 0) * 0.2) * effW, 1 + eSe * (1 + HERB * effW));
+const ccN = forbBlast ? 1 : 4; const ccF = forbBlast ? 1.8 : 0.3; /* 후속 폭발 — 기본: 실전 3구 소모 4회 × 30% · 폭화: 1회 × (30% + 150%) */
+const cc = h(hb * (1 + ccF * ccN), (9 * (1 + ccF * ccN) + (lv.a1 || 0) * 0.3 * (2 + ccF * ccN) + (forbBlast ? 1.6 : 0)) * effF, 1 + ogV('케미컬 카니발 (불 연금술 효과) 주 목표물에게 주는 최종 대미지 배율 증가') / 100);
+const se = h(wc5, (10.8 + (lv.a2 || 0) * 0.2) * effW, (1 + eSe * (1 + HERB * effW)) * (forbCond ? 1.2 : 1));
 const mo = h(0, 450 * effA, 1);
 return { '서먼나이트메어': { v: sn.v, tal: sn.tal }, '케미컬카니발': { v: cc.v, tal: cc.tal }, '스파이럴이럽션': { v: se.v, tal: se.tal }, '마그눔오푸스': { v: mo.v, tal: 0 } };
 };
