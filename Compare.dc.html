@@ -756,7 +756,7 @@ const OG_SP = ['베헤', '리스', '페른', '살', '닌'];
 // 장착 오검의 효과별 합계 — 재능 효과는 모든 오검, 아르카나 효과는 특수 오검에서만 · 같은 효과가 여러 오검에 있으면 더해요
 const ogValsOf = (ogM, ogwM) => { const o = {}; [1, 2, 3, 4, 5].forEach((n) => { const tp = (ogwM || {})[n]; if (!tp) return; ((ogM || {})[n] || []).forEach((q) => { const L = q && OG_LV[q.e]; if (!L || (L[0] === 'a' && OG_SP.indexOf(tp) < 0)) return; o[q.e] = (o[q.e] || 0) + (Number(L[Math.min(Number(q.lv) || 1, L.length - 1)]) || 0); }); }); return o; };
 // ogNow — 스킬 계산식이 읽는 오검 효과 (기본은 장비 · 오검의 현재 오검, 세팅 시뮬레이터 오검 변경을 계산할 때만 잠깐 바꿔요)
-let ogNow = ogValsOf(gear && gear.og, gear && gear.ogw);
+let ogNow = ogValsOf(gear && gear.og, gear && gear.ogw); const OG_BASE0 = ogNow; /* 캐릭터 정보에 입력한 스탯에 이미 들어 있는 현재 오검 */
 const ogV = (name) => ogNow[name] || 0;
 const OG_K = { ogCr: '크래시 샷 파편 대미지 배율 증가', ogMg: '매그넘 샷 대미지 배율 증가', ogFl: '플레임 버스트 대미지 배율 증가', ogHy: '하이드로 피어스 최대 대미지 배율 증가', ogTr: '트라이 어설트 일반 공격, 피니시 공격의 대미지 배율 증가' };
 const sv = (k) => (SG_KEY[k] ? sgSum(SG_KEY[k]) : (OG_K[k] ? ogV(OG_K[k]) : (k === 'magi' ? 10 : 0)));
@@ -924,9 +924,14 @@ const h = (tal, own, m) => arcHit(MM * tal, MM * own, w, m);
 const gE = (k) => sv(k) + ((ov.sg || {})[k] || 0);
 const effW = 1 + 0.15 + 0.1 + 0.3 + 0.005 * gE('water'); const effF = 1 + 0.15 + 0.1 + 0.3 + 0.005 * gE('fire'); const effE = 1 + 0.15 + 0.1 + 0.3 + 0.002 * gE('earth');
 const effA = 1 + 0.15 + 0.1 + 0.3 + (0.005 * (gE('fire') + gE('water') + gE('wind')) + 0.002 * gE('earth')) / 4; /* 4속성 평균 효율 (마그눔 오푸스) */
-const wc5 = (0.607 + 0.3 + 0.006 * g('wc') + ogV('워터 캐논 최대 대미지 배율 증가') / 100) * 5 * 1.25 * effW * skMul('워터 캐논') * (1 + 0.2 + 0.05 * g('rc'));
-const fl5 = (0.335 + 0.3 + 0.003 * g('fl') + ogV('플레이머 최대 대미지 배율 증가') / 100) * 5 * effF * skMul('플레이머');
-const hb = (1.305 + 0.3 + 0.01 * g('hb') + 1 + ogV('히트 버스터 최대 대미지 배율 증가') / 100) * effF * 1.25 * 4; /* 무기(실린더) 에르그 S50 ×4 가정 — 캐릭터 정보에 무기 에르그 레벨 입력칸이 없어요 (dErg는 어둠의 에르그라 쓰지 않아요) */
+/* 속성별 연금술 대미지: 캐릭터 정보의 불 · 물 · 바람 · 흙 연금술 대미지(현재 오검 포함)를 쓰고, MM은 4속성 평균 — 재능 스킬(워터 캐논 물 · 플레이머 · 히트 버스터 불)은 해당 속성 / 평균 비율로, 아르카나 고유 몫은 4속성 평균 그대로
+   오검 시뮬레이션: 속성 오검 변화량(Δ)을 속성별로 더하고, 평균 변화량은 바깥(최대 대미지 환산)에서 더해지므로 비율의 분모에 넣어요 */
+const ogEl = (k) => ogV(k + ' 속성 연금술 대미지 증가') - (OG_BASE0[k + ' 속성 연금술 대미지 증가'] || 0); const ogAvg = (ogEl('불') + ogEl('물') + ogEl('흙') + ogEl('바람')) / 4;
+const elIn = { '불': fNum('alFire'), '물': fNum('alWater'), '바람': fNum('alWind'), '흙': fNum('alEarth') }; const elOk = elIn['불'] > 0 && elIn['물'] > 0 && elIn['바람'] > 0 && elIn['흙'] > 0; const elAvg = elOk ? (elIn['불'] + elIn['물'] + elIn['바람'] + elIn['흙']) / 4 : 0;
+const elBase = MREF; const kEl = (k) => { const d = elOk ? elIn[k] - elAvg : 0; return (elBase + d + ogEl(k)) / ((elBase + ogAvg) || 1); }; const kW = kEl('물'); const kF = kEl('불');
+const wc5 = (0.607 + 0.3 + 0.006 * g('wc') + ogV('워터 캐논 최대 대미지 배율 증가') / 100) * 5 * 1.25 * effW * skMul('워터 캐논') * (1 + 0.2 + 0.05 * g('rc')) * kW;
+const fl5 = (0.335 + 0.3 + 0.003 * g('fl') + ogV('플레이머 최대 대미지 배율 증가') / 100) * 5 * effF * skMul('플레이머') * kF;
+const hb = (1.305 + 0.3 + 0.01 * g('hb') + 1 + ogV('히트 버스터 최대 대미지 배율 증가') / 100) * effF * 1.25 * 4 * kF; /* 무기(실린더) 에르그 S50 ×4 가정 — 캐릭터 정보에 무기 에르그 레벨 입력칸이 없어요 (dErg는 어둠의 에르그라 쓰지 않아요) */
 const HERB = 0.15; const elemE = (per, n) => (forbChe ? Math.min(per * n * 2.4, per * 4.8) : per * n);
 const eSn = elemE(0.05, 4) + ogV('서먼 나이트메어 (흙 연금술 효과) 스킬 최종 대미지 배율 증가') / 100; const eSe = elemE(0.2, 4) + ogV('스파이럴 이럽션 (물 연금술 효과) 스킬 최종 대미지 배율 증가') / 100;
 const flHits = 5 + Math.ceil(Math.max(0, g('fd')) / 5); /* 플레이머 지속 시간 세공: 레벨 구간별 추가 타수 */
