@@ -1,0 +1,8 @@
+// Cloudflare Workers 정적 사이트 배포 설정 — 저장소 루트의 사이트 파일만 올리고, 올리지 않을 파일은 .assetsignore에 적어요
+{
+  "name": "hatsumabinogi",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./"
+  }
+}
