@@ -796,7 +796,7 @@ const shF = shareOf('플레임버스트'), shH = shareOf('하이드로피어스'
 // 아르카나 스킬 = (기반 연속기 J × 피어싱 증폭(재능 부분) + 아르카나 고유 추가 대미지 (유물 · 기본)) × 피어싱 증폭 × 보호 피해감소 − 방어
 // 마기그래프: 스크류 어퍼 · 차징피스트 · 파운딩 10 고정 · 소울 리버레이트 너클이면 드롭킥 ×1.15 · 파운딩 ×1.8
 // 오검 조합: 게일 피어스(닌 · 알름 · 에만콜) → 게일 ×1.2, 드롭킥 · 포스슬램 ×1.12 / 얼티밋 스트라이크(페른 · 케르트 · 일란드) → 얼티밋 1 · 2타 160% + 3타 230%
-const isFury = arcIdx === 9 || arcIdx === 5; /* 블래스트 랜서도 퓨리 파이터와 같은 스킬 계산 경로(lanceEval)를 써요 */
+const isFury = arcIdx === 9 || arcIdx === 5 || arcIdx === 7; /* 블래스트 랜서도 퓨리 파이터와 같은 스킬 계산 경로(lanceEval)를 써요 */
 // 연속마 배율 = 기본 1.0 + 연속마 스킬 · 아르카나 상한 0.7 + 너클 에르그 S50 1.0 + 무기(소울 리버레이트 너클 0.8 · 나이트브링어 0.7 · 페러시우스 0.65) + 장갑 연속기 마스터리 세공 1레벨당 0.01
 // 무기에 따라 바뀌는 효과는 furyWN(계산에 쓰는 무기 이름)으로 — 세팅 시뮬레이터에서 무기를 바꾸면 바꾼 무기로 다시 계산해요
 let furyWN = wName;
@@ -816,8 +816,8 @@ let lanceDet = ['베헤', '에다드', '에바드'].every((x) => stgOgw.indexOf(
 let lanceHeat = ['리스', '루스', '알름'].every((x) => stgOgw.indexOf(x) >= 0);
 // 장착 오검 목록으로 오검 조합(격류 · 분출 · 융합 · 게일 · 얼티밋)을 다시 정해요 — 세팅 시뮬레이터 오검 변경 계산 때 잠깐 바꿨다가 되돌려요
 const setCombos = (list) => { const has = (need) => need.every((x) => list.indexOf(x) >= 0); gyeok = has(['살', '다르', '에다드']); bun = has(['닌', '케르트', '에만콜']); yung = has(['페른', '이다드', '에바드']); triFin = 4400 + (yung ? 4500 : 0); triSyn = yung ? evap : 1; furyGale = has(['닌', '알름', '에만콜']); furyUlt = !furyGale && has(['페른', '케르트', '일란드']); lanceGust = has(['닌', '다르', '페헤']); lanceDet = has(['베헤', '에다드', '에바드']); lanceHeat = has(['리스', '루스', '알름']); };
-const FURY_RELIC = { '익시드 : 체인 블로우 피니시 대미지 증가': 'e1', '익시드 : 임팩트 다이브 대미지 증가': 'e2', '익시드 : 포스 슬램 대미지 증가': 'e3', '오버 드라이브 폭발 공격 대미지 증가': 'l1', '어나이얼레이션 대폭발 과열 계수 증가': 'l2', '임팩트 크러시 대미지 증가': 'l3' };
-const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3: 0, l1: 0, l2: 0, l3: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = FURY_RELIC[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
+const FURY_RELIC = { '익시드 : 체인 블로우 피니시 대미지 증가': 'e1', '익시드 : 임팩트 다이브 대미지 증가': 'e2', '익시드 : 포스 슬램 대미지 증가': 'e3', '오버 드라이브 폭발 공격 대미지 증가': 'l1', '어나이얼레이션 대폭발 과열 계수 증가': 'l2', '임팩트 크러시 대미지 증가': 'l3', '케미컬 카니발 대미지 증가': 'a1', '스파이럴 이럽션 대미지 증가': 'a2', '서먼 나이트메어 속성 에너지 4개 소모 추가 대미지 배율 증가': 'a3' };
+const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3: 0, l1: 0, l2: 0, l3: 0, a1: 0, a2: 0, a3: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = FURY_RELIC[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
 // 스킬별 대미지 (딜 사이클 비중 키 = 띄어쓰기 없는 이름) — w: 재능 부분 가중치 (재능 보너스 대미지)
 // 재능 스킬 강화 세트 효과 (장비·오검에서 체크) — 해당 재능 스킬 대미지 ×(1 + n%) · 같은 세트는 한 번만, 다른 세트끼리는 곱해요
 // ── 블래스트 랜서 스킬 계산식 (디시 모리안 갤 '블랜 스킬 대미지 계산식 정리 v260308' 기준 · 스킬 최대 랭크 · 링크 최대) ──
@@ -855,8 +855,32 @@ const ic = h((1625 + 5 * g('cb')) / 100, (20 + (lv.l3 || 0) * 0.5 + ogV('임팩�
 const cb = h(0, 500, 1); /* 캐스케이드 버스트(각성기): 딜 50,000% 고정 — 세공 · 기반 스킬 · 다른 배율 영향 없음 */
 return { '오버드라이브': { v: odS.v + odB.v, tal: odB.tal }, '어나이얼레이션': { v: anS.v + anB.v, tal: anB.tal }, '캐스케이드버스트': { v: cb.v, tal: 0 }, '랜스차지': { v: lcS.v, tal: lcS.tal }, '스파이럴볼텍스': { v: svx.v, tal: svx.tal }, '포커스드엣지': { v: fe.v, tal: 0 }, '임팩트크러시': { v: ic.v, tal: ic.tal }, '차지어설트': { v: ca.v, tal: ca.tal } };
 };
+// ── 포비든 알케미스트 스킬 계산식 (에린 데이터 최신 · 최대 대미지 기준 · 계산식 영상 자료) ──
+// 아르카나 스킬 = 영향받는 재능 스킬 대미지(재능 몫) + 4속성 연금술 대미지 평균 × 아르카나 배율(고유 몫)
+// 워터 캐논 5차지 = 물 연금술 대미지 × (60.7% + '워터 캐논 최대 대미지' 세공 레벨당 0.6% + 오검) × 1.25 × 워터 캐논 강화 세트 × 레인 캐스팅(1 + 0.2 + '레인 캐스팅 워터캐논 대미지' 세공 레벨당 0.05%)
+// 플레이머 5차지 = 불 연금술 대미지 × (33.5% + '플레이머 최대 대미지' 세공 레벨당 0.3% + 속성 실린더 30% + 오검) × 5차지 × 플레이머 강화 세트
+// 히트 버스터(압력 100%) = 불 연금술 대미지 × (130.5% + '히트 버스터 최대 대미지' 세공 레벨당 1% + 속성 실린더 30% + 압력 100% + 오검) × 엘레멘탈 웨이브 1.25 × 에르그(S50 ×4, 레벨당 +6%)
+// 서먼 나이트메어 = 플레이머 5차지 + 평균 × (480% + 유물 레벨당 5%) · 케미컬 카니발 = 히트 버스터 + 평균 × (900% + 유물 레벨당 30%) · 스파이럴 이럽션 = 워터 캐논 5차지 + 평균 × (1080% + 유물 레벨당 20%) · 마그눔 오푸스(각성기) 45,000% 고정
+// 오검 '…스킬 최종 대미지 배율 증가'는 스킬 전체에 곱해요 (수치 % 기준)
+const isForb = arcIdx === 7;
+Object.assign(SG_KEY, { a_wc: '워터 캐논 최대 대미지', a_fl: '플레이머 최대 대미지', a_hb: '히트 버스터 최대 대미지', a_rc: '레인 캐스팅 워터캐논 대미지' });
+const forbEval = (ov, w) => {
+const g = (k) => sv('a_' + k) + ((ov.sg || {})['a_' + k] || 0);
+const lv = ov.relic || furyRelicWith('', 0); const MM = ov.M !== undefined ? ov.M : MREF;
+const dE = ov.dErg !== undefined ? ov.dErg : dErgLv;
+const h = (tal, own, m) => arcHit(MM * tal, MM * own, w, m);
+const wc5 = (0.607 + 0.006 * g('wc') + ogV('워터 캐논 최대 대미지 배율 증가') / 100) * 1.25 * skMul('워터 캐논') * (1 + 0.2 + 0.0005 * g('rc'));
+const fl5 = (0.335 + 0.003 * g('fl') + 0.3 + ogV('플레이머 최대 대미지 배율 증가') / 100) * 5 * skMul('플레이머');
+const hb = (1.305 + 0.01 * g('hb') + 0.3 + 1 + ogV('히트 버스터 최대 대미지 배율 증가') / 100) * 1.25 * (1 + 0.06 * Math.min(50, dE));
+const sn = h(fl5, 4.8 + (lv.a3 || 0) * 0.05, 1 + ogV('서먼 나이트메어 (흙 연금술 효과) 스킬 최종 대미지 배율 증가') / 100);
+const cc = h(hb, 9 + (lv.a1 || 0) * 0.3, 1 + ogV('케미컬 카니발 (불 연금술 효과) 주 목표물에게 주는 최종 대미지 배율 증가') / 100);
+const se = h(wc5, 10.8 + (lv.a2 || 0) * 0.2, 1 + ogV('스파이럴 이럽션 (물 연금술 효과) 스킬 최종 대미지 배율 증가') / 100);
+const mo = h(0, 450, 1);
+return { '서먼나이트메어': { v: sn.v, tal: sn.tal }, '케미컬카니발': { v: cc.v, tal: cc.tal }, '스파이럴이럽션': { v: se.v, tal: se.tal }, '마그눔오푸스': { v: mo.v, tal: 0 } };
+};
 const furyEval = (ov, w) => {
 if (isLance) return lanceEval(ov, w);
+if (isForb) return forbEval(ov, w);
 const g = (k) => sv('f_' + k) + ((ov.sg || {})['f_' + k] || 0);
 const dE = ov.dErg !== undefined ? ov.dErg : dErgLv; const lv = ov.relic || furyRelicWith('', 0);
 const FURY_OG = { dp: '연속기 : 대쉬 펀치 대미지 배율 증가', up: '연속기 : 스크류 어퍼 대미지 배율 증가', dk: '연속기 : 드롭킥 대미지 배율 증가', cf: '연속기 : 차징 피스트 대미지 배율 증가', ss: '연속기 : 섬머솔트 대미지 배율 증가', pd: '연속기 : 파운딩 대미지 배율 증가' };
@@ -874,7 +898,7 @@ Object.keys(A).forEach((n) => { out[n] = A[n]; }); const fd = arcHit(0, MM * 550
 const furyRaw = isFury ? furyEval({}, 1) : {};
 // 딜 사이클 비중을 입력하지 않았으면 시트 사이클(얼티밋 2 · 대어드 9 · 대펀 9 · 익시드 9 · 게일 20 또는 18회)로 환산한 기본 비중을 써요
 const FURY_DEF = furyUlt ? { '대쉬펀치': 6.8, '스크류어퍼': 6.8, '드롭킥': 10.4, '익시드:체인블로우': 7.7, '익시드:임팩트다이브': 9.2, '익시드:포스슬램': 23.2, '게일피어스': 20.3, '얼티밋스트라이크': 15.7 } : { '대쉬펀치': 6.6, '스크류어퍼': 6.5, '드롭킥': 11.3, '익시드:체인블로우': 7.4, '익시드:임팩트다이브': 8.9, '익시드:포스슬램': 25.1, '게일피어스': 26.2, '얼티밋스트라이크': 8.1 };
-const furyUserShare = isLance || envSkills.some((k) => furyRaw[String(k.name).replace(/\s/g, '')]);
+const furyUserShare = isLance || isForb || envSkills.some((k) => furyRaw[String(k.name).replace(/\s/g, '')]);
 const furyShare = (n) => (furyUserShare ? shareOf(n) : (FURY_DEF[n] || 0) / 100);
 // ── 세이크리드 가드 스킬 계산식 (마도카 실측 글 기준 · 실측 오차 0.05~2.5%) ──
 // 아르카나 스킬 = 기반 재능 몫(최대 대미지 × 윈드밀 7.48 · 돌진 5.38 × 배쉬 스택 1.10 × 계수 × 피어싱 증폭) + 고유 몫(최대 대미지 · 방어력 · 생명력 × 계수), 전체에 피어싱 증폭 × 보호 피해감소 − 방어
