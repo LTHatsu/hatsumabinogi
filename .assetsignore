@@ -1,0 +1,12 @@
+# Cloudflare에 올리지 않을 파일 (사이트에 필요 없는 저장소 파일)
+.git
+.github
+.claude
+scripts
+node_modules
+.wrangler
+README.md
+.nojekyll
+wrangler.jsonc
+.gitignore
+.assetsignore
