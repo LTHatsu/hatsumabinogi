@@ -848,8 +848,10 @@ Object.assign(SG_KEY, { f_dp: '연속기 : 대쉬 펀치 대미지', f_up: '연�
 // 오검 워드 '연속기 마스터리' 효과(레벨별 수치)는 연속마 배율에 더해요 (아래 J의 ogV) — 시트의 3.7 = 소울 너클 3.5 + 장갑 세공 10레벨 0.1 + 오검 2% × 5개 0.1
 let furyGale = ['닌', '알름', '에만콜'].every((x) => stgOgw.indexOf(x) >= 0);
 let furyUlt = !furyGale && ['페른', '케르트', '일란드'].every((x) => stgOgw.indexOf(x) >= 0);
+// 블래스트 랜서 차지 어설트 오검 조합(질풍 · 닌 · 다르 · 페헤): 차지 어설트 대미지 배율 +2000%
+let lanceGust = ['닌', '다르', '페헤'].every((x) => stgOgw.indexOf(x) >= 0);
 // 장착 오검 목록으로 오검 조합(격류 · 분출 · 융합 · 게일 · 얼티밋)을 다시 정해요 — 세팅 시뮬레이터 오검 변경 계산 때 잠깐 바꿨다가 되돌려요
-const setCombos = (list) => { const has = (need) => need.every((x) => list.indexOf(x) >= 0); gyeok = has(['살', '다르', '에다드']); bun = has(['닌', '케르트', '에만콜']); yung = has(['페른', '이다드', '에바드']); triFin = 4400 + (yung ? 4500 : 0); triSyn = yung ? evap : 1; furyGale = has(['닌', '알름', '에만콜']); furyUlt = !furyGale && has(['페른', '케르트', '일란드']); };
+const setCombos = (list) => { const has = (need) => need.every((x) => list.indexOf(x) >= 0); gyeok = has(['살', '다르', '에다드']); bun = has(['닌', '케르트', '에만콜']); yung = has(['페른', '이다드', '에바드']); triFin = 4400 + (yung ? 4500 : 0); triSyn = yung ? evap : 1; furyGale = has(['닌', '알름', '에만콜']); furyUlt = !furyGale && has(['페른', '케르트', '일란드']); lanceGust = has(['닌', '다르', '페헤']); };
 const FURY_RELIC = { '익시드 : 체인 블로우 피니시 대미지 증가': 'e1', '익시드 : 임팩트 다이브 대미지 증가': 'e2', '익시드 : 포스 슬램 대미지 증가': 'e3', '오버 드라이브 폭발 공격 대미지 증가': 'l1', '어나이얼레이션 대폭발 과열 계수 증가': 'l2', '임팩트 크러시 대미지 증가': 'l3' };
 const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3: 0, l1: 0, l2: 0, l3: 0 }; ['relic1', 'relic2', 'relic3'].forEach((k) => { const d = (((gear && gear.det) || {})[k]) || {}; const key = FURY_RELIC[k === slotKey && fxNew ? fxNew : d.rFx]; if (!key) return; const l = k === slotKey ? newLv : (Number(d.rLv) || 0); o[key] = Math.max(o[key], l); }); return o; };
 // 스킬별 대미지 (딜 사이클 비중 키 = 띄어쓰기 없는 이름) — w: 재능 부분 가중치 (재능 보너스 대미지)
@@ -862,7 +864,7 @@ const furyRelicWith = (slotKey, newLv, fxNew) => { const o = { e1: 0, e2: 0, e3:
 // 스파이럴 볼텍스: (평타 × (3000% + 오검) + 클로저 대미지) × 1.35 · 클로저 = 평타 × (400% + 클로져 세공 레벨당 4% + 클로져 오검) — 클로저는 재능 몫 (블로그 '스파이럴 볼텍스 스킬 정보' 2025.3.3 · 주 목표 링크 35%)
 // 포커스드 엣지: 평타 × (1타 1000% + 2타 1500%) × 1.35 (아르카나 몫 · 주 목표 링크 35%)
 // 임팩트 크러시: 크로스 버스터(재능 몫, 평타 × (1625% + 크로스 버스터 세공 레벨당 5%)) + 평타 × (2000% + 임팩트 크러시 유물 레벨당 50% + 오검) × 1.35
-// 차지 어설트: 랜스 블로우(재능 몫, 평타 × 800%) + 평타 × (1200% + 오검) × 1.35 (temiy 계산기 구조 · 스킬 최대 랭크)
+// 차지 어설트: 랜스 블로우(재능 몫, 평타 × 800%) + 평타 × (1200% + 질풍 오검 조합 2000% + 오검) × 1.35 (temiy 계산기 구조 · 스킬 최대 랭크)
 // 캐스케이드 버스트(각성기)는 딜 50,000% 고정 (주목표 보너스 등 다른 배율 없음)
 // 세공 레벨당: 랜차댐 4% · 주목 2.5% · 마상댐 0.03 · 마상 거리 1레벨 1.0 + 레벨당 0.2 (에린 데이터) · 유물: 옵드 폭발 레벨당 70% · 어나이 과열 계수 레벨당 0.3
 // 오검(가정): 오버 드라이브 · 어나이얼레이션 배율은 찌르기 배율(500% · 1000%)에 더하고, 랜스 차지 오검은 랜차 최종댐으로 · 마나셸은 100 기준
@@ -884,7 +886,7 @@ const odS = h(0, 5, 1.35); const odB = h(lc, (lv.l1 || 0) * 0.7 + ogV('오버 �
 const anS = h(0, 10, 1.55); const anB = h(lc, 5 * (0.3 * LANCE_MANA / 100 + 6 + (lv.l2 || 0) * 0.3) + ogV('어나이얼레이션 대미지 배율 증가') / 100, 1.55);
 const lcS = h(lc, 0, 1); /* 블랜 전용 랜스 차지 단독 사용 */
 const cl = (400 + 4 * g('cl')) / 100 + ogV('클로져 대미지 배율 증가') / 100; const svx = h(cl, 30 + ogV('스파이럴 볼텍스 대미지 배율 증가') / 100, 1.35); const fe = h(0, 10 + 15, 1.35);
-const ic = h((1625 + 5 * g('cb')) / 100, 20 + (lv.l3 || 0) * 0.5 + ogV('임팩트 크러시 대미지 배율 증가') / 100, 1.35); const ca = h(8, 12 + ogV('차지 어설트 대미지 배율 증가') / 100, 1.35);
+const ic = h((1625 + 5 * g('cb')) / 100, 20 + (lv.l3 || 0) * 0.5 + ogV('임팩트 크러시 대미지 배율 증가') / 100, 1.35); const ca = h(8, 12 + (lanceGust ? 20 : 0) + ogV('차지 어설트 대미지 배율 증가') / 100, 1.35);
 const cb = h(0, 500, 1); /* 캐스케이드 버스트(각성기): 딜 50,000% 고정 — 세공 · 기반 스킬 · 다른 배율 영향 없음 */
 return { '오버드라이브': { v: odS.v + odB.v, tal: odB.tal }, '어나이얼레이션': { v: anS.v + anB.v, tal: anB.tal }, '캐스케이드버스트': { v: cb.v, tal: 0 }, '랜스차지': { v: lcS.v, tal: lcS.tal }, '스파이럴볼텍스': { v: svx.v, tal: svx.tal }, '포커스드엣지': { v: fe.v, tal: 0 }, '임팩트크러시': { v: ic.v, tal: ic.tal }, '차지어설트': { v: ca.v, tal: ca.tal } };
 };
