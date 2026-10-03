@@ -1,6 +1,6 @@
 # 하츠의 마비노기 — 정적 사이트 + 경매장 시세 자동 갱신
 
-Cloudflare Workers(정적 파일)로 배포해요 — https://hatsumabinogi.leesuhyun9102.workers.dev
+Cloudflare Workers(정적 파일)로 배포해요.
 경매장 시세는 GitHub Actions가 6시간마다 NEXON Open API를 불러 `prices.json`을 갱신해요. API 키는 저장소 Secret에만 두고 페이지에는 들어가지 않아요.
 
 ## 1. 저장소 만들기
