@@ -892,7 +892,9 @@ const ccN = forbBlast ? 1 : 4; const ccF = forbBlast ? 1.8 : 0.3; /* 후속 폭�
 const cc = h(hb * (1 + ccF * ccN), (9 * (1 + ccF * ccN) + (lv.a1 || 0) * 0.3 * (2 + ccF * ccN) + (forbBlast ? 1.6 : 0)) * effF, 1 + ogV('케미컬 카니발 (불 연금술 효과) 주 목표물에게 주는 최종 대미지 배율 증가') / 100);
 const se = h(wc5, (10.8 + (lv.a2 || 0) * 0.2) * effW, (1 + eSe * (1 + HERB * effW)) * (forbCond ? 1.2 : 1));
 const mo = h(0, 450 * effA, 1);
-return { '서먼나이트메어': { v: sn.v, tal: sn.tal }, '케미컬카니발': { v: cc.v, tal: cc.tal }, '스파이럴이럽션': { v: se.v, tal: se.tal }, '마그눔오푸스': { v: mo.v, tal: 0 } };
+/* 재능 스킬 단독 사용 — 영상 자료 계산식 (워터 캐논 5차지 · 플레이머 5차지 · 히트 버스터 압력 100%), 전부 재능 몫 */
+const one = (x) => { const r = h(x, 0, 1); return { v: r.v, tal: r.tal }; };
+return { '서먼나이트메어': { v: sn.v, tal: sn.tal }, '케미컬카니발': { v: cc.v, tal: cc.tal }, '스파이럴이럽션': { v: se.v, tal: se.tal }, '마그눔오푸스': { v: mo.v, tal: 0 }, '히트버스터': one(hb), '워터캐논': one(wc5), '플레이머': one(fl5 * (5 + 0.2 * g('fd'))) }; /* 플레이머 단독: 5초(+ 지속 시간 세공 레벨당 0.2초) 동안 초당 공격 */
 };
 const furyEval = (ov, w) => {
 if (isLance) return lanceEval(ov, w);
